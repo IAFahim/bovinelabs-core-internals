@@ -1,457 +1,481 @@
-# BovineLabs Core - Inner Workings
+# NativeThreadStream
 
-ASCII architecture diagrams for every topic in `com.bovinelabs.core`.
+**Block-based, thread-safe streaming allocator that avoids pre-allocating large arrays.**
 
-Each topic lives on its own branch. Switch to a branch to see the detailed
-README.md with full ASCII diagrams explaining the internal data structures,
-algorithms, and design decisions.
+## Overview
 
-## How to Use
+NativeThreadStream solves the problem of collecting variable-sized data from many parallel
+Unity DOTS jobs without knowing the total count upfront. Instead of pre-allocating one giant
+array per thread (wasting memory) or using a single shared stream (requiring atomic locks),
+it gives each worker thread its own linked-list of fixed-size 4KB blocks. Each thread writes
+into its current block; when the block fills up, a new one is allocated and linked. Later,
+a single-threaded reader can walk each thread's block chain sequentially.
 
-```bash
-# List all topic branches
-git branch -a
-
-# View a specific topic
-git checkout topic/NativeThreadStream
-
-# View the diagram
-cat README.md
-```
-
-## Topics
-
-### Core Collections
-
-- [NativeThreadStream](../../tree/topic/NativeThreadStream)
-- [NativeCounter](../../tree/topic/NativeCounter)
-- [NativeKeyedMap](../../tree/topic/NativeKeyedMap)
-- [NativeLinearCongruentialGenerator](../../tree/topic/NativeLinearCongruentialGenerator)
-- [NativeParallelMultiHashMapFallback](../../tree/topic/NativeParallelMultiHashMapFallback)
-- [NativePartialKeyedMap](../../tree/topic/NativePartialKeyedMap)
-- [ThreadList](../../tree/topic/ThreadList)
-- [ThreadRandom](../../tree/topic/ThreadRandom)
-- [UnsafeArray](../../tree/topic/UnsafeArray)
-- [BitArray256](../../tree/topic/BitArray256)
-- [FixedArray](../../tree/topic/FixedArray)
-- [NativeHashMapExtensions.GetOrAddRef](../../tree/topic/NativeHashMapExtensions_GetOrAddRef)
-- [NativeHashMapExtensions.ClearAndAddBatchUnsafe](../../tree/topic/NativeHashMapExtensions_ClearAndAddBatchUnsafe)
-- [NativeListExtensions.ReserveNoResize](../../tree/topic/NativeListExtensions_ReserveNoResize)
-- [NativeThreadStreamExTests](../../tree/topic/NativeThreadStreamExTests)
-- [BitArray8_16_32_64](../../tree/topic/BitArray8_16_32_64)
-- [BitArray128](../../tree/topic/BitArray128)
-- [BitArrayUtilities](../../tree/topic/BitArrayUtilities)
-- [NativeThreadStream.Reader](../../tree/topic/NativeThreadStream_Reader)
-- [NativeThreadStream.Writer](../../tree/topic/NativeThreadStream_Writer)
-- [NativeWorkQueue](../../tree/topic/NativeWorkQueue)
-- [NativePerfectHashMap](../../tree/topic/NativePerfectHashMap)
-- [NativeUntypedHashMap](../../tree/topic/NativeUntypedHashMap)
-- [UnsafePartialKeyedMap](../../tree/topic/UnsafePartialKeyedMap)
-- [UnsafePerfectHashMap](../../tree/topic/UnsafePerfectHashMap)
-- [NativeListExtensions.ClearAddRange](../../tree/topic/NativeListExtensions_ClearAddRange)
-- [NativeParallelMultiHashMapExtensions.GetUniqueKeyArray](../../tree/topic/NativeParallelMultiHashMapExtensions_GetUniqueKeyArray)
-
-### Blob System
-
-- [BlobHashMap](../../tree/topic/BlobHashMap)
-- [BlobPerfectHashMap](../../tree/topic/BlobPerfectHashMap)
-- [BlobCurve](../../tree/topic/BlobCurve)
-- [BlobBuilderExtensions](../../tree/topic/BlobBuilderExtensions)
-- [BlobHashMapTests](../../tree/topic/BlobHashMapTests)
-- [BlobCurve2_3_4](../../tree/topic/BlobCurve2_3_4)
-- [BlobCurveCache](../../tree/topic/BlobCurveCache)
-- [BlobCurveHeader](../../tree/topic/BlobCurveHeader)
-- [BlobCurveSampler](../../tree/topic/BlobCurveSampler)
-- [BlobCurveSegment](../../tree/topic/BlobCurveSegment)
-- [BlobShared](../../tree/topic/BlobShared)
-- [IBlobCurve](../../tree/topic/IBlobCurve)
-- [BlobBuilderExtensions.Allocate](../../tree/topic/BlobBuilderExtensions_Allocate)
-- [BlobBuilderExtensions.ConstructHashMap](../../tree/topic/BlobBuilderExtensions_ConstructHashMap)
-- [BlobBuilderHashMap](../../tree/topic/BlobBuilderHashMap)
-- [BlobBuilderMultiHashMap](../../tree/topic/BlobBuilderMultiHashMap)
-- [BlobBuilderPerfectHashMap](../../tree/topic/BlobBuilderPerfectHashMap)
-- [BlobHashMapData](../../tree/topic/BlobHashMapData)
-- [BlobMultiHashMapIterator](../../tree/topic/BlobMultiHashMapIterator)
-- [BlobSpline](../../tree/topic/BlobSpline)
-- [BlobAssetOwnerInspector](../../tree/topic/BlobAssetOwnerInspector)
-- [EntityBlobBakedData](../../tree/topic/EntityBlobBakedData)
-- [EntityBlobBakingSystem](../../tree/topic/EntityBlobBakingSystem)
-
-### Memory & Allocators
-
-- [PooledNativeList](../../tree/topic/PooledNativeList)
-- [UnmanagedPool](../../tree/topic/UnmanagedPool)
-- [UnsafeSlabAllocator](../../tree/topic/UnsafeSlabAllocator)
-- [MemoryLabelAllocator](../../tree/topic/MemoryLabelAllocator)
-- [MemoryAllocator](../../tree/topic/MemoryAllocator)
-- [NoAllocHelpers](../../tree/topic/NoAllocHelpers)
-- [UnsafeListPoolTests](../../tree/topic/UnsafeListPoolTests)
-- [NativeSlabAllocator](../../tree/topic/NativeSlabAllocator)
-- [UnsafeParallelPoolAllocator](../../tree/topic/UnsafeParallelPoolAllocator)
-- [UnsafeFixedPoolAllocator](../../tree/topic/UnsafeFixedPoolAllocator)
-- [UnsafePoolAllocator](../../tree/topic/UnsafePoolAllocator)
-- [NativeArrayExtensions.WhereNoAlloc](../../tree/topic/NativeArrayExtensions_WhereNoAlloc)
-
-### Dynamic Buffers
-
-- [Hydrodynamics](../../tree/topic/Hydrodynamics)
-- [DynamicMultiHashMap](../../tree/topic/DynamicMultiHashMap)
-- [DynamicHashSet](../../tree/topic/DynamicHashSet)
-- [DynamicUntypedBuffer](../../tree/topic/DynamicUntypedBuffer)
-- [DynamicVariableMap](../../tree/topic/DynamicVariableMap)
-- [ArchetypeChunk.GetDynamicBufferAccessor](../../tree/topic/ArchetypeChunk_GetDynamicBufferAccessor)
-- [DynamicHashMapPerformanceTests](../../tree/topic/DynamicHashMapPerformanceTests)
-- [UnsafeUntypedDynamicBuffer](../../tree/topic/UnsafeUntypedDynamicBuffer)
-- [UnsafeUntypedDynamicBufferAccessor](../../tree/topic/UnsafeUntypedDynamicBufferAccessor)
-- [UntypedDynamicBuffer](../../tree/topic/UntypedDynamicBuffer)
-- [DynamicGenerator](../../tree/topic/DynamicGenerator)
-
-### ECS Extensions
-
-- [ArchetypeChunk.DidChange](../../tree/topic/ArchetypeChunk_DidChange)
-- [ArchetypeChunk.GetNativeArrayReadOnly](../../tree/topic/ArchetypeChunk_GetNativeArrayReadOnly)
-- [BufferAccessor.GetUnsafe](../../tree/topic/BufferAccessor_GetUnsafe)
-- [BufferLookup.GetROAndChunk](../../tree/topic/BufferLookup_GetROAndChunk)
-- [ComponentLookup.GetOptionalComponentDataRW](../../tree/topic/ComponentLookup_GetOptionalComponentDataRW)
-- [ComponentLookup.SetChangeFilter](../../tree/topic/ComponentLookup_SetChangeFilter)
-- [EntityQueryBuilder.WithAllRW](../../tree/topic/EntityQueryBuilder_WithAllRW)
-- [EntityQuery.QueryHasSharedFilter](../../tree/topic/EntityQuery_QueryHasSharedFilter)
-- [EntityQuery.ReplaceSharedComponentFilter](../../tree/topic/EntityQuery_ReplaceSharedComponentFilter)
-- [EntityQuery.GetFirstEntity](../../tree/topic/EntityQuery_GetFirstEntity)
-- [EntityQuery.GetSingletonBufferNoSync](../../tree/topic/EntityQuery_GetSingletonBufferNoSync)
-- [SystemState.GetSingletonEntity](../../tree/topic/SystemState_GetSingletonEntity)
-- [SystemState.GetManagedSingleton](../../tree/topic/SystemState_GetManagedSingleton)
-- [World.IsClientWorld](../../tree/topic/World_IsClientWorld)
-- [CopyEnableable](../../tree/topic/CopyEnableable)
-- [TimerEnableable](../../tree/topic/TimerEnableable)
-- [StateModelEnableable](../../tree/topic/StateModelEnableable)
-- [EnableMaskCreator](../../tree/topic/EnableMaskCreator)
-- [EntityLock](../../tree/topic/EntityLock)
-- [EntityLockTests](../../tree/topic/EntityLockTests)
-- [ChangeFilterTrackingAttribute](../../tree/topic/ChangeFilterTrackingAttribute)
-- [TypeManagerEx](../../tree/topic/TypeManagerEx)
-- [TypeManagerOverrides](../../tree/topic/TypeManagerOverrides)
-- [TypeManagerUtil](../../tree/topic/TypeManagerUtil)
-- [TypeUtility](../../tree/topic/TypeUtility)
-- [WriteGroupMatcher](../../tree/topic/WriteGroupMatcher)
-- [EntityDataAccessExtensions.GetComponentDataWithTypeRW](../../tree/topic/EntityDataAccessExtensions_GetComponentDataWithTypeRW)
-- [EntityManagerExtensions.GetChunkBuffer](../../tree/topic/EntityManagerExtensions_GetChunkBuffer)
-- [EntityManagerExtensions.GetOrCreateSingletonEntity](../../tree/topic/EntityManagerExtensions_GetOrCreateSingletonEntity)
-- [EntityQueryExtensions.GetSingletonUntypedBuffer](../../tree/topic/EntityQueryExtensions_GetSingletonUntypedBuffer)
-- [EntitySceneReferenceExtensions.SceneGUID](../../tree/topic/EntitySceneReferenceExtensions_SceneGUID)
-- [EntityStorageInfoLookupExtensions.GetNameUnsafe](../../tree/topic/EntityStorageInfoLookupExtensions_GetNameUnsafe)
-- [RefRWExtensions.Create](../../tree/topic/RefRWExtensions_Create)
-- [SystemStateExtensions.GetUnsafeEntityDataAccess](../../tree/topic/SystemStateExtensions_GetUnsafeEntityDataAccess)
-- [ChangeFilterTrackingSystem](../../tree/topic/ChangeFilterTrackingSystem)
-
-### Jobs & Threading
-
-- [IJobParallelForDeferExtensions](../../tree/topic/IJobParallelForDeferExtensions)
-- [IJobChunkWorkerBeginEnd](../../tree/topic/IJobChunkWorkerBeginEnd)
-- [IJobForThread](../../tree/topic/IJobForThread)
-- [IJobHashMapDefer](../../tree/topic/IJobHashMapDefer)
-- [IJobParallelForDeferBatch](../../tree/topic/IJobParallelForDeferBatch)
-- [IJobParallelForDeferExtensions.Schedule](../../tree/topic/IJobParallelForDeferExtensions_Schedule)
-
-### State & Model
-
-- [TimerFixed](../../tree/topic/TimerFixed)
-- [TimerTriggerResetJob](../../tree/topic/TimerTriggerResetJob)
-- [StateFlagModel](../../tree/topic/StateFlagModel)
-- [StateModelWithHistory](../../tree/topic/StateModelWithHistory)
-- [StatefulCollisionEvent](../../tree/topic/StatefulCollisionEvent)
-- [StatefulTriggerEvent](../../tree/topic/StatefulTriggerEvent)
-- [StatefulCollisionEventClearSystem](../../tree/topic/StatefulCollisionEventClearSystem)
-- [StatefulTriggerEventClearSystem](../../tree/topic/StatefulTriggerEventClearSystem)
-- [StateFlagModelTests](../../tree/topic/StateFlagModelTests)
-- [IState](../../tree/topic/IState)
-- [StateAPI](../../tree/topic/StateAPI)
-- [StateInstanceUtil](../../tree/topic/StateInstanceUtil)
-- [DestroyTimer](../../tree/topic/DestroyTimer)
-
-### Spatial & Physics
-
-- [AabbExtensions](../../tree/topic/AabbExtensions)
-- [AlwaysUpdatePhysicsWorld](../../tree/topic/AlwaysUpdatePhysicsWorld)
-- [IntersectionTests](../../tree/topic/IntersectionTests)
-- [ConvexHullBuilder](../../tree/topic/ConvexHullBuilder)
-- [MeshSimplifier](../../tree/topic/MeshSimplifier)
-- [TerrainToMesh](../../tree/topic/TerrainToMesh)
-- [PhysicsLayerUtil](../../tree/topic/PhysicsLayerUtil)
-- [AlwaysUpdatePhysicsWorldSystem](../../tree/topic/AlwaysUpdatePhysicsWorldSystem)
-- [PhysicsTags](../../tree/topic/PhysicsTags)
-- [LocalSpatialMap](../../tree/topic/LocalSpatialMap)
-- [PositionBuilder](../../tree/topic/PositionBuilder)
-- [SpatialKeyedMap](../../tree/topic/SpatialKeyedMap)
-- [SpatialMap](../../tree/topic/SpatialMap)
-- [SpatialMap3](../../tree/topic/SpatialMap3)
-- [DistanceHitSortAscending](../../tree/topic/DistanceHitSortAscending)
-- [DistanceHitSortDescending](../../tree/topic/DistanceHitSortDescending)
-- [PhysicsExtensions.Raycast](../../tree/topic/PhysicsExtensions_Raycast)
-- [PhysicsMassOverrideAuthoring](../../tree/topic/PhysicsMassOverrideAuthoring)
-- [RemovePhysicsVelocityAuthoring](../../tree/topic/RemovePhysicsVelocityAuthoring)
-
-### Utility
-
-- [Ptr](../../tree/topic/Ptr)
-- [BurstTrampoline](../../tree/topic/BurstTrampoline)
-- [BurstUtil.IsEmpty](../../tree/topic/BurstUtil_IsEmpty)
-- [ButtonEvent](../../tree/topic/ButtonEvent)
-- [CurveRemapUtility](../../tree/topic/CurveRemapUtility)
-- [DebugUtil.SplitInt](../../tree/topic/DebugUtil_SplitInt)
-- [GlobalRandom](../../tree/topic/GlobalRandom)
-- [InitSystemBase](../../tree/topic/InitSystemBase)
-- [LibraryLoader](../../tree/topic/LibraryLoader)
-- [SceneInitializeSystem](../../tree/topic/SceneInitializeSystem)
-- [WorldSafeShutdown](../../tree/topic/WorldSafeShutdown)
-- [IFixedSize](../../tree/topic/IFixedSize)
-- [MiniString](../../tree/topic/MiniString)
-- [Pin](../../tree/topic/Pin)
-- [QueryEntityEnumerator](../../tree/topic/QueryEntityEnumerator)
-- [ReflectionUtility](../../tree/topic/ReflectionUtility)
-- [SpinLock](../../tree/topic/SpinLock)
-- [TransformUtility](../../tree/topic/TransformUtility)
-- [WorldUtility](../../tree/topic/WorldUtility)
-- [GhostComponentAttribute](../../tree/topic/GhostComponentAttribute)
-- [GhostFieldAttribute](../../tree/topic/GhostFieldAttribute)
-- [InitializeAllOnLoadExt](../../tree/topic/InitializeAllOnLoadExt)
-- [CloneTransformSystem](../../tree/topic/CloneTransformSystem)
-
-### Extension Methods
-
-- [ListExtensions.AddRangeNative](../../tree/topic/ListExtensions_AddRangeNative)
-- [NativeStreamExtensions.WriteLarge](../../tree/topic/NativeStreamExtensions_WriteLarge)
-- [EntityCommandBufferExtensions.AddUntypedBuffer](../../tree/topic/EntityCommandBufferExtensions_AddUntypedBuffer)
-- [EntityCommandBufferExtensions.UnsafeAddComponent](../../tree/topic/EntityCommandBufferExtensions_UnsafeAddComponent)
-- [EnumerableExtensions.IndexOf](../../tree/topic/EnumerableExtensions_IndexOf)
-- [GameObjectExtensions.IsPrefab](../../tree/topic/GameObjectExtensions_IsPrefab)
-- [NativeArrayExtensions.ElementAtRO](../../tree/topic/NativeArrayExtensions_ElementAtRO)
-- [NativeArrayExtensions.Select](../../tree/topic/NativeArrayExtensions_Select)
-- [NativeSliceExtensions.ReadArrayElementWithStrideRef](../../tree/topic/NativeSliceExtensions_ReadArrayElementWithStrideRef)
-- [NativeStreamExtensions.ReadLarge](../../tree/topic/NativeStreamExtensions_ReadLarge)
-- [StringExtensions.ToDotNotation](../../tree/topic/StringExtensions_ToDotNotation)
-- [SystemStateExtensions.GetAllSystemDependencies](../../tree/topic/SystemStateExtensions_GetAllSystemDependencies)
-- [UnsafeHashMapExtensions.GetOrAddRef](../../tree/topic/UnsafeHashMapExtensions_GetOrAddRef)
-- [UnsafeParallelHashMapDataExtensions.ReserveParallel](../../tree/topic/UnsafeParallelHashMapDataExtensions_ReserveParallel)
-- [WorldUnmanagedExtensions.GetTrackedJobHandle](../../tree/topic/WorldUnmanagedExtensions_GetTrackedJobHandle)
-
-### ConfigVars
-
-- [KSettingsBase](../../tree/topic/KSettingsBase)
-- [ConfigVarAttribute](../../tree/topic/ConfigVarAttribute)
-- [ConfigVarManager](../../tree/topic/ConfigVarManager)
-- [SharedStaticStringContainer](../../tree/topic/SharedStaticStringContainer)
-- [CodecService](../../tree/topic/CodecService)
-- [CommandLineArgs](../../tree/topic/CommandLineArgs)
-- [Deserializer](../../tree/topic/Deserializer)
-- [Serializer](../../tree/topic/Serializer)
-- [FixedNameValue](../../tree/topic/FixedNameValue)
-- [KAttribute](../../tree/topic/KAttribute)
-- [KSettings](../../tree/topic/KSettings)
-- [ConfigVarPanel](../../tree/topic/ConfigVarPanel)
-
-### Authoring & Baking
-
-- [BakerExtensions.AddEnabledComponent](../../tree/topic/BakerExtensions_AddEnabledComponent)
-- [BakerExtensions.AddEnabledBuffer](../../tree/topic/BakerExtensions_AddEnabledBuffer)
-- [BakerCommands](../../tree/topic/BakerCommands)
-- [AuthoringSettingsUtility](../../tree/topic/AuthoringSettingsUtility)
-- [SettingsAuthoring](../../tree/topic/SettingsAuthoring)
-- [TagAuthoring](../../tree/topic/TagAuthoring)
-- [TransformAuthoring](../../tree/topic/TransformAuthoring)
-- [GameObjectHelper.AddAuthoringComponent](../../tree/topic/GameObjectHelper_AddAuthoringComponent)
-- [CloneTransformAuthoring](../../tree/topic/CloneTransformAuthoring)
-- [LifeCycleAuthoring](../../tree/topic/LifeCycleAuthoring)
-- [LookupAuthoring](../../tree/topic/LookupAuthoring)
-
-### Editor Tools
-
-- [AssemblyBuilderWindow](../../tree/topic/AssemblyBuilderWindow)
-- [ComponentAssetBaseDrawer](../../tree/topic/ComponentAssetBaseDrawer)
-- [TypeSearchProvider](../../tree/topic/TypeSearchProvider)
-- [CoreBuildSetup](../../tree/topic/CoreBuildSetup)
-- [CreateEditorWorld](../../tree/topic/CreateEditorWorld)
-- [EditorMenus.DataModeHierarchySet](../../tree/topic/EditorMenus_DataModeHierarchySet)
-- [InspectorSearch](../../tree/topic/InspectorSearch)
-- [SelectedEntityEditorSystem](../../tree/topic/SelectedEntityEditorSystem)
-- [AssemblyGraphWindow](../../tree/topic/AssemblyGraphWindow)
-- [ComponentDependencyWindow](../../tree/topic/ComponentDependencyWindow)
-- [SystemDependencyWindow](../../tree/topic/SystemDependencyWindow)
-- [CoreEditorPreferencesProvider](../../tree/topic/CoreEditorPreferencesProvider)
-- [BitFieldAttributeEditor](../../tree/topic/BitFieldAttributeEditor)
-- [HalfDrawer](../../tree/topic/HalfDrawer)
-- [InlineObjectProperty](../../tree/topic/InlineObjectProperty)
-- [PrefabElementEditor](../../tree/topic/PrefabElementEditor)
-- [StableTypeHashAttributeDrawer](../../tree/topic/StableTypeHashAttributeDrawer)
-- [ToggleOption](../../tree/topic/ToggleOption)
-- [UnityObjectRefInspector](../../tree/topic/UnityObjectRefInspector)
-- [WeakObjectReferenceInspector](../../tree/topic/WeakObjectReferenceInspector)
-- [EntitySelection.GetAllSelectionsInWorld](../../tree/topic/EntitySelection_GetAllSelectionsInWorld)
-- [LoadPrefabsAsEntities](../../tree/topic/LoadPrefabsAsEntities)
-- [ReloadToolbarButton](../../tree/topic/ReloadToolbarButton)
-- [WelcomeWindow](../../tree/topic/WelcomeWindow)
-- [BaseObjectWindow](../../tree/topic/BaseObjectWindow)
-- [FeatureToggle](../../tree/topic/FeatureToggle)
-- [MainToolbarPresetPostProcessor](../../tree/topic/MainToolbarPresetPostProcessor)
-- [ComponentInspectorWindow](../../tree/topic/ComponentInspectorWindow)
-- [StartupSceneSwap](../../tree/topic/StartupSceneSwap)
-- [ViewModelToolbar](../../tree/topic/ViewModelToolbar)
-
-### Source Generators
-
-- [FacetAttribute](../../tree/topic/FacetAttribute)
-- [FacetOptionalAttribute](../../tree/topic/FacetOptionalAttribute)
-- [IFacet](../../tree/topic/IFacet)
-- [FacetGenerator](../../tree/topic/FacetGenerator)
-- [BuilderBase](../../tree/topic/BuilderBase)
-- [ClassBuilder](../../tree/topic/ClassBuilder)
-- [CodeBuilder](../../tree/topic/CodeBuilder)
-- [ConstructorBuilder](../../tree/topic/ConstructorBuilder)
-- [DelegateBuilder](../../tree/topic/DelegateBuilder)
-- [EnumBuilder](../../tree/topic/EnumBuilder)
-- [EventBuilder](../../tree/topic/EventBuilder)
-- [ExpressionBlockBuilder](../../tree/topic/ExpressionBlockBuilder)
-- [LogicalConditionBuilder](../../tree/topic/LogicalConditionBuilder)
-- [MethodBuilder](../../tree/topic/MethodBuilder)
-- [PropertyBuilder](../../tree/topic/PropertyBuilder)
-- [RecordBuilder](../../tree/topic/RecordBuilder)
-- [SwitchBuilder](../../tree/topic/SwitchBuilder)
-- [CodeWriter](../../tree/topic/CodeWriter)
-- [SymbolHelpers](../../tree/topic/SymbolHelpers)
-
-### SubScene System
-
-- [SubSceneLoadData](../../tree/topic/SubSceneLoadData)
-- [SubSceneEntity](../../tree/topic/SubSceneEntity)
-- [LoadSubScene](../../tree/topic/LoadSubScene)
-- [SubSceneBuffer](../../tree/topic/SubSceneBuffer)
-- [SubSceneLoadFlags](../../tree/topic/SubSceneLoadFlags)
-- [SubSceneLoadFlagsUtility](../../tree/topic/SubSceneLoadFlagsUtility)
-- [SubSceneLoadUtil](../../tree/topic/SubSceneLoadUtil)
-- [SubSceneLoaded](../../tree/topic/SubSceneLoaded)
-- [SubSceneLoadingManagedSystem](../../tree/topic/SubSceneLoadingManagedSystem)
-- [SubSceneLoadingSystem](../../tree/topic/SubSceneLoadingSystem)
-- [SubScenePostLoadCommandBufferSystem](../../tree/topic/SubScenePostLoadCommandBufferSystem)
-- [SubSceneSetId](../../tree/topic/SubSceneSetId)
-- [SubSceneUtil](../../tree/topic/SubSceneUtil)
-- [SubSceneEditorSet](../../tree/topic/SubSceneEditorSet)
-- [SubSceneEditorSystem](../../tree/topic/SubSceneEditorSystem)
-- [SubSceneEditorToolbar](../../tree/topic/SubSceneEditorToolbar)
-- [SubScenePrebakeSystem](../../tree/topic/SubScenePrebakeSystem)
-- [DestroyOnSubSceneUnloadSystem](../../tree/topic/DestroyOnSubSceneUnloadSystem)
-
-### Pause & Time
-
-- [LimitedRateNoCatchUpManager](../../tree/topic/LimitedRateNoCatchUpManager)
-- [PauseGame](../../tree/topic/PauseGame)
-- [PauseLimitSystem](../../tree/topic/PauseLimitSystem)
-- [PauseRateManager](../../tree/topic/PauseRateManager)
-- [PauseUtility](../../tree/topic/PauseUtility)
-- [FixedStepUpdatedSystem](../../tree/topic/FixedStepUpdatedSystem)
-- [UpdateWorldTimeSystem](../../tree/topic/UpdateWorldTimeSystem)
-
-### Relevancy & Netcode
-
-- [InputBounds](../../tree/topic/InputBounds)
-- [RelevanceAlways](../../tree/topic/RelevanceAlways)
-- [RelevanceConfig](../../tree/topic/RelevanceConfig)
-- [RelevanceManual](../../tree/topic/RelevanceManual)
-- [RelevanceProvider](../../tree/topic/RelevanceProvider)
-- [RelevancySystem](../../tree/topic/RelevancySystem)
-
-### Singleton System
-
-- [SingletonAttribute](../../tree/topic/SingletonAttribute)
-- [SingletonInitialize](../../tree/topic/SingletonInitialize)
-- [SingletonInitializeSystemGroup](../../tree/topic/SingletonInitializeSystemGroup)
-- [SingletonInitializedSystem](../../tree/topic/SingletonInitializedSystem)
-- [SingletonSystem](../../tree/topic/SingletonSystem)
-- [ComponentSystemBaseInternal.RequireSingletonForUpdate](../../tree/topic/ComponentSystemBaseInternal_RequireSingletonForUpdate)
-- [ISingletonCollection](../../tree/topic/ISingletonCollection)
-- [SingletonCollectionUtil](../../tree/topic/SingletonCollectionUtil)
-
-### Object Management
-
-- [ObjectDefinition](../../tree/topic/ObjectDefinition)
-- [ObjectGroupMatcher](../../tree/topic/ObjectGroupMatcher)
-- [ObjectId](../../tree/topic/ObjectId)
-- [UIDAttribute](../../tree/topic/UIDAttribute)
-- [GroupId](../../tree/topic/GroupId)
-- [ObjectCategories](../../tree/topic/ObjectCategories)
-- [ObjectCategoryComponents](../../tree/topic/ObjectCategoryComponents)
-- [ObjectDefinitionRegistrySystem](../../tree/topic/ObjectDefinitionRegistrySystem)
-- [ObjectGroupRegistry](../../tree/topic/ObjectGroupRegistry)
-- [ObjectInstantiateSystem](../../tree/topic/ObjectInstantiateSystem)
-- [ObjectDefinitionAuthoring](../../tree/topic/ObjectDefinitionAuthoring)
-- [ObjectInstantiate.Editor](../../tree/topic/ObjectInstantiate_Editor)
-
-### Physics States
-
-- [CalculateEventMapBucketsJob](../../tree/topic/CalculateEventMapBucketsJob)
-- [CollectEventsJob](../../tree/topic/CollectEventsJob)
-- [EnsureCurrentEventsCapacityJob](../../tree/topic/EnsureCurrentEventsCapacityJob)
-
-### Life Cycle
-
-- [AfterSceneSystemGroup](../../tree/topic/AfterSceneSystemGroup)
-- [AfterTransformSystemGroup](../../tree/topic/AfterTransformSystemGroup)
-- [BeforeTransformSystemGroup](../../tree/topic/BeforeTransformSystemGroup)
-- [BeginSimulationSystemGroup](../../tree/topic/BeginSimulationSystemGroup)
-- [InstantiateCommandBufferSystem](../../tree/topic/InstantiateCommandBufferSystem)
-- [DestroyEntityCommandBufferSystem](../../tree/topic/DestroyEntityCommandBufferSystem)
-- [DestroyEntitySystem](../../tree/topic/DestroyEntitySystem)
-- [DestroyOnDestroySystem](../../tree/topic/DestroyOnDestroySystem)
-- [EndInitializeEntityCommandBufferSystem](../../tree/topic/EndInitializeEntityCommandBufferSystem)
-- [InitializeEntitySystem](../../tree/topic/InitializeEntitySystem)
-
-### Tests & Diagnostics
-
-- [FaceReadonlyTest](../../tree/topic/FaceReadonlyTest)
-- [MathExPerformanceTests](../../tree/topic/MathExPerformanceTests)
-- [Check.Assume](../../tree/topic/Check_Assume)
-- [ReflectionTestHelper](../../tree/topic/ReflectionTestHelper)
-- [TestLeakDetectionAttribute](../../tree/topic/TestLeakDetectionAttribute)
-
-### Math Extensions
-
-- [MathematicsExtensions.Encapsulate](../../tree/topic/MathematicsExtensions_Encapsulate)
-- [HSV](../../tree/topic/HSV)
-- [PolygonUtility](../../tree/topic/PolygonUtility)
-- [ShortHalfUnion](../../tree/topic/ShortHalfUnion)
-- [IntFloatUnion](../../tree/topic/IntFloatUnion)
-- [mathex.mod](../../tree/topic/mathex_mod)
-- [mathex.minMax](../../tree/topic/mathex_minMax)
-- [mathex.add](../../tree/topic/mathex_add)
-- [mathex.GenerateGaussianNoise](../../tree/topic/mathex_GenerateGaussianNoise)
-- [mathex.FromToRotation](../../tree/topic/mathex_FromToRotation)
-- [MinMaxAttributeDrawer](../../tree/topic/MinMaxAttributeDrawer)
-
-### Other
-
-- [AssetLoad](../../tree/topic/AssetLoad)
-- [GameObjectCleanup](../../tree/topic/GameObjectCleanup)
-- [HalfSizeTriangleMatrix](../../tree/topic/HalfSizeTriangleMatrix)
-- [CalculateCurrentEventsBucketsJob](../../tree/topic/CalculateCurrentEventsBucketsJob)
-- [StripLocalAttribute](../../tree/topic/StripLocalAttribute)
-- [StripLocalSystem](../../tree/topic/StripLocalSystem)
-- [AssetLoadingSystem](../../tree/topic/AssetLoadingSystem)
-- [BovineLabsBootstrap](../../tree/topic/BovineLabsBootstrap)
-- [BovineLabsBootstrap.NetCode](../../tree/topic/BovineLabsBootstrap_NetCode)
-- [CollectionCreator.CreateHashMap](../../tree/topic/CollectionCreator_CreateHashMap)
-- [INativeStreamReader](../../tree/topic/INativeStreamReader)
-- [UnsafeThreadStreamBlockData](../../tree/topic/UnsafeThreadStreamBlockData)
-- [SyncEnableStateUtil](../../tree/topic/SyncEnableStateUtil)
-- [TimeProfiler](../../tree/topic/TimeProfiler)
-- [ReferenceT](../../tree/topic/ReferenceT)
-- [ReferenceData](../../tree/topic/ReferenceData)
-- [UnsafeListDispose](../../tree/topic/UnsafeListDispose)
-- [AppAPI](../../tree/topic/AppAPI)
-- [SerializedHelper.IterateAllChildren](../../tree/topic/SerializedHelper_IterateAllChildren)
-- [TextAssetHelper](../../tree/topic/TextAssetHelper)
-- [PrefabInstance](../../tree/topic/PrefabInstance)
-- [AnalyzersProjectFileGeneration](../../tree/topic/AnalyzersProjectFileGeneration)
-
+The structure supports writing heterogeneous types (different sizes per write) into the same
+stream, making it ideal for event/command queues where each event may have a different payload
+size.
 
 ---
 
-Total: 358 topics across 24 categories
+## Memory Layout
+
+### Top-Level: UnsafeThreadStream (2 words)
+
+```
+UnsafeThreadStream  (16 bytes on 64-bit)
+╔═════════════════════╤══════════════════════════════════════════════════╗
+║ Field               │ Description                                    ║
+╠═════════════════════╪══════════════════════════════════════════════════╣
+║ blockData*          │ Pointer to UnsafeThreadStreamBlockData          ║
+║ allocator           │ AllocatorManager.AllocatorHandle (copyable)    ║
+╚═════════════════════╧══════════════════════════════════════════════════╝
+```
+
+### UnsafeThreadStreamBlockData (the shared control block)
+
+```
+                        UnsafeThreadStreamBlockData
+╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                        ║
+║  Offset 0x00:  Allocator          AllocatorManager.AllocatorHandle     ║
+║                                                                        ║
+║  Offset 0x08:  Blocks**           Pointer to array of                  ║
+║                                    UnsafeThreadStreamBlock*             ║
+║                                    [0 .. ForEachCount-1]               ║
+║                                                                        ║
+║  Offset 0x10:  Ranges*            Pointer to array of                  ║
+║                                    UnsafeThreadStreamRange              ║
+║                                    [0 .. ForEachCount-1]               ║
+║                                                                        ║
+║  ── Immediately after this struct (same allocation) ──────────────      ║
+║  Offset 0x18:  Blocks[0]*         UnsafeThreadStreamBlock*             ║
+║  Offset 0x20:  Blocks[1]*         UnsafeThreadStreamBlock*             ║
+║  ...                                                                   ║
+║  Offset 0x18 + 8*(ForEachCount-1): Blocks[ForEachCount-1]*             ║
+║                                                                        ║
+╚══════════════════════════════════════════════════════════════════════════╝
+  sizeof = 0x18 + 8 * ForEachCount    (allocated as a single block)
+
+  Ranges is a separate allocation:
+  Offset 0x00: Ranges[0]  UnsafeThreadStreamRange  (40 bytes each)
+  Offset 0x28: Ranges[1]  UnsafeThreadStreamRange
+  ...
+```
+
+### UnsafeThreadStreamBlock (4KB linked-list node)
+
+```
+  UnsafeThreadStreamBlock          Total size = 4 * 1024 = 4096 bytes
+╔════════════════════════════════════════════════════════════════════════╗
+║                                                                      ║
+║  Offset 0x00:  Next*         Pointer to next block in chain         ║
+║                              (null if last block)                    ║
+║                                                                      ║
+║  Offset 0x08:  Data[0]      ┌──────────────────────────────────┐    ║
+║  Offset 0x09:  Data[1]      │                                  │    ║
+║  ...                         │   Usable data area               │    ║
+║                              │   = 4096 - 8 = 4088 bytes        │    ║
+║                              │                                  │    ║
+║  Offset 0xFF8: Data[4087]   └──────────────────────────────────┘    ║
+║                                                                      ║
+╚════════════════════════════════════════════════════════════════════════╝
+  Usable payload per block = AllocationSize - sizeof(void*) = 4096 - 8 = 4088 bytes
+```
+
+### UnsafeThreadStreamRange (per-thread write state, 40 bytes)
+
+```
+  UnsafeThreadStreamRange
+╔═════════════════════╤═══════════════════════════════════════════════════╗
+║ Offset  Field        │ Description                                     ║
+╠═════════════════════╪═══════════════════════════════════════════════════╣
+║ 0x00    Block*       │ Head of this thread's block chain (first block) ║
+║ 0x08    OffsetIn-    │ Byte offset to first data byte in first block   ║
+║         FirstBlock   │ (= sizeof(Next*) = 8 normally)                  ║
+║ 0x0C    ElementCount │ Total number of items written by this thread    ║
+║ 0x10    LastOffset   │ Byte offset past the last byte written in the   ║
+║         │             │ last block (used by reader for bounds)          ║
+║ 0x14    NumberOf-    │ Number of blocks after the first (0 = 1 block)  ║
+║         Blocks       │                                                 ║
+║ 0x18    Current-     │ Block currently being written to                ║
+║         Block*       │                                                 ║
+║ 0x20    CurrentPtr   │ Write pointer: next free byte in current block  ║
+║ 0x28    Current-     │ End boundary of current block                   ║
+║         BlockEnd     │ = (byte*)CurrentBlock + 4096                    ║
+╚═════════════════════╧═══════════════════════════════════════════════════╝
+```
+
+---
+
+## Full Memory Map
+
+```
+  NativeThreadStream
+       │
+       ▼
+  UnsafeThreadStream
+       │
+       ▼
+  UnsafeThreadStreamBlockData  ◄──── shared by Writer + Reader
+  ┌─────────────────────────────────────────────────────────────┐
+  │ Allocator                                                   │
+  │ Blocks** ──────────────┐                                    │
+  │ Ranges* ───────┐       │                                    │
+  └────────────────┼───────┼────────────────────────────────────┘
+                   │       │
+        ┌──────────┘       │
+        │                  │
+        ▼                  ▼
+  Ranges[]            Blocks[]               (both length = ForEachCount,
+        │                  │                  ForEachCount = JobsUtility.ThreadIndexCount)
+        │                  │
+  ┌─────┴─────┐      ┌────┴─────┐
+  │           │      │          │
+  ▼           ▼      ▼          ▼
+ Range[0]  Range[1]  Blocks[0] Blocks[1] ...
+  │  │                    │
+  │  │                    ▼
+  │  │              ┌─────────────────┐     ┌─────────────────┐
+  │  │              │ Block (4KB)     │────▶│ Block (4KB)     │──▶ null
+  │  │              │ ┌─────┐        │     │ ┌─────┐        │
+  │  │              │ │Next*│───────┬─│     │ │Next*│──▶ null │
+  │  │              │ ├─────┤      │ │     │ ├─────┤        │
+  │  └──────────────│▶Data │◄─────┘ │     │ │Data │        │
+  │                 │ │ ... │ Offset│      │ │ ... │        │
+  │  CurrentPtr ──▶ │ └─────┘       │      │ └─────┘        │
+  │  CurrentBlock──▶│               │      │                │
+  │                 └─────────────────┘     └─────────────────┘
+  │
+  │  Range[0] detail:
+  │  ┌──────────────────────────────────────┐
+  │  │ Block* ────────────── first block    │
+  │  │ OffsetInFirstBlock ── 8 (past Next*) │
+  │  │ ElementCount ──────── e.g. 42        │
+  │  │ LastOffset ────────── last write end │
+  │  │ NumberOfBlocks ────── e.g. 1         │
+  │  │ CurrentBlock* ─────── active block   │
+  │  │ CurrentPtr ────────── next free byte │
+  │  │ CurrentBlockEnd ───── end boundary   │
+  │  └──────────────────────────────────────┘
+```
+
+---
+
+## Thread Safety: Partition-By-Index
+
+```
+  Unity Job System provides JobsUtility.ThreadIndex
+  ──────────────────────────────────────────────────
+
+  Thread 0 (worker)          Thread 1 (worker)          Thread N (worker)
+  ┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
+  │ Writer.Allocate() │      │ Writer.Allocate() │      │ Writer.Allocate() │
+  │                  │      │                  │      │                  │
+  │ threadIndex=0    │      │ threadIndex=1    │      │ threadIndex=N    │
+  │      │           │      │      │           │      │      │           │
+  │      ▼           │      │      ▼           │      │      ▼           │
+  │  Ranges[0]       │      │  Ranges[1]       │      │  Ranges[N]       │
+  │  (no lock!)      │      │  (no lock!)      │      │  (no lock!)      │
+  │                  │      │                  │      │                  │
+  │  Blocks[0]       │      │  Blocks[1]       │      │  Blocks[N]       │
+  │  chain           │      │  chain           │      │  chain           │
+  └──────────────────┘      └──────────────────┘      └──────────────────┘
+         │                          │                          │
+         └──────── NO SHARING ──────┴──────────────────────────┘
+
+  Key insight: Each thread accesses ONLY its own Ranges[threadIndex]
+  and its own block chain. Zero contention. No atomics, no locks.
+```
+
+---
+
+## Write Algorithm (Writer.Allocate)
+
+```
+  Writer.Allocate(int size):
+  ────────────────────────
+  
+  1. threadIndex = JobsUtility.ThreadIndex
+  2. range = &Ranges[threadIndex]           // This thread's private state
+  3. ptr    = range->CurrentPtr
+  4. end    = ptr + size
+  5. range->CurrentPtr = end                // Optimistically advance
+
+  6. IF end > range->CurrentBlockEnd:       // Block overflow!
+     │
+     ├─ oldBlock = range->CurrentBlock
+     ├─ newBlock = AllocateBlock(oldBlock, threadIndex)
+     │              ┌────────────────────────────────────────┐
+     │              │ Allocate new 4KB block from allocator  │
+     │              │ Link: oldBlock->Next = newBlock        │
+     │              │        newBlock->Next = old old Next   │
+     │              │ Update: Blocks[threadIndex] if 1st     │
+     │              └────────────────────────────────────────┘
+     │
+     ├─ range->CurrentBlock    = newBlock
+     ├─ range->CurrentPtr      = newBlock->Data + size
+     ├─ range->CurrentBlockEnd = newBlock + 4096
+     │
+     ├─ IF range->Block == null:             // First block ever?
+     │  ├─ range->Block = newBlock
+     │  └─ range->OffsetInFirstBlock = offset to Data
+     │  ELSE:
+     │  └─ range->NumberOfBlocks++
+     │
+     └─ ptr = newBlock->Data                 // Return start of new block
+
+  7. range->ElementCount++
+  8. range->LastOffset = CurrentPtr - CurrentBlock
+  9. RETURN ptr
+```
+
+### Write Diagram: Filling a Block Then Overflowing
+
+```
+  State 1: Block partially filled
+  ┌───────────────────────────────────────────────────────────┐
+  │ Block (4096 bytes)                                        │
+  │ ┌──────┬──────────────────────┬───────────────────────┐  │
+  │ │Next* │ D D D D D D D D D D │      FREE SPACE       │  │
+  │ │ 8B   │     written data     │                       │  │
+  │ └──────┴──────────────────────┴───────────────────────┘  │
+  │         ▲                            ▲                   │
+  │    OffsetInFirstBlock           CurrentPtr               │
+  │                                  CurrentBlockEnd ────────│─ byte* + 4096
+  └───────────────────────────────────────────────────────────┘
+
+  State 2: Write doesn't fit, allocate new block and chain
+  ┌──────────────────────────────────────┐     ┌──────────────────────────────────────┐
+  │ Block A (full)                       │     │ Block B (new)                        │
+  │ ┌──────┬──────────────────────┬────┐ │     │ ┌──────┬────────────┬──────────────┐ │
+  │ │Next* │ D D D D D D D D D D │ DD │ │────▶│ │Next* │ new data   │  FREE SPACE  │ │
+  │ │ ──── │──────────────────── │────│ │     │ │ NULL │            │              │ │
+  │ └──────┴──────────────────────┴────┘ │     │ └──────┴────────────┴──────────────┘ │
+  └──────────────────────────────────────┘     └──────────────────────────────────────┘
+         ▲ CurrentBlock ──────────────────────────────▶ CurrentBlock
+         ▲ Block (head)                                  ▲ CurrentPtr
+         LastOffset=4096                                  CurrentBlockEnd = B+4096
+```
+
+---
+
+## Read Algorithm (Reader)
+
+```
+  Reader.BeginForEachIndex(int foreachIndex):
+  ──────────────────────────────────────────
+  
+  1. range = &Ranges[foreachIndex]
+  2. m_RemainingItemCount = range->ElementCount
+  3. m_LastBlockSize      = range->LastOffset
+  4. m_CurrentBlock       = range->Block             // First block
+  5. m_CurrentPtr         = (byte*)Block + OffsetInFirstBlock
+  6. m_CurrentBlockEnd    = (byte*)Block + 4096
+  7. RETURN m_RemainingItemCount
+
+
+  Reader.ReadUnsafePtr(int size):
+  ───────────────────────────────
+
+  1. m_RemainingItemCount--
+  2. ptr = m_CurrentPtr
+  3. m_CurrentPtr += size
+  
+  4. IF m_CurrentPtr > m_CurrentBlockEnd:    // Crossed block boundary
+     │
+     ├─ m_CurrentBlock    = m_CurrentBlock->Next   // Follow linked list
+     ├─ m_CurrentPtr      = m_CurrentBlock->Data + size
+     ├─ m_CurrentBlockEnd = m_CurrentBlock + 4096
+     └─ ptr = m_CurrentBlock->Data
+  
+  5. RETURN ptr
+```
+
+### Read Diagram: Walking Two Blocks
+
+```
+  BeginForEachIndex(0):
+  
+  Block A                                    Block B
+  ┌──────┬──────────────────┬──────────┐    ┌──────┬───────────────┬─────┐
+  │Next* │ item0 │ item1 │  │ item2 ╔══╪══▶│Next* │ item3 │ item4 │     │
+  │  ──▶ │       │       │  │       ║  │    │ NULL │       │       │     │
+  └──────┴───┬───┴───┬───┴──┴───────╨──┘    └──────┴───┬───┴───┬──┴─────┘
+             │       │        ▲                         │       │
+         Read<int> Read<int> │                    Read<int> Read<int>
+             │       │    CurrentPtr                  │       │
+             │       │  (crossed boundary             │       │
+             │       │   → follow Next*)              │       │
+             ▼       ▼                                ▼       ▼
+         LastOffset ──────────────────────────── LastOffset of last block
+```
+
+---
+
+## Block Allocation Strategy (Allocate method in BlockData)
+
+```
+  Two cases for block linking:
+
+  CASE 1: oldBlock == null  (very first allocation for this thread)
+  ───────────────────────────────────────────────────────────────
+  
+  Before:  Blocks[i] ──▶ existing_head
+                                │
+                                ▼
+  
+  After:   Blocks[i] ──▶ new_block ──▶ existing_head
+                                │
+                     new_block->Next = Blocks[i]  (old head)
+                     Blocks[i] = new_block
+
+  CASE 2: oldBlock != null  (appending after current block)
+  ──────────────────────────────────────────────────────────
+  
+  Before:  oldBlock ──▶ oldNext
+                                │
+                                ▼
+  
+  After:   oldBlock ──▶ new_block ──▶ oldNext
+                                │
+                     new_block->Next = oldBlock->Next
+                     oldBlock->Next = new_block
+```
+
+---
+
+## Large Write Handling (WriteLarge)
+
+Writes larger than one block's usable area (4088 bytes) are chunked:
+
+```
+  WriteLarge(data, size):
+  ───────────────────────
+  
+  Input:  size bytes of data
+  
+  MaxLargeSize = 4088  (= 4096 - 8)
+  
+  allocationCount    = size / 4088
+  allocationRemainder = size % 4088
+  
+  STEP 1: Write remainder FIRST (optimization)
+  ┌───────────────────────────┐
+  │ Allocate(remainder bytes) │  ← fills partial block first
+  │ MemCpy from end of data   │     often fits in existing block
+  └───────────────────────────┘
+  
+  STEP 2: Write full chunks in loop
+  ┌───────────────────────────┐
+  │ for i = 0..count-1:       │
+  │   Allocate(4088 bytes)    │  ← each gets its own block
+  │   MemCpy chunk[i]         │
+  └───────────────────────────┘
+  
+  Why remainder first?
+  ────────────────────
+  The remainder is typically small and often fits in the current
+  block's remaining space, avoiding an unnecessary new allocation.
+  The full chunks always need fresh blocks anyway.
+```
+
+---
+
+## Data Flow: Complete Lifecycle
+
+```
+  ╔═══════════════════════════════════════════════════════════════════════╗
+  ║                    COMPLETE LIFECYCLE                                ║
+  ╠═══════════════════════════════════════════════════════════════════════╣
+  ║                                                                     ║
+  ║  1. CREATION (main thread)                                          ║
+  ║     new NativeThreadStream(Allocator.Persistent)                     ║
+  ║         │                                                           ║
+  ║         ├─ AllocateBlockData (1 allocation)                         ║
+  ║         │   └─ BlockData + Blocks[ForEachCount] array               ║
+  ║         │                                                           ║
+  ║         └─ AllocateForEach (1 allocation)                           ║
+  ║             └─ Ranges[ForEachCount] array, zeroed                   ║
+  ║                                                                     ║
+  ║  2. PARALLEL WRITE (job system, N threads)                          ║
+  ║     Writer writer = stream.AsWriter();                              ║
+  ║     writer.Write(myStruct);                                         ║
+  ║     writer.Allocate(42);  // 42 bytes of raw space                  ║
+  ║         │                                                           ║
+  ║         ├─ Thread 0: writes to Ranges[0], allocs blocks chain A     ║
+  ║         ├─ Thread 1: writes to Ranges[1], allocs blocks chain B     ║
+  ║         └─ Thread N: writes to Ranges[N], allocs blocks chain X     ║
+  ║                                                                     ║
+  ║  3. READING (single thread or parallel, read-only per index)        ║
+  ║     Reader reader = stream.AsReader();                              ║
+  ║     for (int i = 0; i < reader.ForEachCount; i++)                   ║
+  ║     {                                                               ║
+  ║         int count = reader.BeginForEachIndex(i);                    ║
+  ║         for (int j = 0; j < count; j++)                             ║
+  ║             MyType val = reader.Read<MyType>();                     ║
+  ║         reader.EndForEachIndex();                                   ║
+  ║     }                                                               ║
+  ║         │                                                           ║
+  ║         ├─ Reads thread 0's chain from Block[0] linked list        ║
+  ║         ├─ Reads thread 1's chain from Block[1] linked list        ║
+  ║         └─ Reads thread N's chain from Block[N] linked list        ║
+  ║                                                                     ║
+  ║  4. DISPOSAL                                                        ║
+  ║     stream.Dispose()                                                ║
+  ║         │                                                           ║
+  ║         ├─ Free all blocks in all chains                            ║
+  ║         ├─ Free Ranges allocation                                   ║
+  ║         └─ Free BlockData + Blocks allocation                       ║
+  ║                                                                     ║
+  ╚═══════════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## Key Design Decisions
+
+1. **Fixed 4KB block size**: Sweet spot between allocation overhead (smaller blocks mean more
+   allocations) and wasted space (larger blocks waste memory at the tail). 4096 aligns to
+   OS page sizes and most allocators handle it efficiently.
+
+2. **Per-thread partitioning by index**: Instead of a single shared stream with atomic
+   compare-and-swap on write, each thread gets its own Ranges[i] and block chain.
+   Zero contention during writes — the most common and hot path.
+
+3. **Optimistic pointer advance**: The writer speculatively advances CurrentPtr before
+   checking if it overflowed. If it did, a new block is allocated. This keeps the common
+   case (fits in current block) to just a pointer bump and increment.
+
+4. **Remainder-first large writes**: When writing data larger than one block, the remainder
+   (which is small) is written first. This often fits in the current block's remaining space,
+   avoiding an extra allocation.
+
+5. **Heterogeneous types**: The stream is type-agnostic — it just stores bytes. The Writer
+   and Reader provide typed convenience methods, but the underlying storage is raw memory.
+   This allows mixing different struct types in the same stream.
+
+6. **Reader tracks RemainingItemCount**: Each write increments ElementCount; the reader
+   decrements it during reads. This provides safety checking (did you read everything?)
+   without storing per-item size headers.
+
+---
+
+## Performance Characteristics
+
+| Operation         | Complexity | Notes                                    |
+|-------------------|------------|------------------------------------------|
+| Write (fits)      | O(1)       | Pointer bump + increment                 |
+| Write (new block) | O(1)*      | Allocation + linking, no copying         |
+| Read (in block)   | O(1)       | Pointer bump                             |
+| Read (cross block)| O(1)       | Pointer follow + bump                    |
+| Count             | O(N)       | Sums ElementCount across all threads     |
+| IsEmpty           | O(N)*      | Early-exits on first non-empty range     |
+| ToNativeArray     | O(T)       | T = total items, sequential copy         |
+| Dispose           | O(N*B)     | N = threads, B = blocks per thread       |
+
+**Memory overhead per block**: 8 bytes (Next pointer) out of 4096 = 0.2%
+**Worst-case waste per thread**: Up to ~4088 bytes in the last partially-filled block
+**Allocation count**: 2 initial + 1 per block overflow (proportional to data volume)
+
+*Write with new block involves a heap allocation, making it amortized O(1) rather than
+ true O(1). In practice, Unity's Allocator handles fixed-size allocations very efficiently.
