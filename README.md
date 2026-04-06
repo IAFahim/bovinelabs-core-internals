@@ -1,457 +1,324 @@
-# BovineLabs Core - Inner Workings
+BlobCurve - Bakes Unity AnimationCurves Into BlobAssets for Fast Burst Evaluation
+===================================================================================
 
-ASCII architecture diagrams for every topic in `com.bovinelabs.core`.
+Overview
+--------
 
-Each topic lives on its own branch. Switch to a branch to see the detailed
-README.md with full ASCII diagrams explaining the internal data structures,
-algorithms, and design decisions.
+BlobCurve converts a Unity AnimationCurve (managed object, not Burst-safe)
+into a frozen BlobAsset that can be evaluated in Burst-compiled jobs.  Each
+pair of adjacent keyframes becomes a pre-computed cubic polynomial segment
+stored as a float4 of coefficients.  At runtime, evaluation reduces to a
+binary search over time stamps followed by a single dot product.
 
-## How to Use
+The system supports variants for float (BlobCurve), float2 (BlobCurve2),
+float3 (BlobCurve3), and float4 (BlobCurve4), all sharing the same header
+and search infrastructure.
 
-```bash
-# List all topic branches
-git branch -a
+Architecture Diagram
+--------------------
 
-# View a specific topic
-git checkout topic/NativeThreadStream
-
-# View the diagram
-cat README.md
-```
-
-## Topics
-
-### Core Collections
-
-- [NativeThreadStream](../../tree/topic/NativeThreadStream)
-- [NativeCounter](../../tree/topic/NativeCounter)
-- [NativeKeyedMap](../../tree/topic/NativeKeyedMap)
-- [NativeLinearCongruentialGenerator](../../tree/topic/NativeLinearCongruentialGenerator)
-- [NativeParallelMultiHashMapFallback](../../tree/topic/NativeParallelMultiHashMapFallback)
-- [NativePartialKeyedMap](../../tree/topic/NativePartialKeyedMap)
-- [ThreadList](../../tree/topic/ThreadList)
-- [ThreadRandom](../../tree/topic/ThreadRandom)
-- [UnsafeArray](../../tree/topic/UnsafeArray)
-- [BitArray256](../../tree/topic/BitArray256)
-- [FixedArray](../../tree/topic/FixedArray)
-- [NativeHashMapExtensions.GetOrAddRef](../../tree/topic/NativeHashMapExtensions_GetOrAddRef)
-- [NativeHashMapExtensions.ClearAndAddBatchUnsafe](../../tree/topic/NativeHashMapExtensions_ClearAndAddBatchUnsafe)
-- [NativeListExtensions.ReserveNoResize](../../tree/topic/NativeListExtensions_ReserveNoResize)
-- [NativeThreadStreamExTests](../../tree/topic/NativeThreadStreamExTests)
-- [BitArray8_16_32_64](../../tree/topic/BitArray8_16_32_64)
-- [BitArray128](../../tree/topic/BitArray128)
-- [BitArrayUtilities](../../tree/topic/BitArrayUtilities)
-- [NativeThreadStream.Reader](../../tree/topic/NativeThreadStream_Reader)
-- [NativeThreadStream.Writer](../../tree/topic/NativeThreadStream_Writer)
-- [NativeWorkQueue](../../tree/topic/NativeWorkQueue)
-- [NativePerfectHashMap](../../tree/topic/NativePerfectHashMap)
-- [NativeUntypedHashMap](../../tree/topic/NativeUntypedHashMap)
-- [UnsafePartialKeyedMap](../../tree/topic/UnsafePartialKeyedMap)
-- [UnsafePerfectHashMap](../../tree/topic/UnsafePerfectHashMap)
-- [NativeListExtensions.ClearAddRange](../../tree/topic/NativeListExtensions_ClearAddRange)
-- [NativeParallelMultiHashMapExtensions.GetUniqueKeyArray](../../tree/topic/NativeParallelMultiHashMapExtensions_GetUniqueKeyArray)
-
-### Blob System
-
-- [BlobHashMap](../../tree/topic/BlobHashMap)
-- [BlobPerfectHashMap](../../tree/topic/BlobPerfectHashMap)
-- [BlobCurve](../../tree/topic/BlobCurve)
-- [BlobBuilderExtensions](../../tree/topic/BlobBuilderExtensions)
-- [BlobHashMapTests](../../tree/topic/BlobHashMapTests)
-- [BlobCurve2_3_4](../../tree/topic/BlobCurve2_3_4)
-- [BlobCurveCache](../../tree/topic/BlobCurveCache)
-- [BlobCurveHeader](../../tree/topic/BlobCurveHeader)
-- [BlobCurveSampler](../../tree/topic/BlobCurveSampler)
-- [BlobCurveSegment](../../tree/topic/BlobCurveSegment)
-- [BlobShared](../../tree/topic/BlobShared)
-- [IBlobCurve](../../tree/topic/IBlobCurve)
-- [BlobBuilderExtensions.Allocate](../../tree/topic/BlobBuilderExtensions_Allocate)
-- [BlobBuilderExtensions.ConstructHashMap](../../tree/topic/BlobBuilderExtensions_ConstructHashMap)
-- [BlobBuilderHashMap](../../tree/topic/BlobBuilderHashMap)
-- [BlobBuilderMultiHashMap](../../tree/topic/BlobBuilderMultiHashMap)
-- [BlobBuilderPerfectHashMap](../../tree/topic/BlobBuilderPerfectHashMap)
-- [BlobHashMapData](../../tree/topic/BlobHashMapData)
-- [BlobMultiHashMapIterator](../../tree/topic/BlobMultiHashMapIterator)
-- [BlobSpline](../../tree/topic/BlobSpline)
-- [BlobAssetOwnerInspector](../../tree/topic/BlobAssetOwnerInspector)
-- [EntityBlobBakedData](../../tree/topic/EntityBlobBakedData)
-- [EntityBlobBakingSystem](../../tree/topic/EntityBlobBakingSystem)
-
-### Memory & Allocators
-
-- [PooledNativeList](../../tree/topic/PooledNativeList)
-- [UnmanagedPool](../../tree/topic/UnmanagedPool)
-- [UnsafeSlabAllocator](../../tree/topic/UnsafeSlabAllocator)
-- [MemoryLabelAllocator](../../tree/topic/MemoryLabelAllocator)
-- [MemoryAllocator](../../tree/topic/MemoryAllocator)
-- [NoAllocHelpers](../../tree/topic/NoAllocHelpers)
-- [UnsafeListPoolTests](../../tree/topic/UnsafeListPoolTests)
-- [NativeSlabAllocator](../../tree/topic/NativeSlabAllocator)
-- [UnsafeParallelPoolAllocator](../../tree/topic/UnsafeParallelPoolAllocator)
-- [UnsafeFixedPoolAllocator](../../tree/topic/UnsafeFixedPoolAllocator)
-- [UnsafePoolAllocator](../../tree/topic/UnsafePoolAllocator)
-- [NativeArrayExtensions.WhereNoAlloc](../../tree/topic/NativeArrayExtensions_WhereNoAlloc)
-
-### Dynamic Buffers
-
-- [Hydrodynamics](../../tree/topic/Hydrodynamics)
-- [DynamicMultiHashMap](../../tree/topic/DynamicMultiHashMap)
-- [DynamicHashSet](../../tree/topic/DynamicHashSet)
-- [DynamicUntypedBuffer](../../tree/topic/DynamicUntypedBuffer)
-- [DynamicVariableMap](../../tree/topic/DynamicVariableMap)
-- [ArchetypeChunk.GetDynamicBufferAccessor](../../tree/topic/ArchetypeChunk_GetDynamicBufferAccessor)
-- [DynamicHashMapPerformanceTests](../../tree/topic/DynamicHashMapPerformanceTests)
-- [UnsafeUntypedDynamicBuffer](../../tree/topic/UnsafeUntypedDynamicBuffer)
-- [UnsafeUntypedDynamicBufferAccessor](../../tree/topic/UnsafeUntypedDynamicBufferAccessor)
-- [UntypedDynamicBuffer](../../tree/topic/UntypedDynamicBuffer)
-- [DynamicGenerator](../../tree/topic/DynamicGenerator)
-
-### ECS Extensions
-
-- [ArchetypeChunk.DidChange](../../tree/topic/ArchetypeChunk_DidChange)
-- [ArchetypeChunk.GetNativeArrayReadOnly](../../tree/topic/ArchetypeChunk_GetNativeArrayReadOnly)
-- [BufferAccessor.GetUnsafe](../../tree/topic/BufferAccessor_GetUnsafe)
-- [BufferLookup.GetROAndChunk](../../tree/topic/BufferLookup_GetROAndChunk)
-- [ComponentLookup.GetOptionalComponentDataRW](../../tree/topic/ComponentLookup_GetOptionalComponentDataRW)
-- [ComponentLookup.SetChangeFilter](../../tree/topic/ComponentLookup_SetChangeFilter)
-- [EntityQueryBuilder.WithAllRW](../../tree/topic/EntityQueryBuilder_WithAllRW)
-- [EntityQuery.QueryHasSharedFilter](../../tree/topic/EntityQuery_QueryHasSharedFilter)
-- [EntityQuery.ReplaceSharedComponentFilter](../../tree/topic/EntityQuery_ReplaceSharedComponentFilter)
-- [EntityQuery.GetFirstEntity](../../tree/topic/EntityQuery_GetFirstEntity)
-- [EntityQuery.GetSingletonBufferNoSync](../../tree/topic/EntityQuery_GetSingletonBufferNoSync)
-- [SystemState.GetSingletonEntity](../../tree/topic/SystemState_GetSingletonEntity)
-- [SystemState.GetManagedSingleton](../../tree/topic/SystemState_GetManagedSingleton)
-- [World.IsClientWorld](../../tree/topic/World_IsClientWorld)
-- [CopyEnableable](../../tree/topic/CopyEnableable)
-- [TimerEnableable](../../tree/topic/TimerEnableable)
-- [StateModelEnableable](../../tree/topic/StateModelEnableable)
-- [EnableMaskCreator](../../tree/topic/EnableMaskCreator)
-- [EntityLock](../../tree/topic/EntityLock)
-- [EntityLockTests](../../tree/topic/EntityLockTests)
-- [ChangeFilterTrackingAttribute](../../tree/topic/ChangeFilterTrackingAttribute)
-- [TypeManagerEx](../../tree/topic/TypeManagerEx)
-- [TypeManagerOverrides](../../tree/topic/TypeManagerOverrides)
-- [TypeManagerUtil](../../tree/topic/TypeManagerUtil)
-- [TypeUtility](../../tree/topic/TypeUtility)
-- [WriteGroupMatcher](../../tree/topic/WriteGroupMatcher)
-- [EntityDataAccessExtensions.GetComponentDataWithTypeRW](../../tree/topic/EntityDataAccessExtensions_GetComponentDataWithTypeRW)
-- [EntityManagerExtensions.GetChunkBuffer](../../tree/topic/EntityManagerExtensions_GetChunkBuffer)
-- [EntityManagerExtensions.GetOrCreateSingletonEntity](../../tree/topic/EntityManagerExtensions_GetOrCreateSingletonEntity)
-- [EntityQueryExtensions.GetSingletonUntypedBuffer](../../tree/topic/EntityQueryExtensions_GetSingletonUntypedBuffer)
-- [EntitySceneReferenceExtensions.SceneGUID](../../tree/topic/EntitySceneReferenceExtensions_SceneGUID)
-- [EntityStorageInfoLookupExtensions.GetNameUnsafe](../../tree/topic/EntityStorageInfoLookupExtensions_GetNameUnsafe)
-- [RefRWExtensions.Create](../../tree/topic/RefRWExtensions_Create)
-- [SystemStateExtensions.GetUnsafeEntityDataAccess](../../tree/topic/SystemStateExtensions_GetUnsafeEntityDataAccess)
-- [ChangeFilterTrackingSystem](../../tree/topic/ChangeFilterTrackingSystem)
-
-### Jobs & Threading
-
-- [IJobParallelForDeferExtensions](../../tree/topic/IJobParallelForDeferExtensions)
-- [IJobChunkWorkerBeginEnd](../../tree/topic/IJobChunkWorkerBeginEnd)
-- [IJobForThread](../../tree/topic/IJobForThread)
-- [IJobHashMapDefer](../../tree/topic/IJobHashMapDefer)
-- [IJobParallelForDeferBatch](../../tree/topic/IJobParallelForDeferBatch)
-- [IJobParallelForDeferExtensions.Schedule](../../tree/topic/IJobParallelForDeferExtensions_Schedule)
-
-### State & Model
-
-- [TimerFixed](../../tree/topic/TimerFixed)
-- [TimerTriggerResetJob](../../tree/topic/TimerTriggerResetJob)
-- [StateFlagModel](../../tree/topic/StateFlagModel)
-- [StateModelWithHistory](../../tree/topic/StateModelWithHistory)
-- [StatefulCollisionEvent](../../tree/topic/StatefulCollisionEvent)
-- [StatefulTriggerEvent](../../tree/topic/StatefulTriggerEvent)
-- [StatefulCollisionEventClearSystem](../../tree/topic/StatefulCollisionEventClearSystem)
-- [StatefulTriggerEventClearSystem](../../tree/topic/StatefulTriggerEventClearSystem)
-- [StateFlagModelTests](../../tree/topic/StateFlagModelTests)
-- [IState](../../tree/topic/IState)
-- [StateAPI](../../tree/topic/StateAPI)
-- [StateInstanceUtil](../../tree/topic/StateInstanceUtil)
-- [DestroyTimer](../../tree/topic/DestroyTimer)
-
-### Spatial & Physics
-
-- [AabbExtensions](../../tree/topic/AabbExtensions)
-- [AlwaysUpdatePhysicsWorld](../../tree/topic/AlwaysUpdatePhysicsWorld)
-- [IntersectionTests](../../tree/topic/IntersectionTests)
-- [ConvexHullBuilder](../../tree/topic/ConvexHullBuilder)
-- [MeshSimplifier](../../tree/topic/MeshSimplifier)
-- [TerrainToMesh](../../tree/topic/TerrainToMesh)
-- [PhysicsLayerUtil](../../tree/topic/PhysicsLayerUtil)
-- [AlwaysUpdatePhysicsWorldSystem](../../tree/topic/AlwaysUpdatePhysicsWorldSystem)
-- [PhysicsTags](../../tree/topic/PhysicsTags)
-- [LocalSpatialMap](../../tree/topic/LocalSpatialMap)
-- [PositionBuilder](../../tree/topic/PositionBuilder)
-- [SpatialKeyedMap](../../tree/topic/SpatialKeyedMap)
-- [SpatialMap](../../tree/topic/SpatialMap)
-- [SpatialMap3](../../tree/topic/SpatialMap3)
-- [DistanceHitSortAscending](../../tree/topic/DistanceHitSortAscending)
-- [DistanceHitSortDescending](../../tree/topic/DistanceHitSortDescending)
-- [PhysicsExtensions.Raycast](../../tree/topic/PhysicsExtensions_Raycast)
-- [PhysicsMassOverrideAuthoring](../../tree/topic/PhysicsMassOverrideAuthoring)
-- [RemovePhysicsVelocityAuthoring](../../tree/topic/RemovePhysicsVelocityAuthoring)
-
-### Utility
-
-- [Ptr](../../tree/topic/Ptr)
-- [BurstTrampoline](../../tree/topic/BurstTrampoline)
-- [BurstUtil.IsEmpty](../../tree/topic/BurstUtil_IsEmpty)
-- [ButtonEvent](../../tree/topic/ButtonEvent)
-- [CurveRemapUtility](../../tree/topic/CurveRemapUtility)
-- [DebugUtil.SplitInt](../../tree/topic/DebugUtil_SplitInt)
-- [GlobalRandom](../../tree/topic/GlobalRandom)
-- [InitSystemBase](../../tree/topic/InitSystemBase)
-- [LibraryLoader](../../tree/topic/LibraryLoader)
-- [SceneInitializeSystem](../../tree/topic/SceneInitializeSystem)
-- [WorldSafeShutdown](../../tree/topic/WorldSafeShutdown)
-- [IFixedSize](../../tree/topic/IFixedSize)
-- [MiniString](../../tree/topic/MiniString)
-- [Pin](../../tree/topic/Pin)
-- [QueryEntityEnumerator](../../tree/topic/QueryEntityEnumerator)
-- [ReflectionUtility](../../tree/topic/ReflectionUtility)
-- [SpinLock](../../tree/topic/SpinLock)
-- [TransformUtility](../../tree/topic/TransformUtility)
-- [WorldUtility](../../tree/topic/WorldUtility)
-- [GhostComponentAttribute](../../tree/topic/GhostComponentAttribute)
-- [GhostFieldAttribute](../../tree/topic/GhostFieldAttribute)
-- [InitializeAllOnLoadExt](../../tree/topic/InitializeAllOnLoadExt)
-- [CloneTransformSystem](../../tree/topic/CloneTransformSystem)
-
-### Extension Methods
-
-- [ListExtensions.AddRangeNative](../../tree/topic/ListExtensions_AddRangeNative)
-- [NativeStreamExtensions.WriteLarge](../../tree/topic/NativeStreamExtensions_WriteLarge)
-- [EntityCommandBufferExtensions.AddUntypedBuffer](../../tree/topic/EntityCommandBufferExtensions_AddUntypedBuffer)
-- [EntityCommandBufferExtensions.UnsafeAddComponent](../../tree/topic/EntityCommandBufferExtensions_UnsafeAddComponent)
-- [EnumerableExtensions.IndexOf](../../tree/topic/EnumerableExtensions_IndexOf)
-- [GameObjectExtensions.IsPrefab](../../tree/topic/GameObjectExtensions_IsPrefab)
-- [NativeArrayExtensions.ElementAtRO](../../tree/topic/NativeArrayExtensions_ElementAtRO)
-- [NativeArrayExtensions.Select](../../tree/topic/NativeArrayExtensions_Select)
-- [NativeSliceExtensions.ReadArrayElementWithStrideRef](../../tree/topic/NativeSliceExtensions_ReadArrayElementWithStrideRef)
-- [NativeStreamExtensions.ReadLarge](../../tree/topic/NativeStreamExtensions_ReadLarge)
-- [StringExtensions.ToDotNotation](../../tree/topic/StringExtensions_ToDotNotation)
-- [SystemStateExtensions.GetAllSystemDependencies](../../tree/topic/SystemStateExtensions_GetAllSystemDependencies)
-- [UnsafeHashMapExtensions.GetOrAddRef](../../tree/topic/UnsafeHashMapExtensions_GetOrAddRef)
-- [UnsafeParallelHashMapDataExtensions.ReserveParallel](../../tree/topic/UnsafeParallelHashMapDataExtensions_ReserveParallel)
-- [WorldUnmanagedExtensions.GetTrackedJobHandle](../../tree/topic/WorldUnmanagedExtensions_GetTrackedJobHandle)
-
-### ConfigVars
-
-- [KSettingsBase](../../tree/topic/KSettingsBase)
-- [ConfigVarAttribute](../../tree/topic/ConfigVarAttribute)
-- [ConfigVarManager](../../tree/topic/ConfigVarManager)
-- [SharedStaticStringContainer](../../tree/topic/SharedStaticStringContainer)
-- [CodecService](../../tree/topic/CodecService)
-- [CommandLineArgs](../../tree/topic/CommandLineArgs)
-- [Deserializer](../../tree/topic/Deserializer)
-- [Serializer](../../tree/topic/Serializer)
-- [FixedNameValue](../../tree/topic/FixedNameValue)
-- [KAttribute](../../tree/topic/KAttribute)
-- [KSettings](../../tree/topic/KSettings)
-- [ConfigVarPanel](../../tree/topic/ConfigVarPanel)
-
-### Authoring & Baking
-
-- [BakerExtensions.AddEnabledComponent](../../tree/topic/BakerExtensions_AddEnabledComponent)
-- [BakerExtensions.AddEnabledBuffer](../../tree/topic/BakerExtensions_AddEnabledBuffer)
-- [BakerCommands](../../tree/topic/BakerCommands)
-- [AuthoringSettingsUtility](../../tree/topic/AuthoringSettingsUtility)
-- [SettingsAuthoring](../../tree/topic/SettingsAuthoring)
-- [TagAuthoring](../../tree/topic/TagAuthoring)
-- [TransformAuthoring](../../tree/topic/TransformAuthoring)
-- [GameObjectHelper.AddAuthoringComponent](../../tree/topic/GameObjectHelper_AddAuthoringComponent)
-- [CloneTransformAuthoring](../../tree/topic/CloneTransformAuthoring)
-- [LifeCycleAuthoring](../../tree/topic/LifeCycleAuthoring)
-- [LookupAuthoring](../../tree/topic/LookupAuthoring)
-
-### Editor Tools
-
-- [AssemblyBuilderWindow](../../tree/topic/AssemblyBuilderWindow)
-- [ComponentAssetBaseDrawer](../../tree/topic/ComponentAssetBaseDrawer)
-- [TypeSearchProvider](../../tree/topic/TypeSearchProvider)
-- [CoreBuildSetup](../../tree/topic/CoreBuildSetup)
-- [CreateEditorWorld](../../tree/topic/CreateEditorWorld)
-- [EditorMenus.DataModeHierarchySet](../../tree/topic/EditorMenus_DataModeHierarchySet)
-- [InspectorSearch](../../tree/topic/InspectorSearch)
-- [SelectedEntityEditorSystem](../../tree/topic/SelectedEntityEditorSystem)
-- [AssemblyGraphWindow](../../tree/topic/AssemblyGraphWindow)
-- [ComponentDependencyWindow](../../tree/topic/ComponentDependencyWindow)
-- [SystemDependencyWindow](../../tree/topic/SystemDependencyWindow)
-- [CoreEditorPreferencesProvider](../../tree/topic/CoreEditorPreferencesProvider)
-- [BitFieldAttributeEditor](../../tree/topic/BitFieldAttributeEditor)
-- [HalfDrawer](../../tree/topic/HalfDrawer)
-- [InlineObjectProperty](../../tree/topic/InlineObjectProperty)
-- [PrefabElementEditor](../../tree/topic/PrefabElementEditor)
-- [StableTypeHashAttributeDrawer](../../tree/topic/StableTypeHashAttributeDrawer)
-- [ToggleOption](../../tree/topic/ToggleOption)
-- [UnityObjectRefInspector](../../tree/topic/UnityObjectRefInspector)
-- [WeakObjectReferenceInspector](../../tree/topic/WeakObjectReferenceInspector)
-- [EntitySelection.GetAllSelectionsInWorld](../../tree/topic/EntitySelection_GetAllSelectionsInWorld)
-- [LoadPrefabsAsEntities](../../tree/topic/LoadPrefabsAsEntities)
-- [ReloadToolbarButton](../../tree/topic/ReloadToolbarButton)
-- [WelcomeWindow](../../tree/topic/WelcomeWindow)
-- [BaseObjectWindow](../../tree/topic/BaseObjectWindow)
-- [FeatureToggle](../../tree/topic/FeatureToggle)
-- [MainToolbarPresetPostProcessor](../../tree/topic/MainToolbarPresetPostProcessor)
-- [ComponentInspectorWindow](../../tree/topic/ComponentInspectorWindow)
-- [StartupSceneSwap](../../tree/topic/StartupSceneSwap)
-- [ViewModelToolbar](../../tree/topic/ViewModelToolbar)
-
-### Source Generators
-
-- [FacetAttribute](../../tree/topic/FacetAttribute)
-- [FacetOptionalAttribute](../../tree/topic/FacetOptionalAttribute)
-- [IFacet](../../tree/topic/IFacet)
-- [FacetGenerator](../../tree/topic/FacetGenerator)
-- [BuilderBase](../../tree/topic/BuilderBase)
-- [ClassBuilder](../../tree/topic/ClassBuilder)
-- [CodeBuilder](../../tree/topic/CodeBuilder)
-- [ConstructorBuilder](../../tree/topic/ConstructorBuilder)
-- [DelegateBuilder](../../tree/topic/DelegateBuilder)
-- [EnumBuilder](../../tree/topic/EnumBuilder)
-- [EventBuilder](../../tree/topic/EventBuilder)
-- [ExpressionBlockBuilder](../../tree/topic/ExpressionBlockBuilder)
-- [LogicalConditionBuilder](../../tree/topic/LogicalConditionBuilder)
-- [MethodBuilder](../../tree/topic/MethodBuilder)
-- [PropertyBuilder](../../tree/topic/PropertyBuilder)
-- [RecordBuilder](../../tree/topic/RecordBuilder)
-- [SwitchBuilder](../../tree/topic/SwitchBuilder)
-- [CodeWriter](../../tree/topic/CodeWriter)
-- [SymbolHelpers](../../tree/topic/SymbolHelpers)
-
-### SubScene System
-
-- [SubSceneLoadData](../../tree/topic/SubSceneLoadData)
-- [SubSceneEntity](../../tree/topic/SubSceneEntity)
-- [LoadSubScene](../../tree/topic/LoadSubScene)
-- [SubSceneBuffer](../../tree/topic/SubSceneBuffer)
-- [SubSceneLoadFlags](../../tree/topic/SubSceneLoadFlags)
-- [SubSceneLoadFlagsUtility](../../tree/topic/SubSceneLoadFlagsUtility)
-- [SubSceneLoadUtil](../../tree/topic/SubSceneLoadUtil)
-- [SubSceneLoaded](../../tree/topic/SubSceneLoaded)
-- [SubSceneLoadingManagedSystem](../../tree/topic/SubSceneLoadingManagedSystem)
-- [SubSceneLoadingSystem](../../tree/topic/SubSceneLoadingSystem)
-- [SubScenePostLoadCommandBufferSystem](../../tree/topic/SubScenePostLoadCommandBufferSystem)
-- [SubSceneSetId](../../tree/topic/SubSceneSetId)
-- [SubSceneUtil](../../tree/topic/SubSceneUtil)
-- [SubSceneEditorSet](../../tree/topic/SubSceneEditorSet)
-- [SubSceneEditorSystem](../../tree/topic/SubSceneEditorSystem)
-- [SubSceneEditorToolbar](../../tree/topic/SubSceneEditorToolbar)
-- [SubScenePrebakeSystem](../../tree/topic/SubScenePrebakeSystem)
-- [DestroyOnSubSceneUnloadSystem](../../tree/topic/DestroyOnSubSceneUnloadSystem)
-
-### Pause & Time
-
-- [LimitedRateNoCatchUpManager](../../tree/topic/LimitedRateNoCatchUpManager)
-- [PauseGame](../../tree/topic/PauseGame)
-- [PauseLimitSystem](../../tree/topic/PauseLimitSystem)
-- [PauseRateManager](../../tree/topic/PauseRateManager)
-- [PauseUtility](../../tree/topic/PauseUtility)
-- [FixedStepUpdatedSystem](../../tree/topic/FixedStepUpdatedSystem)
-- [UpdateWorldTimeSystem](../../tree/topic/UpdateWorldTimeSystem)
-
-### Relevancy & Netcode
-
-- [InputBounds](../../tree/topic/InputBounds)
-- [RelevanceAlways](../../tree/topic/RelevanceAlways)
-- [RelevanceConfig](../../tree/topic/RelevanceConfig)
-- [RelevanceManual](../../tree/topic/RelevanceManual)
-- [RelevanceProvider](../../tree/topic/RelevanceProvider)
-- [RelevancySystem](../../tree/topic/RelevancySystem)
-
-### Singleton System
-
-- [SingletonAttribute](../../tree/topic/SingletonAttribute)
-- [SingletonInitialize](../../tree/topic/SingletonInitialize)
-- [SingletonInitializeSystemGroup](../../tree/topic/SingletonInitializeSystemGroup)
-- [SingletonInitializedSystem](../../tree/topic/SingletonInitializedSystem)
-- [SingletonSystem](../../tree/topic/SingletonSystem)
-- [ComponentSystemBaseInternal.RequireSingletonForUpdate](../../tree/topic/ComponentSystemBaseInternal_RequireSingletonForUpdate)
-- [ISingletonCollection](../../tree/topic/ISingletonCollection)
-- [SingletonCollectionUtil](../../tree/topic/SingletonCollectionUtil)
-
-### Object Management
-
-- [ObjectDefinition](../../tree/topic/ObjectDefinition)
-- [ObjectGroupMatcher](../../tree/topic/ObjectGroupMatcher)
-- [ObjectId](../../tree/topic/ObjectId)
-- [UIDAttribute](../../tree/topic/UIDAttribute)
-- [GroupId](../../tree/topic/GroupId)
-- [ObjectCategories](../../tree/topic/ObjectCategories)
-- [ObjectCategoryComponents](../../tree/topic/ObjectCategoryComponents)
-- [ObjectDefinitionRegistrySystem](../../tree/topic/ObjectDefinitionRegistrySystem)
-- [ObjectGroupRegistry](../../tree/topic/ObjectGroupRegistry)
-- [ObjectInstantiateSystem](../../tree/topic/ObjectInstantiateSystem)
-- [ObjectDefinitionAuthoring](../../tree/topic/ObjectDefinitionAuthoring)
-- [ObjectInstantiate.Editor](../../tree/topic/ObjectInstantiate_Editor)
-
-### Physics States
-
-- [CalculateEventMapBucketsJob](../../tree/topic/CalculateEventMapBucketsJob)
-- [CollectEventsJob](../../tree/topic/CollectEventsJob)
-- [EnsureCurrentEventsCapacityJob](../../tree/topic/EnsureCurrentEventsCapacityJob)
-
-### Life Cycle
-
-- [AfterSceneSystemGroup](../../tree/topic/AfterSceneSystemGroup)
-- [AfterTransformSystemGroup](../../tree/topic/AfterTransformSystemGroup)
-- [BeforeTransformSystemGroup](../../tree/topic/BeforeTransformSystemGroup)
-- [BeginSimulationSystemGroup](../../tree/topic/BeginSimulationSystemGroup)
-- [InstantiateCommandBufferSystem](../../tree/topic/InstantiateCommandBufferSystem)
-- [DestroyEntityCommandBufferSystem](../../tree/topic/DestroyEntityCommandBufferSystem)
-- [DestroyEntitySystem](../../tree/topic/DestroyEntitySystem)
-- [DestroyOnDestroySystem](../../tree/topic/DestroyOnDestroySystem)
-- [EndInitializeEntityCommandBufferSystem](../../tree/topic/EndInitializeEntityCommandBufferSystem)
-- [InitializeEntitySystem](../../tree/topic/InitializeEntitySystem)
-
-### Tests & Diagnostics
-
-- [FaceReadonlyTest](../../tree/topic/FaceReadonlyTest)
-- [MathExPerformanceTests](../../tree/topic/MathExPerformanceTests)
-- [Check.Assume](../../tree/topic/Check_Assume)
-- [ReflectionTestHelper](../../tree/topic/ReflectionTestHelper)
-- [TestLeakDetectionAttribute](../../tree/topic/TestLeakDetectionAttribute)
-
-### Math Extensions
-
-- [MathematicsExtensions.Encapsulate](../../tree/topic/MathematicsExtensions_Encapsulate)
-- [HSV](../../tree/topic/HSV)
-- [PolygonUtility](../../tree/topic/PolygonUtility)
-- [ShortHalfUnion](../../tree/topic/ShortHalfUnion)
-- [IntFloatUnion](../../tree/topic/IntFloatUnion)
-- [mathex.mod](../../tree/topic/mathex_mod)
-- [mathex.minMax](../../tree/topic/mathex_minMax)
-- [mathex.add](../../tree/topic/mathex_add)
-- [mathex.GenerateGaussianNoise](../../tree/topic/mathex_GenerateGaussianNoise)
-- [mathex.FromToRotation](../../tree/topic/mathex_FromToRotation)
-- [MinMaxAttributeDrawer](../../tree/topic/MinMaxAttributeDrawer)
-
-### Other
-
-- [AssetLoad](../../tree/topic/AssetLoad)
-- [GameObjectCleanup](../../tree/topic/GameObjectCleanup)
-- [HalfSizeTriangleMatrix](../../tree/topic/HalfSizeTriangleMatrix)
-- [CalculateCurrentEventsBucketsJob](../../tree/topic/CalculateCurrentEventsBucketsJob)
-- [StripLocalAttribute](../../tree/topic/StripLocalAttribute)
-- [StripLocalSystem](../../tree/topic/StripLocalSystem)
-- [AssetLoadingSystem](../../tree/topic/AssetLoadingSystem)
-- [BovineLabsBootstrap](../../tree/topic/BovineLabsBootstrap)
-- [BovineLabsBootstrap.NetCode](../../tree/topic/BovineLabsBootstrap_NetCode)
-- [CollectionCreator.CreateHashMap](../../tree/topic/CollectionCreator_CreateHashMap)
-- [INativeStreamReader](../../tree/topic/INativeStreamReader)
-- [UnsafeThreadStreamBlockData](../../tree/topic/UnsafeThreadStreamBlockData)
-- [SyncEnableStateUtil](../../tree/topic/SyncEnableStateUtil)
-- [TimeProfiler](../../tree/topic/TimeProfiler)
-- [ReferenceT](../../tree/topic/ReferenceT)
-- [ReferenceData](../../tree/topic/ReferenceData)
-- [UnsafeListDispose](../../tree/topic/UnsafeListDispose)
-- [AppAPI](../../tree/topic/AppAPI)
-- [SerializedHelper.IterateAllChildren](../../tree/topic/SerializedHelper_IterateAllChildren)
-- [TextAssetHelper](../../tree/topic/TextAssetHelper)
-- [PrefabInstance](../../tree/topic/PrefabInstance)
-- [AnalyzersProjectFileGeneration](../../tree/topic/AnalyzersProjectFileGeneration)
+  BlobAssetReference<BlobCurve>
+  ┌────────────────────────────────────────────────────────────────────┐
+  │ BlobAssetHeader (Unity internal)                                    │
+  ├────────────────────────────────────────────────────────────────────┤
+  │ BlobCurve                                                           │
+  │                                                                     │
+  │  ┌─ header: BlobCurveHeader ─────────────────────────────────────┐ │
+  │  │                                                                │ │
+  │  │  WrapModePrev : short  (Clamp=0, Loop=1, PingPong=2)          │ │
+  │  │  WrapModePost : short                                         │ │
+  │  │  SegmentCount : int    (= keyframeCount - 1, min 1)           │ │
+  │  │  StartTime    : float                                         │ │
+  │  │  EndTime      : float                                         │ │
+  │  │                                                                │ │
+  │  │  ┌─ Times: BlobArray<float> ──────────────────────────────┐   │ │
+  │  │  │  length = keyframeCount + 2                             │   │ │
+  │  │  │                                                         │   │ │
+  │  │  │  [0]        [1]    [2]    ...  [n-1]   [n]       [n+1] │   │ │
+  │  │  │  +MaxValue  t₀     t₁    ...  tₙ₋₂    tₙ₋₁  -MinValue │   │ │
+  │  │  │  (sentinel)  ↑ real timestamps start ↑    (sentinel)    │   │ │
+  │  │  └─────────────────────────────────────────────────────────┘   │ │
+  │  └────────────────────────────────────────────────────────────────┘ │
+  │                                                                     │
+  │  ┌─ segments: BlobArray<BlobCurveSegment> ──────────────────────┐  │
+  │  │  length = SegmentCount                                       │  │
+  │  │                                                               │  │
+  │  │  Each BlobCurveSegment stores:                                │  │
+  │  │    factors: float4   = [a₃, a₂, a₁, a₀]                     │  │
+  │  │                                                               │  │
+  │  │  Evaluate(t) = dot(factors, [t³, t², t, 1])                  │  │
+  │  │             = a₃t³ + a₂t² + a₁t + a₀                        │  │
+  │  │                                                               │  │
+  │  │  [0]: factors for key₀→key₁                                  │  │
+  │  │  [1]: factors for key₁→key₂                                  │  │
+  │  │  ...                                                          │  │
+  │  │  [n-2]: factors for keyₙ₋₂→keyₙ₋₁                           │  │
+  │  └───────────────────────────────────────────────────────────────┘  │
+  └────────────────────────────────────────────────────────────────────┘
 
 
----
+Segment Factor Computation (Hermite → Polynomial)
+--------------------------------------------------
 
-Total: 358 topics across 24 categories
+  Given two keyframes: k₀(time₀, val₀, outTangent₀) and k₁(time₁, val₁, inTangent₁)
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  duration = time₁ - time₀                                      │
+  │  m₀ = outTangent₀ × duration                                   │
+  │  m₁ = inTangent₁ × duration                                    │
+  │                                                                 │
+  │  Hermite basis → Cubic coefficients via matrix multiply:        │
+  │                                                                 │
+  │  ┌                    ┐ ┌    ┐     ┌     ┐                      │
+  │  │  2   1   1  -2     │ │ v₀ │     │  a₃  │                    │
+  │  │ -3  -2  -1   3     │ │ m₀ │  =  │  a₂  │                    │
+  │  │  0   1   0   0     │ │ m₁ │     │  a₁  │                    │
+  │  │  1   0   0   0     │ │ v₁ │     │  a₀  │                    │
+  │  └                    ┘ └    ┘     └     ┘                      │
+  │                                                                 │
+  │  Special case: if either tangent is infinity → constant segment │
+  │  (BezierFactor with all identical values = val₀)                │
+  └─────────────────────────────────────────────────────────────────┘
+
+
+Times Array Layout (Sentinel Pattern)
+--------------------------------------
+
+  For N keyframes, the Times array has N+2 entries:
+
+  Index:   0          1      2      3     ...   N-1     N        N+1
+  Value:  +INF     time₀  time₁  time₂  ...  timeₙ₋₂  timeₙ₋₁  -INF
+
+  Purpose of sentinels:
+    [0] = +MaxValue  →  binary search lower bound (prevents underflow)
+    [N+1] = -MinValue →  binary search upper bound (prevents overflow)
+
+  This allows the Search() function to read *(float2*)(times + i + 1)
+  as the [start, end] time range for segment i without bounds checking.
+
+
+Evaluation Pipeline
+-------------------
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  Evaluate(float time, ref BlobCurveCache cache)                 │
+  │                                                                 │
+  │  STEP 1: Wrap time                                              │
+  │  ┌──────────────────────────────────────────────────────────┐   │
+  │  │  if Clamp:  clamp(time, Start, End)                      │   │
+  │  │  if Loop:   (time - Start) % Duration + Start            │   │
+  │  │  if PingPong: mirror on odd loop counts                  │   │
+  │  └──────────────────────────────────────────────────────────┘   │
+  │                        │                                        │
+  │                        ▼ wrappedTime                            │
+  │  STEP 2: Binary Search (with cache)                             │
+  │  ┌──────────────────────────────────────────────────────────┐   │
+  │  │  Cache: { Index, NeighborhoodTimes: float2 }             │   │
+  │  │                                                           │   │
+  │  │  if cached range contains wrappedTime:                    │   │
+  │  │    → return cached index (HIT, no search needed)         │   │
+  │  │                                                           │   │
+  │  │  Check neighbors (cache.Index ± 1):                      │   │
+  │  │    → if hit, update cache, return                        │   │
+  │  │                                                           │   │
+  │  │  Full binary search:                                      │   │
+  │  │    lo=0, hi=SegmentCount-1                                │   │
+  │  │    read *(float2*)(times + i + 1) as [t_i, t_{i+1}]     │   │
+  │  │    branchless: lo/hi adjust via math.select               │   │
+  │  │    until wrappedTime in [t_i, t_{i+1}]                   │   │
+  │  └──────────────────────────────────────────────────────────┘   │
+  │                        │                                        │
+  │                        ▼ segment index i, local t               │
+  │  STEP 3: Evaluate polynomial                                    │
+  │  ┌──────────────────────────────────────────────────────────┐   │
+  │  │  t_serial = (t³, t², t, 1)                               │   │
+  │  │  result = dot(segments[i].factors, t_serial)              │   │
+  │  └──────────────────────────────────────────────────────────┘   │
+  └─────────────────────────────────────────────────────────────────┘
+
+
+Binary Search Detail (Branchless Core)
+---------------------------------------
+
+  The search loop uses no branches for the comparison -- only for the
+  loop continuation condition:
+
+  ┌──────────────────────────────────────────────────────────┐
+  │  do {                                                    │
+  │    timeRange = *(float2*)(times + (i + 1));              │
+  │    //  timeRange.x = start of segment i                  │
+  │    //  timeRange.y = end of segment i (= start of i+1)   │
+  │                                                          │
+  │    goLow  = wrappedTime < timeRange.x;                   │
+  │    goHigh = wrappedTime > timeRange.y;                   │
+  │    notFound = goLow | goHigh;                            │
+  │                                                          │
+  │    lo = select(lo,    i + 1, goHigh);   // move right    │
+  │    hi = select(hi,    i - 1, goLow);    // move left     │
+  │    i  = select(i, lo + ((hi-lo)>>1), notFound);          │
+  │  }                                                       │
+  │  while (notFound & (lo <= hi));                          │
+  │                                                          │
+  │  // When notFound becomes false, i is the segment index  │
+  │  // and timeRange contains [t_i, t_{i+1}]                │
+  │  // t = (wrappedTime - t_i) / (t_{i+1} - t_i)           │
+  └──────────────────────────────────────────────────────────┘
+
+
+Cache Structure (BlobCurveCache)
+---------------------------------
+
+  ┌────────────────────────────────────────────┐
+  │  BlobCurveCache                             │
+  │  ┌────────────────────────────────────────┐ │
+  │  │  NeighborhoodTimes: float2             │ │
+  │  │    .x = start time of cached segment   │ │
+  │  │    .y = end time of cached segment     │ │
+  │  │                                        │ │
+  │  │  Index: int                            │ │
+  │  │    segment index from last evaluation  │ │
+  │  └────────────────────────────────────────┘ │
+  │                                             │
+  │  Empty sentinel: Index = int.MinValue       │
+  │                  NeighborhoodTimes = NaN    │
+  │                                             │
+  │  On sequential evaluation (typical):        │
+  │    - Cache hit rate approaches 100%         │
+  │    - Skips binary search entirely           │
+  │    - Falls back to neighbor check           │
+  └────────────────────────────────────────────┘
+
+
+Multidimensional Variants
+--------------------------
+
+  ┌─────────────┐   ┌──────────────────┐   ┌───────────────────────────┐
+  │ BlobCurve   │   │ BlobCurveSegment │   │ Segment stores            │
+  │ (float)     │──▶│ float4 factors   │   │ a₃,a₂,a₁,a₀ per axis     │
+  ├─────────────┤   ├──────────────────┤   │                           │
+  │ BlobCurve2  │──▶│ float4x2 factors │   │ X axis: float4            │
+  │ (float2)    │   │                  │   │ Y axis: float4            │
+  ├─────────────┤   ├──────────────────┤   ├───────────────────────────┤
+  │ BlobCurve3  │──▶│ float4x3 factors │   │ X,Y,Z axes each: float4  │
+  │ (float3)    │   │                  │   │                           │
+  ├─────────────┤   ├──────────────────┤   ├───────────────────────────┤
+  │ BlobCurve4  │──▶│ float4x4 factors │   │ X,Y,Z,W axes each:float4 │
+  │ (float4)    │   │                  │   │                           │
+  └─────────────┘   └──────────────────┘   └───────────────────────────┘
+
+  All variants share the same BlobCurveHeader and Times array.
+  Evaluation: math.dot(timeSerial, factors) or math.mul(timeSerial, factors)
+
+
+Construction Flow
+------------------
+
+  ┌───────────────────────────────────────┐
+  │  AnimationCurve (managed Unity obj)   │
+  │    keys: [k0, k1, k2, k3, k4]        │
+  └──────────────────┬────────────────────┘
+                     │
+                     ▼
+  ┌─────────────────────────────────────────────────────────────┐
+  │  BlobCurve.Construct(ref builder, ref blobCurve, curve)     │
+  │                                                             │
+  │  1. Validate curve (non-null, non-empty, no weights)        │
+  │  2. segmentCount = keys.Length - 1 (or 1 if single key)    │
+  │  3. Set wrap modes                                          │
+  │  4. Allocate Times[keys.Length + 2]                         │
+  │     Times[0] = +MaxValue  (left sentinel)                   │
+  │     Times[keys.Length + 1] = -MinValue  (right sentinel)    │
+  │  5. Allocate Segments[segmentCount]                         │
+  │     for each key pair (kᵢ, kᵢ₊₁):                         │
+  │       Times[i+1] = kᵢ.time                                 │
+  │       Segments[i] = BlobCurveSegment(kᵢ, kᵢ₊₁)            │
+  │         └─ factors = HermiteMat × [v₀, m₀, m₁, v₁]         │
+  │  6. Set StartTime, EndTime                                  │
+  └──────────────────┬──────────────────────────────────────────┘
+                     │
+                     ▼  CreateBlobAssetReference()
+         BlobAssetReference<BlobCurve>
+
+
+BlobCurveSampler (Stateful Cache Wrapper)
+------------------------------------------
+
+  ┌─────────────────────────────────────────────────────┐
+  │  BlobCurveSampler                                    │
+  │                                                      │
+  │  Curve: BlobAssetReference<BlobCurve>  (read-only)  │
+  │  cache: BlobCurveCache  (mutable, per-instance)      │
+  │                                                      │
+  │  Evaluate(time):                                     │
+  │    → Curve.Value.Evaluate(time, ref cache)           │
+  │    (automatically maintains cache across calls)      │
+  │                                                      │
+  │  EvaluateWithoutCache(time):                         │
+  │    → Curve.Value.Evaluate(time)                      │
+  │    (no cache, binary search every time)              │
+  └─────────────────────────────────────────────────────┘
+
+  Usage in jobs:
+    var sampler = new BlobCurveSampler(blobCurveRef);
+    for (int i = 0; i < count; i++)
+        values[i] = sampler.Evaluate(times[i]);
+    // Sequential access → cache hits → near-free lookups
+
+
+Key Design Decisions
+--------------------
+
+1. **Pre-baked polynomial coefficients.**  Each segment stores 4 floats
+   (the cubic coefficients a₃..a₀) so runtime evaluation is just
+   `dot(factors, [t³,t²,t,1])` -- one SIMD dot product, no Hermite
+   basis matrix multiply needed at runtime.
+
+2. **Sentinel-bounded times array.**  Adding +INF and -INF sentinels at
+   the edges eliminates bounds checks in the binary search.  The search
+   can safely read `*(float2*)(times + i + 1)` for any valid segment
+   index without special-casing the first and last segments.
+
+3. **Cache with neighborhood check.**  The BlobCurveCache stores the time
+   range of the last-evaluated segment.  On the next call, it checks:
+   is the new time still within this range?  If not, check ±1 neighbor.
+   Only if both miss does it fall back to binary search.  This makes
+   sequential evaluation (the common case) O(1) amortized.
+
+4. **Branchless binary search.**  The inner loop uses `math.select` for
+   all direction decisions, avoiding branch mispredictions on the hot
+   path.  Only the loop continuation `while (notFound & (lo <= hi))`
+   involves a branch.
+
+5. **Single-keyframe special case.**  When an AnimationCurve has only one
+   key, the segment is a constant polynomial (a₀ = value, all others 0)
+   and the times array is filled with the same time repeated 4 times.
+
+6. **No weighted tangent support.**  The Unity `WeightedMode` is checked
+   at construction time and a warning is logged.  Only the default
+   Hermite interpolation (non-weighted) is supported.
+
+
+Performance Characteristics
+---------------------------
+
+| Operation                | Time Complexity     | Notes                        |
+|--------------------------|---------------------|------------------------------|
+| Evaluate (cache hit)     | O(1)                | No search, just dot product  |
+| Evaluate (neighbor hit)  | O(1)                | Check ±1 segment             |
+| Evaluate (cache miss)    | O(log n)            | Binary search + dot product  |
+| EvaluateWithoutCache     | O(log n)            | Always binary search         |
+| Construction             | O(n)                | Per-segment factor compute   |
+
+Memory per curve (BlobCurve with N keyframes):
+  - Header:     ~24 bytes (wrap modes, segment count, start/end time)
+  - Times:      (N + 2) × 4 bytes
+  - Segments:   (N - 1) × 16 bytes  (float4 each)
+  - Total:      ~24 + (N+2)×4 + (N-1)×16 ≈ 20N + 16 bytes
+
+BlobCurve2:  segments are float4x2 = 32 bytes each
+BlobCurve3:  segments are float4x3 = 48 bytes each
+BlobCurve4:  segments are float4x4 = 64 bytes each
+
+Burst-compatible:   Yes (100% unmanaged, no managed references)
+Thread-safe reads:  Yes (blob is immutable; cache is per-thread)
+SIMD-friendly:      Yes (float4 dot product, float2 reads)
