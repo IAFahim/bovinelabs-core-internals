@@ -1,457 +1,428 @@
-# BovineLabs Core - Inner Workings
+# DynamicUntypedBuffer
 
-ASCII architecture diagrams for every topic in `com.bovinelabs.core`.
+**Stores mixed unmanaged types manually inside a single DynamicBuffer<byte>, each element tracked by offset, size, type hash, and alignment.**
 
-Each topic lives on its own branch. Switch to a branch to see the detailed
-README.md with full ASCII diagrams explaining the internal data structures,
-algorithms, and design decisions.
+## Overview
 
-## How to Use
+DynamicUntypedBuffer is a type-erased list that stores heterogeneous unmanaged types
+side-by-side in one contiguous `DynamicBuffer<byte>`. Unlike `DynamicBuffer<T>` which holds
+elements of a single type, this buffer can store an `int` at index 0, a `float3` at index 1,
+a `MyCustomStruct` at index 2, and so on.
 
-```bash
-# List all topic branches
-git branch -a
+Each element is tracked by per-element metadata arrays: **Offsets[]** (byte position in data
+area), **Sizes[]** (size in bytes), **Types[]** (Burst type hash for runtime type checking),
+and **Alignments[]** (alignment requirement). The data area is a packed, properly-aligned
+sequence of variable-size blobs.
 
-# View a specific topic
-git checkout topic/NativeThreadStream
-
-# View the diagram
-cat README.md
-```
-
-## Topics
-
-### Core Collections
-
-- [NativeThreadStream](../../tree/topic/NativeThreadStream)
-- [NativeCounter](../../tree/topic/NativeCounter)
-- [NativeKeyedMap](../../tree/topic/NativeKeyedMap)
-- [NativeLinearCongruentialGenerator](../../tree/topic/NativeLinearCongruentialGenerator)
-- [NativeParallelMultiHashMapFallback](../../tree/topic/NativeParallelMultiHashMapFallback)
-- [NativePartialKeyedMap](../../tree/topic/NativePartialKeyedMap)
-- [ThreadList](../../tree/topic/ThreadList)
-- [ThreadRandom](../../tree/topic/ThreadRandom)
-- [UnsafeArray](../../tree/topic/UnsafeArray)
-- [BitArray256](../../tree/topic/BitArray256)
-- [FixedArray](../../tree/topic/FixedArray)
-- [NativeHashMapExtensions.GetOrAddRef](../../tree/topic/NativeHashMapExtensions_GetOrAddRef)
-- [NativeHashMapExtensions.ClearAndAddBatchUnsafe](../../tree/topic/NativeHashMapExtensions_ClearAndAddBatchUnsafe)
-- [NativeListExtensions.ReserveNoResize](../../tree/topic/NativeListExtensions_ReserveNoResize)
-- [NativeThreadStreamExTests](../../tree/topic/NativeThreadStreamExTests)
-- [BitArray8_16_32_64](../../tree/topic/BitArray8_16_32_64)
-- [BitArray128](../../tree/topic/BitArray128)
-- [BitArrayUtilities](../../tree/topic/BitArrayUtilities)
-- [NativeThreadStream.Reader](../../tree/topic/NativeThreadStream_Reader)
-- [NativeThreadStream.Writer](../../tree/topic/NativeThreadStream_Writer)
-- [NativeWorkQueue](../../tree/topic/NativeWorkQueue)
-- [NativePerfectHashMap](../../tree/topic/NativePerfectHashMap)
-- [NativeUntypedHashMap](../../tree/topic/NativeUntypedHashMap)
-- [UnsafePartialKeyedMap](../../tree/topic/UnsafePartialKeyedMap)
-- [UnsafePerfectHashMap](../../tree/topic/UnsafePerfectHashMap)
-- [NativeListExtensions.ClearAddRange](../../tree/topic/NativeListExtensions_ClearAddRange)
-- [NativeParallelMultiHashMapExtensions.GetUniqueKeyArray](../../tree/topic/NativeParallelMultiHashMapExtensions_GetUniqueKeyArray)
-
-### Blob System
-
-- [BlobHashMap](../../tree/topic/BlobHashMap)
-- [BlobPerfectHashMap](../../tree/topic/BlobPerfectHashMap)
-- [BlobCurve](../../tree/topic/BlobCurve)
-- [BlobBuilderExtensions](../../tree/topic/BlobBuilderExtensions)
-- [BlobHashMapTests](../../tree/topic/BlobHashMapTests)
-- [BlobCurve2_3_4](../../tree/topic/BlobCurve2_3_4)
-- [BlobCurveCache](../../tree/topic/BlobCurveCache)
-- [BlobCurveHeader](../../tree/topic/BlobCurveHeader)
-- [BlobCurveSampler](../../tree/topic/BlobCurveSampler)
-- [BlobCurveSegment](../../tree/topic/BlobCurveSegment)
-- [BlobShared](../../tree/topic/BlobShared)
-- [IBlobCurve](../../tree/topic/IBlobCurve)
-- [BlobBuilderExtensions.Allocate](../../tree/topic/BlobBuilderExtensions_Allocate)
-- [BlobBuilderExtensions.ConstructHashMap](../../tree/topic/BlobBuilderExtensions_ConstructHashMap)
-- [BlobBuilderHashMap](../../tree/topic/BlobBuilderHashMap)
-- [BlobBuilderMultiHashMap](../../tree/topic/BlobBuilderMultiHashMap)
-- [BlobBuilderPerfectHashMap](../../tree/topic/BlobBuilderPerfectHashMap)
-- [BlobHashMapData](../../tree/topic/BlobHashMapData)
-- [BlobMultiHashMapIterator](../../tree/topic/BlobMultiHashMapIterator)
-- [BlobSpline](../../tree/topic/BlobSpline)
-- [BlobAssetOwnerInspector](../../tree/topic/BlobAssetOwnerInspector)
-- [EntityBlobBakedData](../../tree/topic/EntityBlobBakedData)
-- [EntityBlobBakingSystem](../../tree/topic/EntityBlobBakingSystem)
-
-### Memory & Allocators
-
-- [PooledNativeList](../../tree/topic/PooledNativeList)
-- [UnmanagedPool](../../tree/topic/UnmanagedPool)
-- [UnsafeSlabAllocator](../../tree/topic/UnsafeSlabAllocator)
-- [MemoryLabelAllocator](../../tree/topic/MemoryLabelAllocator)
-- [MemoryAllocator](../../tree/topic/MemoryAllocator)
-- [NoAllocHelpers](../../tree/topic/NoAllocHelpers)
-- [UnsafeListPoolTests](../../tree/topic/UnsafeListPoolTests)
-- [NativeSlabAllocator](../../tree/topic/NativeSlabAllocator)
-- [UnsafeParallelPoolAllocator](../../tree/topic/UnsafeParallelPoolAllocator)
-- [UnsafeFixedPoolAllocator](../../tree/topic/UnsafeFixedPoolAllocator)
-- [UnsafePoolAllocator](../../tree/topic/UnsafePoolAllocator)
-- [NativeArrayExtensions.WhereNoAlloc](../../tree/topic/NativeArrayExtensions_WhereNoAlloc)
-
-### Dynamic Buffers
-
-- [Hydrodynamics](../../tree/topic/Hydrodynamics)
-- [DynamicMultiHashMap](../../tree/topic/DynamicMultiHashMap)
-- [DynamicHashSet](../../tree/topic/DynamicHashSet)
-- [DynamicUntypedBuffer](../../tree/topic/DynamicUntypedBuffer)
-- [DynamicVariableMap](../../tree/topic/DynamicVariableMap)
-- [ArchetypeChunk.GetDynamicBufferAccessor](../../tree/topic/ArchetypeChunk_GetDynamicBufferAccessor)
-- [DynamicHashMapPerformanceTests](../../tree/topic/DynamicHashMapPerformanceTests)
-- [UnsafeUntypedDynamicBuffer](../../tree/topic/UnsafeUntypedDynamicBuffer)
-- [UnsafeUntypedDynamicBufferAccessor](../../tree/topic/UnsafeUntypedDynamicBufferAccessor)
-- [UntypedDynamicBuffer](../../tree/topic/UntypedDynamicBuffer)
-- [DynamicGenerator](../../tree/topic/DynamicGenerator)
-
-### ECS Extensions
-
-- [ArchetypeChunk.DidChange](../../tree/topic/ArchetypeChunk_DidChange)
-- [ArchetypeChunk.GetNativeArrayReadOnly](../../tree/topic/ArchetypeChunk_GetNativeArrayReadOnly)
-- [BufferAccessor.GetUnsafe](../../tree/topic/BufferAccessor_GetUnsafe)
-- [BufferLookup.GetROAndChunk](../../tree/topic/BufferLookup_GetROAndChunk)
-- [ComponentLookup.GetOptionalComponentDataRW](../../tree/topic/ComponentLookup_GetOptionalComponentDataRW)
-- [ComponentLookup.SetChangeFilter](../../tree/topic/ComponentLookup_SetChangeFilter)
-- [EntityQueryBuilder.WithAllRW](../../tree/topic/EntityQueryBuilder_WithAllRW)
-- [EntityQuery.QueryHasSharedFilter](../../tree/topic/EntityQuery_QueryHasSharedFilter)
-- [EntityQuery.ReplaceSharedComponentFilter](../../tree/topic/EntityQuery_ReplaceSharedComponentFilter)
-- [EntityQuery.GetFirstEntity](../../tree/topic/EntityQuery_GetFirstEntity)
-- [EntityQuery.GetSingletonBufferNoSync](../../tree/topic/EntityQuery_GetSingletonBufferNoSync)
-- [SystemState.GetSingletonEntity](../../tree/topic/SystemState_GetSingletonEntity)
-- [SystemState.GetManagedSingleton](../../tree/topic/SystemState_GetManagedSingleton)
-- [World.IsClientWorld](../../tree/topic/World_IsClientWorld)
-- [CopyEnableable](../../tree/topic/CopyEnableable)
-- [TimerEnableable](../../tree/topic/TimerEnableable)
-- [StateModelEnableable](../../tree/topic/StateModelEnableable)
-- [EnableMaskCreator](../../tree/topic/EnableMaskCreator)
-- [EntityLock](../../tree/topic/EntityLock)
-- [EntityLockTests](../../tree/topic/EntityLockTests)
-- [ChangeFilterTrackingAttribute](../../tree/topic/ChangeFilterTrackingAttribute)
-- [TypeManagerEx](../../tree/topic/TypeManagerEx)
-- [TypeManagerOverrides](../../tree/topic/TypeManagerOverrides)
-- [TypeManagerUtil](../../tree/topic/TypeManagerUtil)
-- [TypeUtility](../../tree/topic/TypeUtility)
-- [WriteGroupMatcher](../../tree/topic/WriteGroupMatcher)
-- [EntityDataAccessExtensions.GetComponentDataWithTypeRW](../../tree/topic/EntityDataAccessExtensions_GetComponentDataWithTypeRW)
-- [EntityManagerExtensions.GetChunkBuffer](../../tree/topic/EntityManagerExtensions_GetChunkBuffer)
-- [EntityManagerExtensions.GetOrCreateSingletonEntity](../../tree/topic/EntityManagerExtensions_GetOrCreateSingletonEntity)
-- [EntityQueryExtensions.GetSingletonUntypedBuffer](../../tree/topic/EntityQueryExtensions_GetSingletonUntypedBuffer)
-- [EntitySceneReferenceExtensions.SceneGUID](../../tree/topic/EntitySceneReferenceExtensions_SceneGUID)
-- [EntityStorageInfoLookupExtensions.GetNameUnsafe](../../tree/topic/EntityStorageInfoLookupExtensions_GetNameUnsafe)
-- [RefRWExtensions.Create](../../tree/topic/RefRWExtensions_Create)
-- [SystemStateExtensions.GetUnsafeEntityDataAccess](../../tree/topic/SystemStateExtensions_GetUnsafeEntityDataAccess)
-- [ChangeFilterTrackingSystem](../../tree/topic/ChangeFilterTrackingSystem)
-
-### Jobs & Threading
-
-- [IJobParallelForDeferExtensions](../../tree/topic/IJobParallelForDeferExtensions)
-- [IJobChunkWorkerBeginEnd](../../tree/topic/IJobChunkWorkerBeginEnd)
-- [IJobForThread](../../tree/topic/IJobForThread)
-- [IJobHashMapDefer](../../tree/topic/IJobHashMapDefer)
-- [IJobParallelForDeferBatch](../../tree/topic/IJobParallelForDeferBatch)
-- [IJobParallelForDeferExtensions.Schedule](../../tree/topic/IJobParallelForDeferExtensions_Schedule)
-
-### State & Model
-
-- [TimerFixed](../../tree/topic/TimerFixed)
-- [TimerTriggerResetJob](../../tree/topic/TimerTriggerResetJob)
-- [StateFlagModel](../../tree/topic/StateFlagModel)
-- [StateModelWithHistory](../../tree/topic/StateModelWithHistory)
-- [StatefulCollisionEvent](../../tree/topic/StatefulCollisionEvent)
-- [StatefulTriggerEvent](../../tree/topic/StatefulTriggerEvent)
-- [StatefulCollisionEventClearSystem](../../tree/topic/StatefulCollisionEventClearSystem)
-- [StatefulTriggerEventClearSystem](../../tree/topic/StatefulTriggerEventClearSystem)
-- [StateFlagModelTests](../../tree/topic/StateFlagModelTests)
-- [IState](../../tree/topic/IState)
-- [StateAPI](../../tree/topic/StateAPI)
-- [StateInstanceUtil](../../tree/topic/StateInstanceUtil)
-- [DestroyTimer](../../tree/topic/DestroyTimer)
-
-### Spatial & Physics
-
-- [AabbExtensions](../../tree/topic/AabbExtensions)
-- [AlwaysUpdatePhysicsWorld](../../tree/topic/AlwaysUpdatePhysicsWorld)
-- [IntersectionTests](../../tree/topic/IntersectionTests)
-- [ConvexHullBuilder](../../tree/topic/ConvexHullBuilder)
-- [MeshSimplifier](../../tree/topic/MeshSimplifier)
-- [TerrainToMesh](../../tree/topic/TerrainToMesh)
-- [PhysicsLayerUtil](../../tree/topic/PhysicsLayerUtil)
-- [AlwaysUpdatePhysicsWorldSystem](../../tree/topic/AlwaysUpdatePhysicsWorldSystem)
-- [PhysicsTags](../../tree/topic/PhysicsTags)
-- [LocalSpatialMap](../../tree/topic/LocalSpatialMap)
-- [PositionBuilder](../../tree/topic/PositionBuilder)
-- [SpatialKeyedMap](../../tree/topic/SpatialKeyedMap)
-- [SpatialMap](../../tree/topic/SpatialMap)
-- [SpatialMap3](../../tree/topic/SpatialMap3)
-- [DistanceHitSortAscending](../../tree/topic/DistanceHitSortAscending)
-- [DistanceHitSortDescending](../../tree/topic/DistanceHitSortDescending)
-- [PhysicsExtensions.Raycast](../../tree/topic/PhysicsExtensions_Raycast)
-- [PhysicsMassOverrideAuthoring](../../tree/topic/PhysicsMassOverrideAuthoring)
-- [RemovePhysicsVelocityAuthoring](../../tree/topic/RemovePhysicsVelocityAuthoring)
-
-### Utility
-
-- [Ptr](../../tree/topic/Ptr)
-- [BurstTrampoline](../../tree/topic/BurstTrampoline)
-- [BurstUtil.IsEmpty](../../tree/topic/BurstUtil_IsEmpty)
-- [ButtonEvent](../../tree/topic/ButtonEvent)
-- [CurveRemapUtility](../../tree/topic/CurveRemapUtility)
-- [DebugUtil.SplitInt](../../tree/topic/DebugUtil_SplitInt)
-- [GlobalRandom](../../tree/topic/GlobalRandom)
-- [InitSystemBase](../../tree/topic/InitSystemBase)
-- [LibraryLoader](../../tree/topic/LibraryLoader)
-- [SceneInitializeSystem](../../tree/topic/SceneInitializeSystem)
-- [WorldSafeShutdown](../../tree/topic/WorldSafeShutdown)
-- [IFixedSize](../../tree/topic/IFixedSize)
-- [MiniString](../../tree/topic/MiniString)
-- [Pin](../../tree/topic/Pin)
-- [QueryEntityEnumerator](../../tree/topic/QueryEntityEnumerator)
-- [ReflectionUtility](../../tree/topic/ReflectionUtility)
-- [SpinLock](../../tree/topic/SpinLock)
-- [TransformUtility](../../tree/topic/TransformUtility)
-- [WorldUtility](../../tree/topic/WorldUtility)
-- [GhostComponentAttribute](../../tree/topic/GhostComponentAttribute)
-- [GhostFieldAttribute](../../tree/topic/GhostFieldAttribute)
-- [InitializeAllOnLoadExt](../../tree/topic/InitializeAllOnLoadExt)
-- [CloneTransformSystem](../../tree/topic/CloneTransformSystem)
-
-### Extension Methods
-
-- [ListExtensions.AddRangeNative](../../tree/topic/ListExtensions_AddRangeNative)
-- [NativeStreamExtensions.WriteLarge](../../tree/topic/NativeStreamExtensions_WriteLarge)
-- [EntityCommandBufferExtensions.AddUntypedBuffer](../../tree/topic/EntityCommandBufferExtensions_AddUntypedBuffer)
-- [EntityCommandBufferExtensions.UnsafeAddComponent](../../tree/topic/EntityCommandBufferExtensions_UnsafeAddComponent)
-- [EnumerableExtensions.IndexOf](../../tree/topic/EnumerableExtensions_IndexOf)
-- [GameObjectExtensions.IsPrefab](../../tree/topic/GameObjectExtensions_IsPrefab)
-- [NativeArrayExtensions.ElementAtRO](../../tree/topic/NativeArrayExtensions_ElementAtRO)
-- [NativeArrayExtensions.Select](../../tree/topic/NativeArrayExtensions_Select)
-- [NativeSliceExtensions.ReadArrayElementWithStrideRef](../../tree/topic/NativeSliceExtensions_ReadArrayElementWithStrideRef)
-- [NativeStreamExtensions.ReadLarge](../../tree/topic/NativeStreamExtensions_ReadLarge)
-- [StringExtensions.ToDotNotation](../../tree/topic/StringExtensions_ToDotNotation)
-- [SystemStateExtensions.GetAllSystemDependencies](../../tree/topic/SystemStateExtensions_GetAllSystemDependencies)
-- [UnsafeHashMapExtensions.GetOrAddRef](../../tree/topic/UnsafeHashMapExtensions_GetOrAddRef)
-- [UnsafeParallelHashMapDataExtensions.ReserveParallel](../../tree/topic/UnsafeParallelHashMapDataExtensions_ReserveParallel)
-- [WorldUnmanagedExtensions.GetTrackedJobHandle](../../tree/topic/WorldUnmanagedExtensions_GetTrackedJobHandle)
-
-### ConfigVars
-
-- [KSettingsBase](../../tree/topic/KSettingsBase)
-- [ConfigVarAttribute](../../tree/topic/ConfigVarAttribute)
-- [ConfigVarManager](../../tree/topic/ConfigVarManager)
-- [SharedStaticStringContainer](../../tree/topic/SharedStaticStringContainer)
-- [CodecService](../../tree/topic/CodecService)
-- [CommandLineArgs](../../tree/topic/CommandLineArgs)
-- [Deserializer](../../tree/topic/Deserializer)
-- [Serializer](../../tree/topic/Serializer)
-- [FixedNameValue](../../tree/topic/FixedNameValue)
-- [KAttribute](../../tree/topic/KAttribute)
-- [KSettings](../../tree/topic/KSettings)
-- [ConfigVarPanel](../../tree/topic/ConfigVarPanel)
-
-### Authoring & Baking
-
-- [BakerExtensions.AddEnabledComponent](../../tree/topic/BakerExtensions_AddEnabledComponent)
-- [BakerExtensions.AddEnabledBuffer](../../tree/topic/BakerExtensions_AddEnabledBuffer)
-- [BakerCommands](../../tree/topic/BakerCommands)
-- [AuthoringSettingsUtility](../../tree/topic/AuthoringSettingsUtility)
-- [SettingsAuthoring](../../tree/topic/SettingsAuthoring)
-- [TagAuthoring](../../tree/topic/TagAuthoring)
-- [TransformAuthoring](../../tree/topic/TransformAuthoring)
-- [GameObjectHelper.AddAuthoringComponent](../../tree/topic/GameObjectHelper_AddAuthoringComponent)
-- [CloneTransformAuthoring](../../tree/topic/CloneTransformAuthoring)
-- [LifeCycleAuthoring](../../tree/topic/LifeCycleAuthoring)
-- [LookupAuthoring](../../tree/topic/LookupAuthoring)
-
-### Editor Tools
-
-- [AssemblyBuilderWindow](../../tree/topic/AssemblyBuilderWindow)
-- [ComponentAssetBaseDrawer](../../tree/topic/ComponentAssetBaseDrawer)
-- [TypeSearchProvider](../../tree/topic/TypeSearchProvider)
-- [CoreBuildSetup](../../tree/topic/CoreBuildSetup)
-- [CreateEditorWorld](../../tree/topic/CreateEditorWorld)
-- [EditorMenus.DataModeHierarchySet](../../tree/topic/EditorMenus_DataModeHierarchySet)
-- [InspectorSearch](../../tree/topic/InspectorSearch)
-- [SelectedEntityEditorSystem](../../tree/topic/SelectedEntityEditorSystem)
-- [AssemblyGraphWindow](../../tree/topic/AssemblyGraphWindow)
-- [ComponentDependencyWindow](../../tree/topic/ComponentDependencyWindow)
-- [SystemDependencyWindow](../../tree/topic/SystemDependencyWindow)
-- [CoreEditorPreferencesProvider](../../tree/topic/CoreEditorPreferencesProvider)
-- [BitFieldAttributeEditor](../../tree/topic/BitFieldAttributeEditor)
-- [HalfDrawer](../../tree/topic/HalfDrawer)
-- [InlineObjectProperty](../../tree/topic/InlineObjectProperty)
-- [PrefabElementEditor](../../tree/topic/PrefabElementEditor)
-- [StableTypeHashAttributeDrawer](../../tree/topic/StableTypeHashAttributeDrawer)
-- [ToggleOption](../../tree/topic/ToggleOption)
-- [UnityObjectRefInspector](../../tree/topic/UnityObjectRefInspector)
-- [WeakObjectReferenceInspector](../../tree/topic/WeakObjectReferenceInspector)
-- [EntitySelection.GetAllSelectionsInWorld](../../tree/topic/EntitySelection_GetAllSelectionsInWorld)
-- [LoadPrefabsAsEntities](../../tree/topic/LoadPrefabsAsEntities)
-- [ReloadToolbarButton](../../tree/topic/ReloadToolbarButton)
-- [WelcomeWindow](../../tree/topic/WelcomeWindow)
-- [BaseObjectWindow](../../tree/topic/BaseObjectWindow)
-- [FeatureToggle](../../tree/topic/FeatureToggle)
-- [MainToolbarPresetPostProcessor](../../tree/topic/MainToolbarPresetPostProcessor)
-- [ComponentInspectorWindow](../../tree/topic/ComponentInspectorWindow)
-- [StartupSceneSwap](../../tree/topic/StartupSceneSwap)
-- [ViewModelToolbar](../../tree/topic/ViewModelToolbar)
-
-### Source Generators
-
-- [FacetAttribute](../../tree/topic/FacetAttribute)
-- [FacetOptionalAttribute](../../tree/topic/FacetOptionalAttribute)
-- [IFacet](../../tree/topic/IFacet)
-- [FacetGenerator](../../tree/topic/FacetGenerator)
-- [BuilderBase](../../tree/topic/BuilderBase)
-- [ClassBuilder](../../tree/topic/ClassBuilder)
-- [CodeBuilder](../../tree/topic/CodeBuilder)
-- [ConstructorBuilder](../../tree/topic/ConstructorBuilder)
-- [DelegateBuilder](../../tree/topic/DelegateBuilder)
-- [EnumBuilder](../../tree/topic/EnumBuilder)
-- [EventBuilder](../../tree/topic/EventBuilder)
-- [ExpressionBlockBuilder](../../tree/topic/ExpressionBlockBuilder)
-- [LogicalConditionBuilder](../../tree/topic/LogicalConditionBuilder)
-- [MethodBuilder](../../tree/topic/MethodBuilder)
-- [PropertyBuilder](../../tree/topic/PropertyBuilder)
-- [RecordBuilder](../../tree/topic/RecordBuilder)
-- [SwitchBuilder](../../tree/topic/SwitchBuilder)
-- [CodeWriter](../../tree/topic/CodeWriter)
-- [SymbolHelpers](../../tree/topic/SymbolHelpers)
-
-### SubScene System
-
-- [SubSceneLoadData](../../tree/topic/SubSceneLoadData)
-- [SubSceneEntity](../../tree/topic/SubSceneEntity)
-- [LoadSubScene](../../tree/topic/LoadSubScene)
-- [SubSceneBuffer](../../tree/topic/SubSceneBuffer)
-- [SubSceneLoadFlags](../../tree/topic/SubSceneLoadFlags)
-- [SubSceneLoadFlagsUtility](../../tree/topic/SubSceneLoadFlagsUtility)
-- [SubSceneLoadUtil](../../tree/topic/SubSceneLoadUtil)
-- [SubSceneLoaded](../../tree/topic/SubSceneLoaded)
-- [SubSceneLoadingManagedSystem](../../tree/topic/SubSceneLoadingManagedSystem)
-- [SubSceneLoadingSystem](../../tree/topic/SubSceneLoadingSystem)
-- [SubScenePostLoadCommandBufferSystem](../../tree/topic/SubScenePostLoadCommandBufferSystem)
-- [SubSceneSetId](../../tree/topic/SubSceneSetId)
-- [SubSceneUtil](../../tree/topic/SubSceneUtil)
-- [SubSceneEditorSet](../../tree/topic/SubSceneEditorSet)
-- [SubSceneEditorSystem](../../tree/topic/SubSceneEditorSystem)
-- [SubSceneEditorToolbar](../../tree/topic/SubSceneEditorToolbar)
-- [SubScenePrebakeSystem](../../tree/topic/SubScenePrebakeSystem)
-- [DestroyOnSubSceneUnloadSystem](../../tree/topic/DestroyOnSubSceneUnloadSystem)
-
-### Pause & Time
-
-- [LimitedRateNoCatchUpManager](../../tree/topic/LimitedRateNoCatchUpManager)
-- [PauseGame](../../tree/topic/PauseGame)
-- [PauseLimitSystem](../../tree/topic/PauseLimitSystem)
-- [PauseRateManager](../../tree/topic/PauseRateManager)
-- [PauseUtility](../../tree/topic/PauseUtility)
-- [FixedStepUpdatedSystem](../../tree/topic/FixedStepUpdatedSystem)
-- [UpdateWorldTimeSystem](../../tree/topic/UpdateWorldTimeSystem)
-
-### Relevancy & Netcode
-
-- [InputBounds](../../tree/topic/InputBounds)
-- [RelevanceAlways](../../tree/topic/RelevanceAlways)
-- [RelevanceConfig](../../tree/topic/RelevanceConfig)
-- [RelevanceManual](../../tree/topic/RelevanceManual)
-- [RelevanceProvider](../../tree/topic/RelevanceProvider)
-- [RelevancySystem](../../tree/topic/RelevancySystem)
-
-### Singleton System
-
-- [SingletonAttribute](../../tree/topic/SingletonAttribute)
-- [SingletonInitialize](../../tree/topic/SingletonInitialize)
-- [SingletonInitializeSystemGroup](../../tree/topic/SingletonInitializeSystemGroup)
-- [SingletonInitializedSystem](../../tree/topic/SingletonInitializedSystem)
-- [SingletonSystem](../../tree/topic/SingletonSystem)
-- [ComponentSystemBaseInternal.RequireSingletonForUpdate](../../tree/topic/ComponentSystemBaseInternal_RequireSingletonForUpdate)
-- [ISingletonCollection](../../tree/topic/ISingletonCollection)
-- [SingletonCollectionUtil](../../tree/topic/SingletonCollectionUtil)
-
-### Object Management
-
-- [ObjectDefinition](../../tree/topic/ObjectDefinition)
-- [ObjectGroupMatcher](../../tree/topic/ObjectGroupMatcher)
-- [ObjectId](../../tree/topic/ObjectId)
-- [UIDAttribute](../../tree/topic/UIDAttribute)
-- [GroupId](../../tree/topic/GroupId)
-- [ObjectCategories](../../tree/topic/ObjectCategories)
-- [ObjectCategoryComponents](../../tree/topic/ObjectCategoryComponents)
-- [ObjectDefinitionRegistrySystem](../../tree/topic/ObjectDefinitionRegistrySystem)
-- [ObjectGroupRegistry](../../tree/topic/ObjectGroupRegistry)
-- [ObjectInstantiateSystem](../../tree/topic/ObjectInstantiateSystem)
-- [ObjectDefinitionAuthoring](../../tree/topic/ObjectDefinitionAuthoring)
-- [ObjectInstantiate.Editor](../../tree/topic/ObjectInstantiate_Editor)
-
-### Physics States
-
-- [CalculateEventMapBucketsJob](../../tree/topic/CalculateEventMapBucketsJob)
-- [CollectEventsJob](../../tree/topic/CollectEventsJob)
-- [EnsureCurrentEventsCapacityJob](../../tree/topic/EnsureCurrentEventsCapacityJob)
-
-### Life Cycle
-
-- [AfterSceneSystemGroup](../../tree/topic/AfterSceneSystemGroup)
-- [AfterTransformSystemGroup](../../tree/topic/AfterTransformSystemGroup)
-- [BeforeTransformSystemGroup](../../tree/topic/BeforeTransformSystemGroup)
-- [BeginSimulationSystemGroup](../../tree/topic/BeginSimulationSystemGroup)
-- [InstantiateCommandBufferSystem](../../tree/topic/InstantiateCommandBufferSystem)
-- [DestroyEntityCommandBufferSystem](../../tree/topic/DestroyEntityCommandBufferSystem)
-- [DestroyEntitySystem](../../tree/topic/DestroyEntitySystem)
-- [DestroyOnDestroySystem](../../tree/topic/DestroyOnDestroySystem)
-- [EndInitializeEntityCommandBufferSystem](../../tree/topic/EndInitializeEntityCommandBufferSystem)
-- [InitializeEntitySystem](../../tree/topic/InitializeEntitySystem)
-
-### Tests & Diagnostics
-
-- [FaceReadonlyTest](../../tree/topic/FaceReadonlyTest)
-- [MathExPerformanceTests](../../tree/topic/MathExPerformanceTests)
-- [Check.Assume](../../tree/topic/Check_Assume)
-- [ReflectionTestHelper](../../tree/topic/ReflectionTestHelper)
-- [TestLeakDetectionAttribute](../../tree/topic/TestLeakDetectionAttribute)
-
-### Math Extensions
-
-- [MathematicsExtensions.Encapsulate](../../tree/topic/MathematicsExtensions_Encapsulate)
-- [HSV](../../tree/topic/HSV)
-- [PolygonUtility](../../tree/topic/PolygonUtility)
-- [ShortHalfUnion](../../tree/topic/ShortHalfUnion)
-- [IntFloatUnion](../../tree/topic/IntFloatUnion)
-- [mathex.mod](../../tree/topic/mathex_mod)
-- [mathex.minMax](../../tree/topic/mathex_minMax)
-- [mathex.add](../../tree/topic/mathex_add)
-- [mathex.GenerateGaussianNoise](../../tree/topic/mathex_GenerateGaussianNoise)
-- [mathex.FromToRotation](../../tree/topic/mathex_FromToRotation)
-- [MinMaxAttributeDrawer](../../tree/topic/MinMaxAttributeDrawer)
-
-### Other
-
-- [AssetLoad](../../tree/topic/AssetLoad)
-- [GameObjectCleanup](../../tree/topic/GameObjectCleanup)
-- [HalfSizeTriangleMatrix](../../tree/topic/HalfSizeTriangleMatrix)
-- [CalculateCurrentEventsBucketsJob](../../tree/topic/CalculateCurrentEventsBucketsJob)
-- [StripLocalAttribute](../../tree/topic/StripLocalAttribute)
-- [StripLocalSystem](../../tree/topic/StripLocalSystem)
-- [AssetLoadingSystem](../../tree/topic/AssetLoadingSystem)
-- [BovineLabsBootstrap](../../tree/topic/BovineLabsBootstrap)
-- [BovineLabsBootstrap.NetCode](../../tree/topic/BovineLabsBootstrap_NetCode)
-- [CollectionCreator.CreateHashMap](../../tree/topic/CollectionCreator_CreateHashMap)
-- [INativeStreamReader](../../tree/topic/INativeStreamReader)
-- [UnsafeThreadStreamBlockData](../../tree/topic/UnsafeThreadStreamBlockData)
-- [SyncEnableStateUtil](../../tree/topic/SyncEnableStateUtil)
-- [TimeProfiler](../../tree/topic/TimeProfiler)
-- [ReferenceT](../../tree/topic/ReferenceT)
-- [ReferenceData](../../tree/topic/ReferenceData)
-- [UnsafeListDispose](../../tree/topic/UnsafeListDispose)
-- [AppAPI](../../tree/topic/AppAPI)
-- [SerializedHelper.IterateAllChildren](../../tree/topic/SerializedHelper_IterateAllChildren)
-- [TextAssetHelper](../../tree/topic/TextAssetHelper)
-- [PrefabInstance](../../tree/topic/PrefabInstance)
-- [AnalyzersProjectFileGeneration](../../tree/topic/AnalyzersProjectFileGeneration)
-
+This is useful for ECS patterns where an entity needs to hold an arbitrary set of typed
+parameters without pre-defining each as a separate component or buffer.
 
 ---
 
-Total: 358 topics across 24 categories
+## Memory Layout
+
+### Buffer-Level View
+
+```
+  DynamicBuffer<byte> contents:
+  ╔══════════════════════════════════════════════════════════════════════════════╗
+  ║                                                                            ║
+  ║  [0x00]  DynamicUntypedBufferHelper  (40 bytes header)                    ║
+  ║          ┌──────────────────────────────────────────────────────┐          ║
+  ║          │ OffsetsOffset      (int)                            │          ║
+  ║          │ SizesOffset        (int)                            │          ║
+  ║          │ TypesOffset        (int)                            │          ║
+  ║          │ AlignmentsOffset   (int)                            │          ║
+  ║          │ DataOffset         (int)                            │          ║
+  ║          │ Count              (int) — # of elements           │          ║
+  ║          │ Capacity           (int) — max elements            │          ║
+  ║          │ DataCapacity       (int) — data area size in bytes │          ║
+  ║          │ DataAllocatedIndex (int) — data high-water mark    │          ║
+  ║          │ Log2MinGrowth      (int)                            │          ║
+  ║          └──────────────────────────────────────────────────────┘          ║
+  ║                                                                            ║
+  ║  [0x28]  Offsets[Capacity]        (4 * Capacity bytes)                    ║
+  ║          ┌──────┬──────┬──────┬──────┐                                    ║
+  ║          │  0   │  4   │ 16   │  ... │  byte offset into Data[]            ║
+  ║          └──────┴──────┴──────┴──────┘                                    ║
+  ║                                                                            ║
+  ║  [aligned]  Sizes[Capacity]        (4 * Capacity bytes)                   ║
+  ║          ┌──────┬──────┬──────┬──────┐                                    ║
+  ║          │  4   │ 12   │  8   │  ... │  sizeof(T) for each element        ║
+  ║          └──────┴──────┴──────┴──────┘                                    ║
+  ║                                                                            ║
+  ║  [aligned]  Types[Capacity]        (4 * Capacity bytes)                   ║
+  ║          ┌──────┬──────┬──────┬──────┐                                    ║
+  ║          │ H(int)│H(f3) │H(str)│  ... │  BurstRuntime.GetHashCode32<T>()   ║
+  ║          └──────┴──────┴──────┴──────┘                                    ║
+  ║                                                                            ║
+  ║  [aligned]  Alignments[Capacity]   (1 * Capacity bytes)                   ║
+  ║          ┌───┬───┬───┬───┐                                              ║
+  ║          │ 4 │16 │ 8 │...│  alignment of each element                    ║
+  ║          └───┴───┴───┴───┘                                              ║
+  ║                                                                            ║
+  ║  [aligned to 16]  Data[DataCapacity]  (variable-size data area)           ║
+  ║          ┌──────────────────────────────────────────────────────┐          ║
+  ║          │ [0]  int(42)     │ padding │ [1]  float3(1,2,3)     │  ...     ║
+  ║          │ 4 bytes          │ 12 bytes│ 12 bytes              │          ║
+  ║          └──────────────────────────────────────────────────────┘          ║
+  ║                                                                            ║
+  ╚══════════════════════════════════════════════════════════════════════════════╝
+```
+
+### Header Struct Detail
+
+```
+  DynamicUntypedBufferHelper  — 40 bytes (10 ints)
+  ┌──────────┬─────────────────────┬──────────────────────────────────────────┐
+  │ Offset   │ Field               │ Purpose                                  │
+  ├──────────┼─────────────────────┼──────────────────────────────────────────┤
+  │ 0x00     │ OffsetsOffset       │ Byte offset from buffer start to Offsets[]│
+  │ 0x04     │ SizesOffset         │ Byte offset from buffer start to Sizes[] │
+  │ 0x08     │ TypesOffset         │ Byte offset from buffer start to Types[] │
+  │ 0x0C     │ AlignmentsOffset    │ Byte offset from buffer start to Aln[]   │
+  │ 0x10     │ DataOffset          │ Byte offset from buffer start to Data[]  │
+  │ 0x14     │ Count               │ Number of stored elements                │
+  │ 0x18     │ Capacity            │ Max elements (metadata array slots)      │
+  │ 0x1C     │ DataCapacity        │ Total bytes in Data area                 │
+  │ 0x20     │ DataAllocatedIndex  │ Next free byte offset in Data            │
+  │ 0x24     │ Log2MinGrowth       │ Growth granularity as log2               │
+  └──────────┴─────────────────────┴──────────────────────────────────────────┘
+```
+
+### Data Area Layout (The Key Innovation)
+
+```
+  Data[] area — packed, aligned, variable-size elements:
+  ════════════════════════════════════════════════════════════════
+
+  Index 0: int (4 bytes, align 4)
+  Index 1: float3 (12 bytes, align 16) ← needs padding!
+  Index 2: double (8 bytes, align 8)
+  Index 3: short (2 bytes, align 2)
+
+  Data area byte-by-byte:
+  ┌────────┬────────────────┬──────────────────────┬──────────┬───┬──────────┬─────┐
+  │ int    │  PAD (12 bytes)│      float3          │  double  │P  │  short   │ ... │
+  │ 42     │  (alignment)   │  (1.0, 2.0, 3.0)    │  3.14    │AD │  7       │     │
+  │ 4B     │  align→16      │  12B                 │  8B      │6B │  2B      │     │
+  └────────┴────────────────┴──────────────────────┴──────────┴───┴──────────┴─────┘
+  │←─ 0 ─→│                 │←──── 16 ────────────→│←─ 28 ──→│   │←─ 36 ──→│
+  │        │                 │                      │          │   │          │
+  Offsets[0]=0              Offsets[1]=16          Offsets[2]=28  Offsets[3]=36
+  Sizes[0]=4                Sizes[1]=12            Sizes[2]=8     Sizes[3]=2
+  Types[0]=H(int)           Types[1]=H(float3)     Types[2]=H(double) Types[3]=H(short)
+  Aln[0]=4                  Aln[1]=16              Aln[2]=8       Aln[3]=2
+
+  DataAllocatedIndex = 38  (= 36 + 2)
+```
+
+---
+
+## Alignment Algorithm
+
+```
+  AlignDataIndex helper — accounts for Data pointer's own alignment:
+  ─────────────────────────────────────────────────────────────────
+
+  WHY: Data area alignment is relative to absolute memory address,
+  not just byte offset. If Data* itself is misaligned, simple
+  offset alignment is wrong.
+
+  Algorithm:
+  ┌──────────────────────────────────────────────────────────┐
+  │ 1. dataMisalignment = (int)(Data* & (align - 1))        │
+  │                                                          │
+  │ 2. IF dataMisalignment == 0:                             │
+  │    └─ return Align(dataIndex, align)  // simple case     │
+  │                                                          │
+  │ 3. ELSE:                                                 │
+  │    └─ return Align(dataIndex + dataMisalignment, align)  │
+  │               - dataMisalignment                         │
+  └──────────────────────────────────────────────────────────┘
+
+  Example:
+    Data* = 0x1006 (misaligned by 6 for align=16)
+    dataIndex = 10, align = 16
+    
+    dataMisalignment = 6
+    result = Align(10 + 6, 16) - 6 = Align(16, 16) - 6 = 16 - 6 = 10
+    → So absolute address = 0x1006 + 10 = 0x1010 (16-aligned ✓)
+```
+
+---
+
+## Add Algorithm
+
+```
+  DynamicUntypedBuffer.Add<TValue>(value):
+  ────────────────────────────────────────
+
+  1. IF Count == Capacity:
+     └─ Resize metadata arrays (grow Capacity)
+
+  2. idx = Count++
+  3. size = sizeof(TValue)
+  4. align = alignof(TValue)
+  5. dataAllocIndex = AlignDataIndex(DataAllocatedIndex, align)
+     ┌──────────────────────────────────────────────────────┐
+     │ Aligns current write position to the element's       │
+     │ alignment requirement. May add padding bytes.        │
+     └──────────────────────────────────────────────────────┘
+
+  6. IF dataAllocIndex + size > DataCapacity:
+     └─ ResizeData (grow DataCapacity, may loop to find enough)
+
+  7. dst = Data + dataAllocIndex
+  8. MemCpy(&value → dst, size)         ← copy value bytes into data area
+
+  9. Record metadata:
+     Offsets[idx]     = dataAllocIndex
+     Sizes[idx]       = size
+     Types[idx]       = BurstRuntime.GetHashCode32<TValue>()
+     Alignments[idx]  = (byte)align
+
+  10. DataAllocatedIndex = dataAllocIndex + size
+  11. RETURN idx
+```
+
+### Visual: Adding Mixed Types
+
+```
+  INITIAL: Count=0, DataAllocatedIndex=0, DataCapacity=64
+
+  ── Add<int>(42): size=4, align=4 ──────────────────────────────
+  dataAllocIndex = AlignDataIndex(0, 4) = 0
+  Data: [42(int)                               ...free...       ]
+        ↑ offset=0
+  Offsets=[0], Sizes=[4], Types=[H(int)], Alignments=[4]
+  DataAllocatedIndex = 4
+
+  ── Add<float3>(1,2,3): size=12, align=16 ─────────────────────
+  dataAllocIndex = AlignDataIndex(4, 16) = 16  ← 12 bytes padding!
+  Data: [42 | PAD PAD PAD PAD | float3(1,2,3)   ...free...     ]
+        0    4               16                   28
+  Offsets=[0,16], Sizes=[4,12], Types=[H(int),H(f3)], Aln=[4,16]
+  DataAllocatedIndex = 28
+
+  ── Add<short>(7): size=2, align=2 ────────────────────────────
+  dataAllocIndex = AlignDataIndex(28, 2) = 28   ← no padding needed
+  Data: [42 | PAD | float3 | short  ...free...                    ]
+        0    4   16        28  30
+  Offsets=[0,16,28], Sizes=[4,12,2], Types=[H(i),H(f3),H(s)], Aln=[4,16,2]
+  DataAllocatedIndex = 30
+```
+
+---
+
+## Read Algorithm
+
+```
+  DynamicUntypedBuffer.ElementAtRO<TValue>(index):
+  ──────────────────────────────────────────────────
+
+  1. CheckIndexInRange(index)         // 0 <= index < Count
+  2. CheckType<TValue>(index):
+     ├─ expected = BurstRuntime.GetHashCode32<TValue>()
+     ├─ actual = Types[index]
+     └─ IF expected != actual → THROW (type mismatch!)
+  3. offset = Offsets[index]
+  4. RETURN ref *(TValue*)(Data + offset)
+
+  Type safety is enforced at runtime via the stored type hash.
+  Reading with the wrong type throws InvalidOperationException.
+```
+
+---
+
+## RemoveAt Algorithm (Compact + Realign)
+
+```
+  DynamicUntypedBuffer.RemoveAt(index):
+  ─────────────────────────────────────
+
+  PHASE 1: Shift metadata arrays down
+  ┌──────────────────────────────────────────────────────────────┐
+  │ MemMove(Offsets[index],    Offsets[index+1],    remaining)   │
+  │ MemMove(Sizes[index],      Sizes[index+1],      remaining)   │
+  │ MemMove(Types[index],      Types[index+1],      remaining)   │
+  │ MemMove(Alignments[index], Alignments[index+1], remaining)   │
+  │ Count--                                                      │
+  └──────────────────────────────────────────────────────────────┘
+
+  PHASE 2: Compact and realign the data area
+  ┌──────────────────────────────────────────────────────────────┐
+  │ dataIndex = 0                                                │
+  │ FOR i = 0 TO Count-1:                                        │
+  │   dataIndex = AlignDataIndex(dataIndex, Alignments[i])       │
+  │   IF Offsets[i] != dataIndex:                                │
+  │     MemMove(Data+dataIndex, Data+Offsets[i], Sizes[i])       │
+  │   Offsets[i] = dataIndex                                     │
+  │   dataIndex += Sizes[i]                                      │
+  │                                                              │
+  │ DataAllocatedIndex = dataIndex                               │
+  └──────────────────────────────────────────────────────────────┘
+```
+
+### Visual: RemoveAt In Action
+
+```
+  BEFORE: 3 elements — int(42), float3(1,2,3), short(7)
+
+  Data:   [42 | PAD PAD PAD | float3 | short ]
+          0    4              16      28  30
+  
+  Offsets=[0, 16, 28],  Sizes=[4, 12, 2]
+  Types=[H(i), H(f3), H(s)],  Alignments=[4, 16, 2]
+  Count=3, DataAllocatedIndex=30
+
+  ── RemoveAt(1) — remove the float3 ────────────────────────────
+
+  PHASE 1: Shift metadata (remove slot 1):
+  Offsets = [0, 28]        ← was [0, 16, 28], shifted down
+  Sizes   = [4, 2]         ← was [4, 12, 2]
+  Types   = [H(i), H(s)]   ← was [H(i), H(f3), H(s)]
+  Aln     = [4, 2]          ← was [4, 16, 2]
+  Count = 2
+
+  PHASE 2: Compact data area:
+  ┌─────────────────────────────────────────────────────────────┐
+  │ i=0: dataIndex = AlignDataIndex(0, 4) = 0                  │
+  │      Offsets[0]=0, already at 0, no move. dataIndex=4      │
+  │                                                             │
+  │ i=1: dataIndex = AlignDataIndex(4, 2) = 4                  │
+  │      Old Offsets[1]=28 → NEW=4.                             │
+  │      MemMove(Data+4, Data+28, 2) ← copy short from 28 to 4 │
+  │      Offsets[1] = 4. dataIndex = 6                         │
+  │                                                             │
+  │ DataAllocatedIndex = 6                                     │
+  └─────────────────────────────────────────────────────────────┘
+
+  AFTER:
+  Data:   [42 | short | ...freed...                             ]
+          0    4    6
+  
+  Offsets=[0, 4], Sizes=[4, 2]
+  Types=[H(i), H(s)], Alignments=[4, 2]
+  Count=2, DataAllocatedIndex=6
+  Data area reclaimed from 30 bytes → 6 bytes!
+```
+
+---
+
+## Resize Strategy
+
+```
+  Two independent growth areas:
+  ══════════════════════════════
+  
+  1. ELEMENT CAPACITY (metadata arrays):
+     - Grows when Count == Capacity
+     - Powers of 2, controlled by Log2MinGrowth
+     - Resizes: Offsets[], Sizes[], Types[], Alignments[]
+     
+  2. DATA CAPACITY (raw data area):
+     - Grows when aligned write position exceeds DataCapacity
+     - Powers of 2, controlled by Log2MinGrowth
+     - May need multiple doublings to fit a large element
+     
+  Both can grow independently — adding many small elements
+  only grows element capacity, while adding one large element
+  only grows data capacity.
+  
+  Resize flow:
+  ┌─────────────────────────────────────────────────────────────┐
+  │ 1. Copy old metadata + data to temp allocations             │
+  │ 2. buffer.ResizeUninitialized(headerSize + newSize)        │
+  │ 3. Rebuild header with new offsets                          │
+  │ 4. Copy old data back into new positions                    │
+  │ 5. Update helper pointer (buffer may have moved!)           │
+  └─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Data Flow: Complete Lifecycle
+
+```
+  ╔═══════════════════════════════════════════════════════════════════════════╗
+  ║                  DYNAMIC UNTYPED BUFFER LIFECYCLE                        ║
+  ╠═══════════════════════════════════════════════════════════════════════════╣
+  ║                                                                         ║
+  ║  1. DECLARE                                                              ║
+  ║     struct MyBuf : IDynamicUntypedBuffer { byte Value { get; } }        ║
+  ║                                                                         ║
+  ║  2. INITIALIZE                                                           ║
+  ║     buffer.InitializeUntypedBuffer<MyBuf>(capacity: 8)                  ║
+  ║         │                                                               ║
+  ║         ├─ CalcCapacityCeilPow2 for element capacity and data capacity  ║
+  ║         ├─ CalculateDataSize (metadata arrays + data area)             ║
+  ║         └─ buffer.ResizeUninitialized + write header + offsets          ║
+  ║                                                                         ║
+  ║  3. ADD MIXED TYPES                                                      ║
+  ║     var buf = buffer.AsUntypedBuffer<MyBuf>();                          ║
+  ║     buf.Add<int>(42);          → idx 0, 4 bytes, aligned to 4          ║
+  ║     buf.Add<float3>(1,2,3);    → idx 1, 12 bytes, aligned to 16        ║
+  ║     buf.Add<MyStruct>(...);    → idx 2, N bytes, aligned to A          ║
+  ║                                                                         ║
+  ║  4. READ WITH TYPE CHECKING                                              ║
+  ║     int i = buf.ElementAtRO<int>(0);       → OK (type hash matches)    ║
+  ║     float3 f = buf.ElementAtRO<float3>(1); → OK                         ║
+  ║     float x = buf.ElementAtRO<float>(0);   → THROWS (type mismatch!)   ║
+  ║                                                                         ║
+  ║  5. REMOVE (compacts data)                                               ║
+  ║     buf.RemoveAt(1);        → removes float3, compacts data area       ║
+  ║     buf.ElementAtRO<int>(0); → still works (re-indexed)                ║
+  ║                                                                         ║
+  ╚═══════════════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## Key Design Decisions
+
+1. **Per-element type hash**: Each stored element records `BurstRuntime.GetHashCode32<T>()`
+   at write time. Reads verify the hash matches, preventing type confusion bugs in
+   burst-compiled code where generics are concrete.
+
+2. **Alignment-aware data area**: The data area isn't a simple byte stream. Each write
+   position is aligned to the element's natural alignment, accounting for the Data pointer's
+   actual address. This ensures SIMD types (float3, float4) are properly aligned.
+
+3. **RemoveAt compacts data**: Unlike hash maps (which use free lists), removing an element
+   from the untyped buffer compacts the data area to eliminate gaps. This is because the
+   buffer is a sequential list, not a sparse map.
+
+4. **Two independent capacity axes**: Element capacity (number of slots) and data capacity
+   (bytes of storage) grow independently. This avoids wasting memory when you have many
+   small elements or few large elements.
+
+5. **Offset-based pointers**: All internal arrays are referenced via byte offsets from the
+   header start, not raw pointers. This survives buffer resizes (which may relocate the
+   entire buffer in memory).
+
+6. **Alignment stored as byte**: Since alignments are always small powers of 2 (≤ 128 or so),
+   a single byte per element suffices, saving 3 bytes per slot compared to an int.
+
+---
+
+## Performance Characteristics
+
+| Operation          | Average  | Worst    | Notes                                  |
+|--------------------|----------|----------|----------------------------------------|
+| Add<T>             | O(1)     | O(N)     | Worst = resize + copy                  |
+| ElementAt<T>(idx)  | O(1)     | O(1)     | Direct offset lookup + type check      |
+| Set<T>(idx, val)   | O(1)     | O(1)     | Direct offset write + type check       |
+| RemoveAt(idx)      | O(N)     | O(N)     | Shift metadata + compact data area     |
+| Clear              | O(1)     | O(1)     | Just resets Count and DataAllocIndex   |
+| Resize             | O(N)     | O(N)     | Copy all metadata + data to new buffer |
+
+**Per-element overhead**: 4 (offset) + 4 (size) + 4 (type) + 1 (alignment) = 13 bytes
+**Alignment waste**: Up to `max_alignment - 1` bytes of padding per element
+**Data area waste**: Up to `DataCapacity - DataAllocatedIndex` bytes after last element
+
+**Memory per element** = 13 bytes metadata + sizeof(T) + padding for alignment
+
+The RemoveAt compaction is the most expensive operation (O(N)), as it must re-layout
+all remaining data with proper alignment. For workloads with frequent removals, consider
+using a "swap and pop" pattern or marking entries as invalid instead.
