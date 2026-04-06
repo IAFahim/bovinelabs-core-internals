@@ -1,457 +1,268 @@
-# BovineLabs Core - Inner Workings
+# IJobParallelForDeferBatch - Inner Workings
 
-ASCII architecture diagrams for every topic in `com.bovinelabs.core`.
+## Overview
 
-Each topic lives on its own branch. Switch to a branch to see the detailed
-README.md with full ASCII diagrams explaining the internal data structures,
-algorithms, and design decisions.
+`IJobParallelForDeferBatch` is a batch-oriented parallel job where the total iteration count is
+**not known at schedule time**. Instead, the count is read from a deferred pointer (typically a
+`NativeList<T>.Length` or an `int*`) when the job actually begins execution. This enables a
+pipeline where one job produces items into a list, and a subsequent batch job processes them
+without the main thread needing to read the count in between.
 
-## How to Use
-
-```bash
-# List all topic branches
-git branch -a
-
-# View a specific topic
-git checkout topic/NativeThreadStream
-
-# View the diagram
-cat README.md
-```
-
-## Topics
-
-### Core Collections
-
-- [NativeThreadStream](../../tree/topic/NativeThreadStream)
-- [NativeCounter](../../tree/topic/NativeCounter)
-- [NativeKeyedMap](../../tree/topic/NativeKeyedMap)
-- [NativeLinearCongruentialGenerator](../../tree/topic/NativeLinearCongruentialGenerator)
-- [NativeParallelMultiHashMapFallback](../../tree/topic/NativeParallelMultiHashMapFallback)
-- [NativePartialKeyedMap](../../tree/topic/NativePartialKeyedMap)
-- [ThreadList](../../tree/topic/ThreadList)
-- [ThreadRandom](../../tree/topic/ThreadRandom)
-- [UnsafeArray](../../tree/topic/UnsafeArray)
-- [BitArray256](../../tree/topic/BitArray256)
-- [FixedArray](../../tree/topic/FixedArray)
-- [NativeHashMapExtensions.GetOrAddRef](../../tree/topic/NativeHashMapExtensions_GetOrAddRef)
-- [NativeHashMapExtensions.ClearAndAddBatchUnsafe](../../tree/topic/NativeHashMapExtensions_ClearAndAddBatchUnsafe)
-- [NativeListExtensions.ReserveNoResize](../../tree/topic/NativeListExtensions_ReserveNoResize)
-- [NativeThreadStreamExTests](../../tree/topic/NativeThreadStreamExTests)
-- [BitArray8_16_32_64](../../tree/topic/BitArray8_16_32_64)
-- [BitArray128](../../tree/topic/BitArray128)
-- [BitArrayUtilities](../../tree/topic/BitArrayUtilities)
-- [NativeThreadStream.Reader](../../tree/topic/NativeThreadStream_Reader)
-- [NativeThreadStream.Writer](../../tree/topic/NativeThreadStream_Writer)
-- [NativeWorkQueue](../../tree/topic/NativeWorkQueue)
-- [NativePerfectHashMap](../../tree/topic/NativePerfectHashMap)
-- [NativeUntypedHashMap](../../tree/topic/NativeUntypedHashMap)
-- [UnsafePartialKeyedMap](../../tree/topic/UnsafePartialKeyedMap)
-- [UnsafePerfectHashMap](../../tree/topic/UnsafePerfectHashMap)
-- [NativeListExtensions.ClearAddRange](../../tree/topic/NativeListExtensions_ClearAddRange)
-- [NativeParallelMultiHashMapExtensions.GetUniqueKeyArray](../../tree/topic/NativeParallelMultiHashMapExtensions_GetUniqueKeyArray)
-
-### Blob System
-
-- [BlobHashMap](../../tree/topic/BlobHashMap)
-- [BlobPerfectHashMap](../../tree/topic/BlobPerfectHashMap)
-- [BlobCurve](../../tree/topic/BlobCurve)
-- [BlobBuilderExtensions](../../tree/topic/BlobBuilderExtensions)
-- [BlobHashMapTests](../../tree/topic/BlobHashMapTests)
-- [BlobCurve2_3_4](../../tree/topic/BlobCurve2_3_4)
-- [BlobCurveCache](../../tree/topic/BlobCurveCache)
-- [BlobCurveHeader](../../tree/topic/BlobCurveHeader)
-- [BlobCurveSampler](../../tree/topic/BlobCurveSampler)
-- [BlobCurveSegment](../../tree/topic/BlobCurveSegment)
-- [BlobShared](../../tree/topic/BlobShared)
-- [IBlobCurve](../../tree/topic/IBlobCurve)
-- [BlobBuilderExtensions.Allocate](../../tree/topic/BlobBuilderExtensions_Allocate)
-- [BlobBuilderExtensions.ConstructHashMap](../../tree/topic/BlobBuilderExtensions_ConstructHashMap)
-- [BlobBuilderHashMap](../../tree/topic/BlobBuilderHashMap)
-- [BlobBuilderMultiHashMap](../../tree/topic/BlobBuilderMultiHashMap)
-- [BlobBuilderPerfectHashMap](../../tree/topic/BlobBuilderPerfectHashMap)
-- [BlobHashMapData](../../tree/topic/BlobHashMapData)
-- [BlobMultiHashMapIterator](../../tree/topic/BlobMultiHashMapIterator)
-- [BlobSpline](../../tree/topic/BlobSpline)
-- [BlobAssetOwnerInspector](../../tree/topic/BlobAssetOwnerInspector)
-- [EntityBlobBakedData](../../tree/topic/EntityBlobBakedData)
-- [EntityBlobBakingSystem](../../tree/topic/EntityBlobBakingSystem)
-
-### Memory & Allocators
-
-- [PooledNativeList](../../tree/topic/PooledNativeList)
-- [UnmanagedPool](../../tree/topic/UnmanagedPool)
-- [UnsafeSlabAllocator](../../tree/topic/UnsafeSlabAllocator)
-- [MemoryLabelAllocator](../../tree/topic/MemoryLabelAllocator)
-- [MemoryAllocator](../../tree/topic/MemoryAllocator)
-- [NoAllocHelpers](../../tree/topic/NoAllocHelpers)
-- [UnsafeListPoolTests](../../tree/topic/UnsafeListPoolTests)
-- [NativeSlabAllocator](../../tree/topic/NativeSlabAllocator)
-- [UnsafeParallelPoolAllocator](../../tree/topic/UnsafeParallelPoolAllocator)
-- [UnsafeFixedPoolAllocator](../../tree/topic/UnsafeFixedPoolAllocator)
-- [UnsafePoolAllocator](../../tree/topic/UnsafePoolAllocator)
-- [NativeArrayExtensions.WhereNoAlloc](../../tree/topic/NativeArrayExtensions_WhereNoAlloc)
-
-### Dynamic Buffers
-
-- [Hydrodynamics](../../tree/topic/Hydrodynamics)
-- [DynamicMultiHashMap](../../tree/topic/DynamicMultiHashMap)
-- [DynamicHashSet](../../tree/topic/DynamicHashSet)
-- [DynamicUntypedBuffer](../../tree/topic/DynamicUntypedBuffer)
-- [DynamicVariableMap](../../tree/topic/DynamicVariableMap)
-- [ArchetypeChunk.GetDynamicBufferAccessor](../../tree/topic/ArchetypeChunk_GetDynamicBufferAccessor)
-- [DynamicHashMapPerformanceTests](../../tree/topic/DynamicHashMapPerformanceTests)
-- [UnsafeUntypedDynamicBuffer](../../tree/topic/UnsafeUntypedDynamicBuffer)
-- [UnsafeUntypedDynamicBufferAccessor](../../tree/topic/UnsafeUntypedDynamicBufferAccessor)
-- [UntypedDynamicBuffer](../../tree/topic/UntypedDynamicBuffer)
-- [DynamicGenerator](../../tree/topic/DynamicGenerator)
-
-### ECS Extensions
-
-- [ArchetypeChunk.DidChange](../../tree/topic/ArchetypeChunk_DidChange)
-- [ArchetypeChunk.GetNativeArrayReadOnly](../../tree/topic/ArchetypeChunk_GetNativeArrayReadOnly)
-- [BufferAccessor.GetUnsafe](../../tree/topic/BufferAccessor_GetUnsafe)
-- [BufferLookup.GetROAndChunk](../../tree/topic/BufferLookup_GetROAndChunk)
-- [ComponentLookup.GetOptionalComponentDataRW](../../tree/topic/ComponentLookup_GetOptionalComponentDataRW)
-- [ComponentLookup.SetChangeFilter](../../tree/topic/ComponentLookup_SetChangeFilter)
-- [EntityQueryBuilder.WithAllRW](../../tree/topic/EntityQueryBuilder_WithAllRW)
-- [EntityQuery.QueryHasSharedFilter](../../tree/topic/EntityQuery_QueryHasSharedFilter)
-- [EntityQuery.ReplaceSharedComponentFilter](../../tree/topic/EntityQuery_ReplaceSharedComponentFilter)
-- [EntityQuery.GetFirstEntity](../../tree/topic/EntityQuery_GetFirstEntity)
-- [EntityQuery.GetSingletonBufferNoSync](../../tree/topic/EntityQuery_GetSingletonBufferNoSync)
-- [SystemState.GetSingletonEntity](../../tree/topic/SystemState_GetSingletonEntity)
-- [SystemState.GetManagedSingleton](../../tree/topic/SystemState_GetManagedSingleton)
-- [World.IsClientWorld](../../tree/topic/World_IsClientWorld)
-- [CopyEnableable](../../tree/topic/CopyEnableable)
-- [TimerEnableable](../../tree/topic/TimerEnableable)
-- [StateModelEnableable](../../tree/topic/StateModelEnableable)
-- [EnableMaskCreator](../../tree/topic/EnableMaskCreator)
-- [EntityLock](../../tree/topic/EntityLock)
-- [EntityLockTests](../../tree/topic/EntityLockTests)
-- [ChangeFilterTrackingAttribute](../../tree/topic/ChangeFilterTrackingAttribute)
-- [TypeManagerEx](../../tree/topic/TypeManagerEx)
-- [TypeManagerOverrides](../../tree/topic/TypeManagerOverrides)
-- [TypeManagerUtil](../../tree/topic/TypeManagerUtil)
-- [TypeUtility](../../tree/topic/TypeUtility)
-- [WriteGroupMatcher](../../tree/topic/WriteGroupMatcher)
-- [EntityDataAccessExtensions.GetComponentDataWithTypeRW](../../tree/topic/EntityDataAccessExtensions_GetComponentDataWithTypeRW)
-- [EntityManagerExtensions.GetChunkBuffer](../../tree/topic/EntityManagerExtensions_GetChunkBuffer)
-- [EntityManagerExtensions.GetOrCreateSingletonEntity](../../tree/topic/EntityManagerExtensions_GetOrCreateSingletonEntity)
-- [EntityQueryExtensions.GetSingletonUntypedBuffer](../../tree/topic/EntityQueryExtensions_GetSingletonUntypedBuffer)
-- [EntitySceneReferenceExtensions.SceneGUID](../../tree/topic/EntitySceneReferenceExtensions_SceneGUID)
-- [EntityStorageInfoLookupExtensions.GetNameUnsafe](../../tree/topic/EntityStorageInfoLookupExtensions_GetNameUnsafe)
-- [RefRWExtensions.Create](../../tree/topic/RefRWExtensions_Create)
-- [SystemStateExtensions.GetUnsafeEntityDataAccess](../../tree/topic/SystemStateExtensions_GetUnsafeEntityDataAccess)
-- [ChangeFilterTrackingSystem](../../tree/topic/ChangeFilterTrackingSystem)
-
-### Jobs & Threading
-
-- [IJobParallelForDeferExtensions](../../tree/topic/IJobParallelForDeferExtensions)
-- [IJobChunkWorkerBeginEnd](../../tree/topic/IJobChunkWorkerBeginEnd)
-- [IJobForThread](../../tree/topic/IJobForThread)
-- [IJobHashMapDefer](../../tree/topic/IJobHashMapDefer)
-- [IJobParallelForDeferBatch](../../tree/topic/IJobParallelForDeferBatch)
-- [IJobParallelForDeferExtensions.Schedule](../../tree/topic/IJobParallelForDeferExtensions_Schedule)
-
-### State & Model
-
-- [TimerFixed](../../tree/topic/TimerFixed)
-- [TimerTriggerResetJob](../../tree/topic/TimerTriggerResetJob)
-- [StateFlagModel](../../tree/topic/StateFlagModel)
-- [StateModelWithHistory](../../tree/topic/StateModelWithHistory)
-- [StatefulCollisionEvent](../../tree/topic/StatefulCollisionEvent)
-- [StatefulTriggerEvent](../../tree/topic/StatefulTriggerEvent)
-- [StatefulCollisionEventClearSystem](../../tree/topic/StatefulCollisionEventClearSystem)
-- [StatefulTriggerEventClearSystem](../../tree/topic/StatefulTriggerEventClearSystem)
-- [StateFlagModelTests](../../tree/topic/StateFlagModelTests)
-- [IState](../../tree/topic/IState)
-- [StateAPI](../../tree/topic/StateAPI)
-- [StateInstanceUtil](../../tree/topic/StateInstanceUtil)
-- [DestroyTimer](../../tree/topic/DestroyTimer)
-
-### Spatial & Physics
-
-- [AabbExtensions](../../tree/topic/AabbExtensions)
-- [AlwaysUpdatePhysicsWorld](../../tree/topic/AlwaysUpdatePhysicsWorld)
-- [IntersectionTests](../../tree/topic/IntersectionTests)
-- [ConvexHullBuilder](../../tree/topic/ConvexHullBuilder)
-- [MeshSimplifier](../../tree/topic/MeshSimplifier)
-- [TerrainToMesh](../../tree/topic/TerrainToMesh)
-- [PhysicsLayerUtil](../../tree/topic/PhysicsLayerUtil)
-- [AlwaysUpdatePhysicsWorldSystem](../../tree/topic/AlwaysUpdatePhysicsWorldSystem)
-- [PhysicsTags](../../tree/topic/PhysicsTags)
-- [LocalSpatialMap](../../tree/topic/LocalSpatialMap)
-- [PositionBuilder](../../tree/topic/PositionBuilder)
-- [SpatialKeyedMap](../../tree/topic/SpatialKeyedMap)
-- [SpatialMap](../../tree/topic/SpatialMap)
-- [SpatialMap3](../../tree/topic/SpatialMap3)
-- [DistanceHitSortAscending](../../tree/topic/DistanceHitSortAscending)
-- [DistanceHitSortDescending](../../tree/topic/DistanceHitSortDescending)
-- [PhysicsExtensions.Raycast](../../tree/topic/PhysicsExtensions_Raycast)
-- [PhysicsMassOverrideAuthoring](../../tree/topic/PhysicsMassOverrideAuthoring)
-- [RemovePhysicsVelocityAuthoring](../../tree/topic/RemovePhysicsVelocityAuthoring)
-
-### Utility
-
-- [Ptr](../../tree/topic/Ptr)
-- [BurstTrampoline](../../tree/topic/BurstTrampoline)
-- [BurstUtil.IsEmpty](../../tree/topic/BurstUtil_IsEmpty)
-- [ButtonEvent](../../tree/topic/ButtonEvent)
-- [CurveRemapUtility](../../tree/topic/CurveRemapUtility)
-- [DebugUtil.SplitInt](../../tree/topic/DebugUtil_SplitInt)
-- [GlobalRandom](../../tree/topic/GlobalRandom)
-- [InitSystemBase](../../tree/topic/InitSystemBase)
-- [LibraryLoader](../../tree/topic/LibraryLoader)
-- [SceneInitializeSystem](../../tree/topic/SceneInitializeSystem)
-- [WorldSafeShutdown](../../tree/topic/WorldSafeShutdown)
-- [IFixedSize](../../tree/topic/IFixedSize)
-- [MiniString](../../tree/topic/MiniString)
-- [Pin](../../tree/topic/Pin)
-- [QueryEntityEnumerator](../../tree/topic/QueryEntityEnumerator)
-- [ReflectionUtility](../../tree/topic/ReflectionUtility)
-- [SpinLock](../../tree/topic/SpinLock)
-- [TransformUtility](../../tree/topic/TransformUtility)
-- [WorldUtility](../../tree/topic/WorldUtility)
-- [GhostComponentAttribute](../../tree/topic/GhostComponentAttribute)
-- [GhostFieldAttribute](../../tree/topic/GhostFieldAttribute)
-- [InitializeAllOnLoadExt](../../tree/topic/InitializeAllOnLoadExt)
-- [CloneTransformSystem](../../tree/topic/CloneTransformSystem)
-
-### Extension Methods
-
-- [ListExtensions.AddRangeNative](../../tree/topic/ListExtensions_AddRangeNative)
-- [NativeStreamExtensions.WriteLarge](../../tree/topic/NativeStreamExtensions_WriteLarge)
-- [EntityCommandBufferExtensions.AddUntypedBuffer](../../tree/topic/EntityCommandBufferExtensions_AddUntypedBuffer)
-- [EntityCommandBufferExtensions.UnsafeAddComponent](../../tree/topic/EntityCommandBufferExtensions_UnsafeAddComponent)
-- [EnumerableExtensions.IndexOf](../../tree/topic/EnumerableExtensions_IndexOf)
-- [GameObjectExtensions.IsPrefab](../../tree/topic/GameObjectExtensions_IsPrefab)
-- [NativeArrayExtensions.ElementAtRO](../../tree/topic/NativeArrayExtensions_ElementAtRO)
-- [NativeArrayExtensions.Select](../../tree/topic/NativeArrayExtensions_Select)
-- [NativeSliceExtensions.ReadArrayElementWithStrideRef](../../tree/topic/NativeSliceExtensions_ReadArrayElementWithStrideRef)
-- [NativeStreamExtensions.ReadLarge](../../tree/topic/NativeStreamExtensions_ReadLarge)
-- [StringExtensions.ToDotNotation](../../tree/topic/StringExtensions_ToDotNotation)
-- [SystemStateExtensions.GetAllSystemDependencies](../../tree/topic/SystemStateExtensions_GetAllSystemDependencies)
-- [UnsafeHashMapExtensions.GetOrAddRef](../../tree/topic/UnsafeHashMapExtensions_GetOrAddRef)
-- [UnsafeParallelHashMapDataExtensions.ReserveParallel](../../tree/topic/UnsafeParallelHashMapDataExtensions_ReserveParallel)
-- [WorldUnmanagedExtensions.GetTrackedJobHandle](../../tree/topic/WorldUnmanagedExtensions_GetTrackedJobHandle)
-
-### ConfigVars
-
-- [KSettingsBase](../../tree/topic/KSettingsBase)
-- [ConfigVarAttribute](../../tree/topic/ConfigVarAttribute)
-- [ConfigVarManager](../../tree/topic/ConfigVarManager)
-- [SharedStaticStringContainer](../../tree/topic/SharedStaticStringContainer)
-- [CodecService](../../tree/topic/CodecService)
-- [CommandLineArgs](../../tree/topic/CommandLineArgs)
-- [Deserializer](../../tree/topic/Deserializer)
-- [Serializer](../../tree/topic/Serializer)
-- [FixedNameValue](../../tree/topic/FixedNameValue)
-- [KAttribute](../../tree/topic/KAttribute)
-- [KSettings](../../tree/topic/KSettings)
-- [ConfigVarPanel](../../tree/topic/ConfigVarPanel)
-
-### Authoring & Baking
-
-- [BakerExtensions.AddEnabledComponent](../../tree/topic/BakerExtensions_AddEnabledComponent)
-- [BakerExtensions.AddEnabledBuffer](../../tree/topic/BakerExtensions_AddEnabledBuffer)
-- [BakerCommands](../../tree/topic/BakerCommands)
-- [AuthoringSettingsUtility](../../tree/topic/AuthoringSettingsUtility)
-- [SettingsAuthoring](../../tree/topic/SettingsAuthoring)
-- [TagAuthoring](../../tree/topic/TagAuthoring)
-- [TransformAuthoring](../../tree/topic/TransformAuthoring)
-- [GameObjectHelper.AddAuthoringComponent](../../tree/topic/GameObjectHelper_AddAuthoringComponent)
-- [CloneTransformAuthoring](../../tree/topic/CloneTransformAuthoring)
-- [LifeCycleAuthoring](../../tree/topic/LifeCycleAuthoring)
-- [LookupAuthoring](../../tree/topic/LookupAuthoring)
-
-### Editor Tools
-
-- [AssemblyBuilderWindow](../../tree/topic/AssemblyBuilderWindow)
-- [ComponentAssetBaseDrawer](../../tree/topic/ComponentAssetBaseDrawer)
-- [TypeSearchProvider](../../tree/topic/TypeSearchProvider)
-- [CoreBuildSetup](../../tree/topic/CoreBuildSetup)
-- [CreateEditorWorld](../../tree/topic/CreateEditorWorld)
-- [EditorMenus.DataModeHierarchySet](../../tree/topic/EditorMenus_DataModeHierarchySet)
-- [InspectorSearch](../../tree/topic/InspectorSearch)
-- [SelectedEntityEditorSystem](../../tree/topic/SelectedEntityEditorSystem)
-- [AssemblyGraphWindow](../../tree/topic/AssemblyGraphWindow)
-- [ComponentDependencyWindow](../../tree/topic/ComponentDependencyWindow)
-- [SystemDependencyWindow](../../tree/topic/SystemDependencyWindow)
-- [CoreEditorPreferencesProvider](../../tree/topic/CoreEditorPreferencesProvider)
-- [BitFieldAttributeEditor](../../tree/topic/BitFieldAttributeEditor)
-- [HalfDrawer](../../tree/topic/HalfDrawer)
-- [InlineObjectProperty](../../tree/topic/InlineObjectProperty)
-- [PrefabElementEditor](../../tree/topic/PrefabElementEditor)
-- [StableTypeHashAttributeDrawer](../../tree/topic/StableTypeHashAttributeDrawer)
-- [ToggleOption](../../tree/topic/ToggleOption)
-- [UnityObjectRefInspector](../../tree/topic/UnityObjectRefInspector)
-- [WeakObjectReferenceInspector](../../tree/topic/WeakObjectReferenceInspector)
-- [EntitySelection.GetAllSelectionsInWorld](../../tree/topic/EntitySelection_GetAllSelectionsInWorld)
-- [LoadPrefabsAsEntities](../../tree/topic/LoadPrefabsAsEntities)
-- [ReloadToolbarButton](../../tree/topic/ReloadToolbarButton)
-- [WelcomeWindow](../../tree/topic/WelcomeWindow)
-- [BaseObjectWindow](../../tree/topic/BaseObjectWindow)
-- [FeatureToggle](../../tree/topic/FeatureToggle)
-- [MainToolbarPresetPostProcessor](../../tree/topic/MainToolbarPresetPostProcessor)
-- [ComponentInspectorWindow](../../tree/topic/ComponentInspectorWindow)
-- [StartupSceneSwap](../../tree/topic/StartupSceneSwap)
-- [ViewModelToolbar](../../tree/topic/ViewModelToolbar)
-
-### Source Generators
-
-- [FacetAttribute](../../tree/topic/FacetAttribute)
-- [FacetOptionalAttribute](../../tree/topic/FacetOptionalAttribute)
-- [IFacet](../../tree/topic/IFacet)
-- [FacetGenerator](../../tree/topic/FacetGenerator)
-- [BuilderBase](../../tree/topic/BuilderBase)
-- [ClassBuilder](../../tree/topic/ClassBuilder)
-- [CodeBuilder](../../tree/topic/CodeBuilder)
-- [ConstructorBuilder](../../tree/topic/ConstructorBuilder)
-- [DelegateBuilder](../../tree/topic/DelegateBuilder)
-- [EnumBuilder](../../tree/topic/EnumBuilder)
-- [EventBuilder](../../tree/topic/EventBuilder)
-- [ExpressionBlockBuilder](../../tree/topic/ExpressionBlockBuilder)
-- [LogicalConditionBuilder](../../tree/topic/LogicalConditionBuilder)
-- [MethodBuilder](../../tree/topic/MethodBuilder)
-- [PropertyBuilder](../../tree/topic/PropertyBuilder)
-- [RecordBuilder](../../tree/topic/RecordBuilder)
-- [SwitchBuilder](../../tree/topic/SwitchBuilder)
-- [CodeWriter](../../tree/topic/CodeWriter)
-- [SymbolHelpers](../../tree/topic/SymbolHelpers)
-
-### SubScene System
-
-- [SubSceneLoadData](../../tree/topic/SubSceneLoadData)
-- [SubSceneEntity](../../tree/topic/SubSceneEntity)
-- [LoadSubScene](../../tree/topic/LoadSubScene)
-- [SubSceneBuffer](../../tree/topic/SubSceneBuffer)
-- [SubSceneLoadFlags](../../tree/topic/SubSceneLoadFlags)
-- [SubSceneLoadFlagsUtility](../../tree/topic/SubSceneLoadFlagsUtility)
-- [SubSceneLoadUtil](../../tree/topic/SubSceneLoadUtil)
-- [SubSceneLoaded](../../tree/topic/SubSceneLoaded)
-- [SubSceneLoadingManagedSystem](../../tree/topic/SubSceneLoadingManagedSystem)
-- [SubSceneLoadingSystem](../../tree/topic/SubSceneLoadingSystem)
-- [SubScenePostLoadCommandBufferSystem](../../tree/topic/SubScenePostLoadCommandBufferSystem)
-- [SubSceneSetId](../../tree/topic/SubSceneSetId)
-- [SubSceneUtil](../../tree/topic/SubSceneUtil)
-- [SubSceneEditorSet](../../tree/topic/SubSceneEditorSet)
-- [SubSceneEditorSystem](../../tree/topic/SubSceneEditorSystem)
-- [SubSceneEditorToolbar](../../tree/topic/SubSceneEditorToolbar)
-- [SubScenePrebakeSystem](../../tree/topic/SubScenePrebakeSystem)
-- [DestroyOnSubSceneUnloadSystem](../../tree/topic/DestroyOnSubSceneUnloadSystem)
-
-### Pause & Time
-
-- [LimitedRateNoCatchUpManager](../../tree/topic/LimitedRateNoCatchUpManager)
-- [PauseGame](../../tree/topic/PauseGame)
-- [PauseLimitSystem](../../tree/topic/PauseLimitSystem)
-- [PauseRateManager](../../tree/topic/PauseRateManager)
-- [PauseUtility](../../tree/topic/PauseUtility)
-- [FixedStepUpdatedSystem](../../tree/topic/FixedStepUpdatedSystem)
-- [UpdateWorldTimeSystem](../../tree/topic/UpdateWorldTimeSystem)
-
-### Relevancy & Netcode
-
-- [InputBounds](../../tree/topic/InputBounds)
-- [RelevanceAlways](../../tree/topic/RelevanceAlways)
-- [RelevanceConfig](../../tree/topic/RelevanceConfig)
-- [RelevanceManual](../../tree/topic/RelevanceManual)
-- [RelevanceProvider](../../tree/topic/RelevanceProvider)
-- [RelevancySystem](../../tree/topic/RelevancySystem)
-
-### Singleton System
-
-- [SingletonAttribute](../../tree/topic/SingletonAttribute)
-- [SingletonInitialize](../../tree/topic/SingletonInitialize)
-- [SingletonInitializeSystemGroup](../../tree/topic/SingletonInitializeSystemGroup)
-- [SingletonInitializedSystem](../../tree/topic/SingletonInitializedSystem)
-- [SingletonSystem](../../tree/topic/SingletonSystem)
-- [ComponentSystemBaseInternal.RequireSingletonForUpdate](../../tree/topic/ComponentSystemBaseInternal_RequireSingletonForUpdate)
-- [ISingletonCollection](../../tree/topic/ISingletonCollection)
-- [SingletonCollectionUtil](../../tree/topic/SingletonCollectionUtil)
-
-### Object Management
-
-- [ObjectDefinition](../../tree/topic/ObjectDefinition)
-- [ObjectGroupMatcher](../../tree/topic/ObjectGroupMatcher)
-- [ObjectId](../../tree/topic/ObjectId)
-- [UIDAttribute](../../tree/topic/UIDAttribute)
-- [GroupId](../../tree/topic/GroupId)
-- [ObjectCategories](../../tree/topic/ObjectCategories)
-- [ObjectCategoryComponents](../../tree/topic/ObjectCategoryComponents)
-- [ObjectDefinitionRegistrySystem](../../tree/topic/ObjectDefinitionRegistrySystem)
-- [ObjectGroupRegistry](../../tree/topic/ObjectGroupRegistry)
-- [ObjectInstantiateSystem](../../tree/topic/ObjectInstantiateSystem)
-- [ObjectDefinitionAuthoring](../../tree/topic/ObjectDefinitionAuthoring)
-- [ObjectInstantiate.Editor](../../tree/topic/ObjectInstantiate_Editor)
-
-### Physics States
-
-- [CalculateEventMapBucketsJob](../../tree/topic/CalculateEventMapBucketsJob)
-- [CollectEventsJob](../../tree/topic/CollectEventsJob)
-- [EnsureCurrentEventsCapacityJob](../../tree/topic/EnsureCurrentEventsCapacityJob)
-
-### Life Cycle
-
-- [AfterSceneSystemGroup](../../tree/topic/AfterSceneSystemGroup)
-- [AfterTransformSystemGroup](../../tree/topic/AfterTransformSystemGroup)
-- [BeforeTransformSystemGroup](../../tree/topic/BeforeTransformSystemGroup)
-- [BeginSimulationSystemGroup](../../tree/topic/BeginSimulationSystemGroup)
-- [InstantiateCommandBufferSystem](../../tree/topic/InstantiateCommandBufferSystem)
-- [DestroyEntityCommandBufferSystem](../../tree/topic/DestroyEntityCommandBufferSystem)
-- [DestroyEntitySystem](../../tree/topic/DestroyEntitySystem)
-- [DestroyOnDestroySystem](../../tree/topic/DestroyOnDestroySystem)
-- [EndInitializeEntityCommandBufferSystem](../../tree/topic/EndInitializeEntityCommandBufferSystem)
-- [InitializeEntitySystem](../../tree/topic/InitializeEntitySystem)
-
-### Tests & Diagnostics
-
-- [FaceReadonlyTest](../../tree/topic/FaceReadonlyTest)
-- [MathExPerformanceTests](../../tree/topic/MathExPerformanceTests)
-- [Check.Assume](../../tree/topic/Check_Assume)
-- [ReflectionTestHelper](../../tree/topic/ReflectionTestHelper)
-- [TestLeakDetectionAttribute](../../tree/topic/TestLeakDetectionAttribute)
-
-### Math Extensions
-
-- [MathematicsExtensions.Encapsulate](../../tree/topic/MathematicsExtensions_Encapsulate)
-- [HSV](../../tree/topic/HSV)
-- [PolygonUtility](../../tree/topic/PolygonUtility)
-- [ShortHalfUnion](../../tree/topic/ShortHalfUnion)
-- [IntFloatUnion](../../tree/topic/IntFloatUnion)
-- [mathex.mod](../../tree/topic/mathex_mod)
-- [mathex.minMax](../../tree/topic/mathex_minMax)
-- [mathex.add](../../tree/topic/mathex_add)
-- [mathex.GenerateGaussianNoise](../../tree/topic/mathex_GenerateGaussianNoise)
-- [mathex.FromToRotation](../../tree/topic/mathex_FromToRotation)
-- [MinMaxAttributeDrawer](../../tree/topic/MinMaxAttributeDrawer)
-
-### Other
-
-- [AssetLoad](../../tree/topic/AssetLoad)
-- [GameObjectCleanup](../../tree/topic/GameObjectCleanup)
-- [HalfSizeTriangleMatrix](../../tree/topic/HalfSizeTriangleMatrix)
-- [CalculateCurrentEventsBucketsJob](../../tree/topic/CalculateCurrentEventsBucketsJob)
-- [StripLocalAttribute](../../tree/topic/StripLocalAttribute)
-- [StripLocalSystem](../../tree/topic/StripLocalSystem)
-- [AssetLoadingSystem](../../tree/topic/AssetLoadingSystem)
-- [BovineLabsBootstrap](../../tree/topic/BovineLabsBootstrap)
-- [BovineLabsBootstrap.NetCode](../../tree/topic/BovineLabsBootstrap_NetCode)
-- [CollectionCreator.CreateHashMap](../../tree/topic/CollectionCreator_CreateHashMap)
-- [INativeStreamReader](../../tree/topic/INativeStreamReader)
-- [UnsafeThreadStreamBlockData](../../tree/topic/UnsafeThreadStreamBlockData)
-- [SyncEnableStateUtil](../../tree/topic/SyncEnableStateUtil)
-- [TimeProfiler](../../tree/topic/TimeProfiler)
-- [ReferenceT](../../tree/topic/ReferenceT)
-- [ReferenceData](../../tree/topic/ReferenceData)
-- [UnsafeListDispose](../../tree/topic/UnsafeListDispose)
-- [AppAPI](../../tree/topic/AppAPI)
-- [SerializedHelper.IterateAllChildren](../../tree/topic/SerializedHelper_IterateAllChildren)
-- [TextAssetHelper](../../tree/topic/TextAssetHelper)
-- [PrefabInstance](../../tree/topic/PrefabInstance)
-- [AnalyzersProjectFileGeneration](../../tree/topic/AnalyzersProjectFileGeneration)
-
+Unlike `IJobParallelForDefer` which calls `Execute(int index)` per item, this interface calls
+`Execute(int startIndex, int count)` with a contiguous batch of indices, giving the user control
+over inner-loop optimization.
 
 ---
 
-Total: 358 topics across 24 categories
+## Source
+
+`BovineLabs.Core/Jobs/IJobParallelForDeferBatch.cs`
+
+---
+
+## Interface & Producer
+
+```
++------------------------------------------------------------------+
+|              IJobParallelForDeferBatch (interface)                |
++------------------------------------------------------------------+
+|  void Execute(int startIndex, int count)                          |
++------------------------------------------------------------------+
+            |
+            |  [JobProducerType(typeof(IJobParallelForDeferBatchProducer<>))]
+            v
++------------------------------------------------------------------+
+|        IJobParallelForDeferBatchExtensions (scheduling)           |
++------------------------------------------------------------------+
+|  ScheduleParallel<T,U>(job, NativeList<U>, batch, dep)           |
+|  Schedule<T,U>(job, NativeList<U>, batch, dep)                   |
+|  ScheduleParallelByRef<T,U>(...)                                  |
+|  ScheduleParallel<T>(job, int* forEachCount, batch, dep)         |
+|  ScheduleParallel<T>(job, NativeReference<int>, batch, dep)      |
+|  ScheduleParallelByRef<T>(job, int*, batch, dep)                  |
++------------------------------------------------------------------+
+            |
+            v
++------------------------------------------------------------------+
+|     IJobParallelForDeferBatchProducer<T>  (internal)              |
++------------------------------------------------------------------+
+|  SharedStatic<IntPtr> JobReflectionData                          |
+|  Execute(ref T jobData, ..., ref JobRanges, jobIndex)            |
++------------------------------------------------------------------+
+```
+
+---
+
+## Deferred Scheduling Flow
+
+```
+ User Code                            BovineLabs                Unity Job System
+===========================================================================
+
+ var job = new ProcessBatchJob();
+ job.ScheduleParallel(myList, innerloopBatchCount: 64, dep)
+       |
+       v
+ +--------------------------------------------------------------+
+ |  Extract deferred length pointer from NativeList:            |
+ |                                                              |
+ |  #if UNITY_6000_5_OR_NEWER                                   |
+ |    list.GetUnsafeList()         -> forEachListPtr            |
+ |  #else                                                       |
+ |    NativeListUnsafeUtility.                                   |
+ |      GetInternalListDataPtrUnchecked(ref list)               |
+ |      -> forEachListPtr                                       |
+ |                                                              |
+ |  #if ENABLE_UNITY_COLLECTIONS_CHECKS                         |
+ |    atomicSafetyHandlePtr = &list.m_Safety                    |
+ |  #endif                                                      |
+ +--------------------------------------------------------------+
+       |
+       v
+ ScheduleParallelBatchInternal(ref jobData, 64, forEachListPtr, ...)
+       |
+       v
+ JobsUtility.ScheduleParallelForDeferArraySize(
+     ref scheduleParams,
+     innerloopBatchCount = 64,
+     forEachListPtr,           // <-- pointer to list header; Length read at exec time
+     atomicSafetyHandlePtr
+ )
+       |
+       v
+ +--------------------------------------------------------------+
+ |              DEFERRED EXECUTION MECHANISM                     |
+ |                                                              |
+ |  SCHEDULE TIME:                                              |
+ |    Job is registered with a POINTER to the length.           |
+ |    The actual count is NOT read.                             |
+ |                                                              |
+ |  EXECUTION TIME (after dep chain completes):                 |
+ |    *forEachListPtr.Length is dereferenced                    |
+ |    Unity divides: totalLength / innerloopBatchCount          |
+ |    -> determines number of work-stealing ranges              |
+ |    -> distributes ranges across worker threads               |
+ +--------------------------------------------------------------+
+```
+
+---
+
+## Execution: Batch Processing
+
+```
+ Execute() Producer Method:
+ ============================================
+
+ while (true):
+   |
+   +---> GetWorkStealingRange -> begin, end
+   |     if no range -> BREAK
+   |
+   +---> PatchBufferMinMaxRanges(begin, end - begin)
+   |     (safety checks for parallel writes)
+   |
+   +---> >>> jobData.Execute(begin, end - begin) <<<
+   |         USER CODE receives:
+   |           startIndex = begin
+   |           count      = end - begin
+   |
+   +---> loop back, try to steal more work
+```
+
+### Visual: Batch Division
+
+```
+ Total deferred length: 256 items (resolved at exec time)
+ innerloopBatchCount: 64
+
+ Unity creates 4 work-stealing ranges:
+   Range 0: [0, 64)
+   Range 1: [64, 128)
+   Range 2: [128, 192)
+   Range 3: [192, 256)
+
+ Thread 0 steals Range 0:
+   Execute(startIndex=0, count=64)
+
+ Thread 1 steals Range 1:
+   Execute(startIndex=64, count=64)
+
+ Thread 2 steals Range 2:
+   Execute(startIndex=128, count=64)
+
+ Thread 3 steals Range 3:
+   Execute(startIndex=192, count=64)
+```
+
+### Uneven Distribution with Work Stealing
+
+```
+ Total: 200 items, batch=64
+
+ Unity creates 4 ranges:
+   [0,64)  [64,128)  [128,192)  [192,200)  <-- last batch is smaller
+
+ Timeline:
+                      Time ------------------------------------>
+
+ Thread 0: | Execute(0, 64)    | Execute(192, 8)  | (stole last batch)
+ Thread 1: | Execute(64, 64)   |
+ Thread 2: | Execute(128, 64)  |
+ Thread 3: | (idle - all work taken)             |
+```
+
+---
+
+## Comparison: DeferBatch vs Defer (per-item)
+
+```
+ IJobParallelForDefer              IJobParallelForDeferBatch
+ ========================          ============================
+
+ Execute(int index)                Execute(int startIndex, int count)
+
+ Called ONCE per item              Called ONCE per BATCH
+
+ User does:                        User does:
+   for (int i = 0; i < 1; i++)      for (int i = 0; i < count; i++)
+     process(index);                  process(startIndex + i);
+
+ No inner loop control             Full inner loop control
+ (scheduler decides granularity)   (scheduler gives batch, user iterates)
+
+ Better for:                       Better for:
+   Uniform per-item work             Variable work per item
+   Small tasks                       Expensive tasks needing
+                                      custom SIMD / loop unrolling
+```
+
+---
+
+## Schedule Variants
+
+```
+ +--------------------------------------------+------------------+
+ | Method                                     | Execution Mode   |
+ +--------------------------------------------+------------------+
+ | ScheduleParallel<T,U>(NativeList<U>)       | Parallel         |
+ | Schedule<T,U>(NativeList<U>)               | Single (serial)  |
+ | ScheduleParallelByRef<T,U>(NativeList<U>)  | Parallel         |
+ | ScheduleParallel<T>(int*)                  | Parallel         |
+ | ScheduleParallel<T>(NativeReference<int>)  | Parallel         |
+ | ScheduleParallelByRef<T>(int*)             | Parallel         |
+ +--------------------------------------------+------------------+
+
+ Single mode:
+   ScheduleBatchInternal -> ScheduleMode.Single
+   -> JobsUtility.ScheduleParallelForDeferArraySize with Single mode
+   -> entire array processed on one thread
+
+ Parallel mode:
+   ScheduleParallelBatchInternal -> ScheduleMode.Parallel
+   -> work-stealing across multiple threads
+```
+
+---
+
+## NativeReference<int> Variant
+
+```
+ job.ScheduleParallel(nativeRef, batch=32, dep)
+
+   forEachListPtr = (byte*)nativeRef.GetUnsafePtrWithoutChecks() - sizeof(void*)
+
+   This points to the "length" field of the internal buffer header,
+   similar to how NativeList exposes its length.
+
+   Use case: a prior job writes the count to a NativeReference<int>,
+   and this job uses that count as the iteration count.
+```
+
+---
+
+## Unsafe int* Variant
+
+```
+ job.ScheduleParallel(&myCount, batch=32, dep)
+
+   forEachListPtr = (byte*)forEachCount - sizeof(void*)
+
+   WARNING: "This API is unsafe, it is recommended to use
+    the NativeList based Schedule method instead."
+
+   Use case: custom data structures where you control the memory
+   layout and guarantee the int* points to a valid count field.
+```
+
+---
+
+## Key Design Decisions
+
+| Decision | Rationale |
+|---|---|
+| `Execute(start, count)` instead of `Execute(index)` | Gives user control over inner loop for SIMD, unrolling, or batch-level optimizations |
+| Deferred length via `ScheduleParallelForDeferArraySize` | Prior job determines count; no main-thread sync point needed |
+| `innerloopBatchCount` user-configurable | Trade-off: large batches = less stealing overhead, small batches = better load balancing |
+| NativeList, NativeReference, and raw `int*` overloads | Flexibility from safe to unsafe APIs |
+| No job wrapper struct (unlike IJobChunk) | Simpler; `ref T jobData` is passed directly to Execute |
+| `ScheduleByRef` variants | Support for unusually large job structs that shouldn't be copied |
