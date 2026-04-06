@@ -1,457 +1,389 @@
-# BovineLabs Core - Inner Workings
+BlobHashMapData - Core Unmanaged Memory Layout for Blob-Based Hash Maps
+========================================================================
 
-ASCII architecture diagrams for every topic in `com.bovinelabs.core`.
+Overview
+--------
 
-Each topic lives on its own branch. Switch to a branch to see the detailed
-README.md with full ASCII diagrams explaining the internal data structures,
-algorithms, and design decisions.
+BlobHashMapData<TKey, TValue> is the internal shared storage engine that
+underlies both BlobHashMap and BlobMultiHashMap.  It implements a chained
+open-addressing scheme where parallel arrays (Keys, Values, Next, Buckets)
+are all embedded as BlobArray<T> inside a single contiguous blob allocation.
 
-## How to Use
+This struct is never used directly by consumers -- it is accessed through
+the public BlobHashMap or BlobMultiHashMap wrapper types, which delegate
+all lookup and iteration to BlobHashMapData.
 
-```bash
-# List all topic branches
-git branch -a
+Architecture: Full Memory Layout
+---------------------------------
 
-# View a specific topic
-git checkout topic/NativeThreadStream
-
-# View the diagram
-cat README.md
-```
-
-## Topics
-
-### Core Collections
-
-- [NativeThreadStream](../../tree/topic/NativeThreadStream)
-- [NativeCounter](../../tree/topic/NativeCounter)
-- [NativeKeyedMap](../../tree/topic/NativeKeyedMap)
-- [NativeLinearCongruentialGenerator](../../tree/topic/NativeLinearCongruentialGenerator)
-- [NativeParallelMultiHashMapFallback](../../tree/topic/NativeParallelMultiHashMapFallback)
-- [NativePartialKeyedMap](../../tree/topic/NativePartialKeyedMap)
-- [ThreadList](../../tree/topic/ThreadList)
-- [ThreadRandom](../../tree/topic/ThreadRandom)
-- [UnsafeArray](../../tree/topic/UnsafeArray)
-- [BitArray256](../../tree/topic/BitArray256)
-- [FixedArray](../../tree/topic/FixedArray)
-- [NativeHashMapExtensions.GetOrAddRef](../../tree/topic/NativeHashMapExtensions_GetOrAddRef)
-- [NativeHashMapExtensions.ClearAndAddBatchUnsafe](../../tree/topic/NativeHashMapExtensions_ClearAndAddBatchUnsafe)
-- [NativeListExtensions.ReserveNoResize](../../tree/topic/NativeListExtensions_ReserveNoResize)
-- [NativeThreadStreamExTests](../../tree/topic/NativeThreadStreamExTests)
-- [BitArray8_16_32_64](../../tree/topic/BitArray8_16_32_64)
-- [BitArray128](../../tree/topic/BitArray128)
-- [BitArrayUtilities](../../tree/topic/BitArrayUtilities)
-- [NativeThreadStream.Reader](../../tree/topic/NativeThreadStream_Reader)
-- [NativeThreadStream.Writer](../../tree/topic/NativeThreadStream_Writer)
-- [NativeWorkQueue](../../tree/topic/NativeWorkQueue)
-- [NativePerfectHashMap](../../tree/topic/NativePerfectHashMap)
-- [NativeUntypedHashMap](../../tree/topic/NativeUntypedHashMap)
-- [UnsafePartialKeyedMap](../../tree/topic/UnsafePartialKeyedMap)
-- [UnsafePerfectHashMap](../../tree/topic/UnsafePerfectHashMap)
-- [NativeListExtensions.ClearAddRange](../../tree/topic/NativeListExtensions_ClearAddRange)
-- [NativeParallelMultiHashMapExtensions.GetUniqueKeyArray](../../tree/topic/NativeParallelMultiHashMapExtensions_GetUniqueKeyArray)
-
-### Blob System
-
-- [BlobHashMap](../../tree/topic/BlobHashMap)
-- [BlobPerfectHashMap](../../tree/topic/BlobPerfectHashMap)
-- [BlobCurve](../../tree/topic/BlobCurve)
-- [BlobBuilderExtensions](../../tree/topic/BlobBuilderExtensions)
-- [BlobHashMapTests](../../tree/topic/BlobHashMapTests)
-- [BlobCurve2_3_4](../../tree/topic/BlobCurve2_3_4)
-- [BlobCurveCache](../../tree/topic/BlobCurveCache)
-- [BlobCurveHeader](../../tree/topic/BlobCurveHeader)
-- [BlobCurveSampler](../../tree/topic/BlobCurveSampler)
-- [BlobCurveSegment](../../tree/topic/BlobCurveSegment)
-- [BlobShared](../../tree/topic/BlobShared)
-- [IBlobCurve](../../tree/topic/IBlobCurve)
-- [BlobBuilderExtensions.Allocate](../../tree/topic/BlobBuilderExtensions_Allocate)
-- [BlobBuilderExtensions.ConstructHashMap](../../tree/topic/BlobBuilderExtensions_ConstructHashMap)
-- [BlobBuilderHashMap](../../tree/topic/BlobBuilderHashMap)
-- [BlobBuilderMultiHashMap](../../tree/topic/BlobBuilderMultiHashMap)
-- [BlobBuilderPerfectHashMap](../../tree/topic/BlobBuilderPerfectHashMap)
-- [BlobHashMapData](../../tree/topic/BlobHashMapData)
-- [BlobMultiHashMapIterator](../../tree/topic/BlobMultiHashMapIterator)
-- [BlobSpline](../../tree/topic/BlobSpline)
-- [BlobAssetOwnerInspector](../../tree/topic/BlobAssetOwnerInspector)
-- [EntityBlobBakedData](../../tree/topic/EntityBlobBakedData)
-- [EntityBlobBakingSystem](../../tree/topic/EntityBlobBakingSystem)
-
-### Memory & Allocators
-
-- [PooledNativeList](../../tree/topic/PooledNativeList)
-- [UnmanagedPool](../../tree/topic/UnmanagedPool)
-- [UnsafeSlabAllocator](../../tree/topic/UnsafeSlabAllocator)
-- [MemoryLabelAllocator](../../tree/topic/MemoryLabelAllocator)
-- [MemoryAllocator](../../tree/topic/MemoryAllocator)
-- [NoAllocHelpers](../../tree/topic/NoAllocHelpers)
-- [UnsafeListPoolTests](../../tree/topic/UnsafeListPoolTests)
-- [NativeSlabAllocator](../../tree/topic/NativeSlabAllocator)
-- [UnsafeParallelPoolAllocator](../../tree/topic/UnsafeParallelPoolAllocator)
-- [UnsafeFixedPoolAllocator](../../tree/topic/UnsafeFixedPoolAllocator)
-- [UnsafePoolAllocator](../../tree/topic/UnsafePoolAllocator)
-- [NativeArrayExtensions.WhereNoAlloc](../../tree/topic/NativeArrayExtensions_WhereNoAlloc)
-
-### Dynamic Buffers
-
-- [Hydrodynamics](../../tree/topic/Hydrodynamics)
-- [DynamicMultiHashMap](../../tree/topic/DynamicMultiHashMap)
-- [DynamicHashSet](../../tree/topic/DynamicHashSet)
-- [DynamicUntypedBuffer](../../tree/topic/DynamicUntypedBuffer)
-- [DynamicVariableMap](../../tree/topic/DynamicVariableMap)
-- [ArchetypeChunk.GetDynamicBufferAccessor](../../tree/topic/ArchetypeChunk_GetDynamicBufferAccessor)
-- [DynamicHashMapPerformanceTests](../../tree/topic/DynamicHashMapPerformanceTests)
-- [UnsafeUntypedDynamicBuffer](../../tree/topic/UnsafeUntypedDynamicBuffer)
-- [UnsafeUntypedDynamicBufferAccessor](../../tree/topic/UnsafeUntypedDynamicBufferAccessor)
-- [UntypedDynamicBuffer](../../tree/topic/UntypedDynamicBuffer)
-- [DynamicGenerator](../../tree/topic/DynamicGenerator)
-
-### ECS Extensions
-
-- [ArchetypeChunk.DidChange](../../tree/topic/ArchetypeChunk_DidChange)
-- [ArchetypeChunk.GetNativeArrayReadOnly](../../tree/topic/ArchetypeChunk_GetNativeArrayReadOnly)
-- [BufferAccessor.GetUnsafe](../../tree/topic/BufferAccessor_GetUnsafe)
-- [BufferLookup.GetROAndChunk](../../tree/topic/BufferLookup_GetROAndChunk)
-- [ComponentLookup.GetOptionalComponentDataRW](../../tree/topic/ComponentLookup_GetOptionalComponentDataRW)
-- [ComponentLookup.SetChangeFilter](../../tree/topic/ComponentLookup_SetChangeFilter)
-- [EntityQueryBuilder.WithAllRW](../../tree/topic/EntityQueryBuilder_WithAllRW)
-- [EntityQuery.QueryHasSharedFilter](../../tree/topic/EntityQuery_QueryHasSharedFilter)
-- [EntityQuery.ReplaceSharedComponentFilter](../../tree/topic/EntityQuery_ReplaceSharedComponentFilter)
-- [EntityQuery.GetFirstEntity](../../tree/topic/EntityQuery_GetFirstEntity)
-- [EntityQuery.GetSingletonBufferNoSync](../../tree/topic/EntityQuery_GetSingletonBufferNoSync)
-- [SystemState.GetSingletonEntity](../../tree/topic/SystemState_GetSingletonEntity)
-- [SystemState.GetManagedSingleton](../../tree/topic/SystemState_GetManagedSingleton)
-- [World.IsClientWorld](../../tree/topic/World_IsClientWorld)
-- [CopyEnableable](../../tree/topic/CopyEnableable)
-- [TimerEnableable](../../tree/topic/TimerEnableable)
-- [StateModelEnableable](../../tree/topic/StateModelEnableable)
-- [EnableMaskCreator](../../tree/topic/EnableMaskCreator)
-- [EntityLock](../../tree/topic/EntityLock)
-- [EntityLockTests](../../tree/topic/EntityLockTests)
-- [ChangeFilterTrackingAttribute](../../tree/topic/ChangeFilterTrackingAttribute)
-- [TypeManagerEx](../../tree/topic/TypeManagerEx)
-- [TypeManagerOverrides](../../tree/topic/TypeManagerOverrides)
-- [TypeManagerUtil](../../tree/topic/TypeManagerUtil)
-- [TypeUtility](../../tree/topic/TypeUtility)
-- [WriteGroupMatcher](../../tree/topic/WriteGroupMatcher)
-- [EntityDataAccessExtensions.GetComponentDataWithTypeRW](../../tree/topic/EntityDataAccessExtensions_GetComponentDataWithTypeRW)
-- [EntityManagerExtensions.GetChunkBuffer](../../tree/topic/EntityManagerExtensions_GetChunkBuffer)
-- [EntityManagerExtensions.GetOrCreateSingletonEntity](../../tree/topic/EntityManagerExtensions_GetOrCreateSingletonEntity)
-- [EntityQueryExtensions.GetSingletonUntypedBuffer](../../tree/topic/EntityQueryExtensions_GetSingletonUntypedBuffer)
-- [EntitySceneReferenceExtensions.SceneGUID](../../tree/topic/EntitySceneReferenceExtensions_SceneGUID)
-- [EntityStorageInfoLookupExtensions.GetNameUnsafe](../../tree/topic/EntityStorageInfoLookupExtensions_GetNameUnsafe)
-- [RefRWExtensions.Create](../../tree/topic/RefRWExtensions_Create)
-- [SystemStateExtensions.GetUnsafeEntityDataAccess](../../tree/topic/SystemStateExtensions_GetUnsafeEntityDataAccess)
-- [ChangeFilterTrackingSystem](../../tree/topic/ChangeFilterTrackingSystem)
-
-### Jobs & Threading
-
-- [IJobParallelForDeferExtensions](../../tree/topic/IJobParallelForDeferExtensions)
-- [IJobChunkWorkerBeginEnd](../../tree/topic/IJobChunkWorkerBeginEnd)
-- [IJobForThread](../../tree/topic/IJobForThread)
-- [IJobHashMapDefer](../../tree/topic/IJobHashMapDefer)
-- [IJobParallelForDeferBatch](../../tree/topic/IJobParallelForDeferBatch)
-- [IJobParallelForDeferExtensions.Schedule](../../tree/topic/IJobParallelForDeferExtensions_Schedule)
-
-### State & Model
-
-- [TimerFixed](../../tree/topic/TimerFixed)
-- [TimerTriggerResetJob](../../tree/topic/TimerTriggerResetJob)
-- [StateFlagModel](../../tree/topic/StateFlagModel)
-- [StateModelWithHistory](../../tree/topic/StateModelWithHistory)
-- [StatefulCollisionEvent](../../tree/topic/StatefulCollisionEvent)
-- [StatefulTriggerEvent](../../tree/topic/StatefulTriggerEvent)
-- [StatefulCollisionEventClearSystem](../../tree/topic/StatefulCollisionEventClearSystem)
-- [StatefulTriggerEventClearSystem](../../tree/topic/StatefulTriggerEventClearSystem)
-- [StateFlagModelTests](../../tree/topic/StateFlagModelTests)
-- [IState](../../tree/topic/IState)
-- [StateAPI](../../tree/topic/StateAPI)
-- [StateInstanceUtil](../../tree/topic/StateInstanceUtil)
-- [DestroyTimer](../../tree/topic/DestroyTimer)
-
-### Spatial & Physics
-
-- [AabbExtensions](../../tree/topic/AabbExtensions)
-- [AlwaysUpdatePhysicsWorld](../../tree/topic/AlwaysUpdatePhysicsWorld)
-- [IntersectionTests](../../tree/topic/IntersectionTests)
-- [ConvexHullBuilder](../../tree/topic/ConvexHullBuilder)
-- [MeshSimplifier](../../tree/topic/MeshSimplifier)
-- [TerrainToMesh](../../tree/topic/TerrainToMesh)
-- [PhysicsLayerUtil](../../tree/topic/PhysicsLayerUtil)
-- [AlwaysUpdatePhysicsWorldSystem](../../tree/topic/AlwaysUpdatePhysicsWorldSystem)
-- [PhysicsTags](../../tree/topic/PhysicsTags)
-- [LocalSpatialMap](../../tree/topic/LocalSpatialMap)
-- [PositionBuilder](../../tree/topic/PositionBuilder)
-- [SpatialKeyedMap](../../tree/topic/SpatialKeyedMap)
-- [SpatialMap](../../tree/topic/SpatialMap)
-- [SpatialMap3](../../tree/topic/SpatialMap3)
-- [DistanceHitSortAscending](../../tree/topic/DistanceHitSortAscending)
-- [DistanceHitSortDescending](../../tree/topic/DistanceHitSortDescending)
-- [PhysicsExtensions.Raycast](../../tree/topic/PhysicsExtensions_Raycast)
-- [PhysicsMassOverrideAuthoring](../../tree/topic/PhysicsMassOverrideAuthoring)
-- [RemovePhysicsVelocityAuthoring](../../tree/topic/RemovePhysicsVelocityAuthoring)
-
-### Utility
-
-- [Ptr](../../tree/topic/Ptr)
-- [BurstTrampoline](../../tree/topic/BurstTrampoline)
-- [BurstUtil.IsEmpty](../../tree/topic/BurstUtil_IsEmpty)
-- [ButtonEvent](../../tree/topic/ButtonEvent)
-- [CurveRemapUtility](../../tree/topic/CurveRemapUtility)
-- [DebugUtil.SplitInt](../../tree/topic/DebugUtil_SplitInt)
-- [GlobalRandom](../../tree/topic/GlobalRandom)
-- [InitSystemBase](../../tree/topic/InitSystemBase)
-- [LibraryLoader](../../tree/topic/LibraryLoader)
-- [SceneInitializeSystem](../../tree/topic/SceneInitializeSystem)
-- [WorldSafeShutdown](../../tree/topic/WorldSafeShutdown)
-- [IFixedSize](../../tree/topic/IFixedSize)
-- [MiniString](../../tree/topic/MiniString)
-- [Pin](../../tree/topic/Pin)
-- [QueryEntityEnumerator](../../tree/topic/QueryEntityEnumerator)
-- [ReflectionUtility](../../tree/topic/ReflectionUtility)
-- [SpinLock](../../tree/topic/SpinLock)
-- [TransformUtility](../../tree/topic/TransformUtility)
-- [WorldUtility](../../tree/topic/WorldUtility)
-- [GhostComponentAttribute](../../tree/topic/GhostComponentAttribute)
-- [GhostFieldAttribute](../../tree/topic/GhostFieldAttribute)
-- [InitializeAllOnLoadExt](../../tree/topic/InitializeAllOnLoadExt)
-- [CloneTransformSystem](../../tree/topic/CloneTransformSystem)
-
-### Extension Methods
-
-- [ListExtensions.AddRangeNative](../../tree/topic/ListExtensions_AddRangeNative)
-- [NativeStreamExtensions.WriteLarge](../../tree/topic/NativeStreamExtensions_WriteLarge)
-- [EntityCommandBufferExtensions.AddUntypedBuffer](../../tree/topic/EntityCommandBufferExtensions_AddUntypedBuffer)
-- [EntityCommandBufferExtensions.UnsafeAddComponent](../../tree/topic/EntityCommandBufferExtensions_UnsafeAddComponent)
-- [EnumerableExtensions.IndexOf](../../tree/topic/EnumerableExtensions_IndexOf)
-- [GameObjectExtensions.IsPrefab](../../tree/topic/GameObjectExtensions_IsPrefab)
-- [NativeArrayExtensions.ElementAtRO](../../tree/topic/NativeArrayExtensions_ElementAtRO)
-- [NativeArrayExtensions.Select](../../tree/topic/NativeArrayExtensions_Select)
-- [NativeSliceExtensions.ReadArrayElementWithStrideRef](../../tree/topic/NativeSliceExtensions_ReadArrayElementWithStrideRef)
-- [NativeStreamExtensions.ReadLarge](../../tree/topic/NativeStreamExtensions_ReadLarge)
-- [StringExtensions.ToDotNotation](../../tree/topic/StringExtensions_ToDotNotation)
-- [SystemStateExtensions.GetAllSystemDependencies](../../tree/topic/SystemStateExtensions_GetAllSystemDependencies)
-- [UnsafeHashMapExtensions.GetOrAddRef](../../tree/topic/UnsafeHashMapExtensions_GetOrAddRef)
-- [UnsafeParallelHashMapDataExtensions.ReserveParallel](../../tree/topic/UnsafeParallelHashMapDataExtensions_ReserveParallel)
-- [WorldUnmanagedExtensions.GetTrackedJobHandle](../../tree/topic/WorldUnmanagedExtensions_GetTrackedJobHandle)
-
-### ConfigVars
-
-- [KSettingsBase](../../tree/topic/KSettingsBase)
-- [ConfigVarAttribute](../../tree/topic/ConfigVarAttribute)
-- [ConfigVarManager](../../tree/topic/ConfigVarManager)
-- [SharedStaticStringContainer](../../tree/topic/SharedStaticStringContainer)
-- [CodecService](../../tree/topic/CodecService)
-- [CommandLineArgs](../../tree/topic/CommandLineArgs)
-- [Deserializer](../../tree/topic/Deserializer)
-- [Serializer](../../tree/topic/Serializer)
-- [FixedNameValue](../../tree/topic/FixedNameValue)
-- [KAttribute](../../tree/topic/KAttribute)
-- [KSettings](../../tree/topic/KSettings)
-- [ConfigVarPanel](../../tree/topic/ConfigVarPanel)
-
-### Authoring & Baking
-
-- [BakerExtensions.AddEnabledComponent](../../tree/topic/BakerExtensions_AddEnabledComponent)
-- [BakerExtensions.AddEnabledBuffer](../../tree/topic/BakerExtensions_AddEnabledBuffer)
-- [BakerCommands](../../tree/topic/BakerCommands)
-- [AuthoringSettingsUtility](../../tree/topic/AuthoringSettingsUtility)
-- [SettingsAuthoring](../../tree/topic/SettingsAuthoring)
-- [TagAuthoring](../../tree/topic/TagAuthoring)
-- [TransformAuthoring](../../tree/topic/TransformAuthoring)
-- [GameObjectHelper.AddAuthoringComponent](../../tree/topic/GameObjectHelper_AddAuthoringComponent)
-- [CloneTransformAuthoring](../../tree/topic/CloneTransformAuthoring)
-- [LifeCycleAuthoring](../../tree/topic/LifeCycleAuthoring)
-- [LookupAuthoring](../../tree/topic/LookupAuthoring)
-
-### Editor Tools
-
-- [AssemblyBuilderWindow](../../tree/topic/AssemblyBuilderWindow)
-- [ComponentAssetBaseDrawer](../../tree/topic/ComponentAssetBaseDrawer)
-- [TypeSearchProvider](../../tree/topic/TypeSearchProvider)
-- [CoreBuildSetup](../../tree/topic/CoreBuildSetup)
-- [CreateEditorWorld](../../tree/topic/CreateEditorWorld)
-- [EditorMenus.DataModeHierarchySet](../../tree/topic/EditorMenus_DataModeHierarchySet)
-- [InspectorSearch](../../tree/topic/InspectorSearch)
-- [SelectedEntityEditorSystem](../../tree/topic/SelectedEntityEditorSystem)
-- [AssemblyGraphWindow](../../tree/topic/AssemblyGraphWindow)
-- [ComponentDependencyWindow](../../tree/topic/ComponentDependencyWindow)
-- [SystemDependencyWindow](../../tree/topic/SystemDependencyWindow)
-- [CoreEditorPreferencesProvider](../../tree/topic/CoreEditorPreferencesProvider)
-- [BitFieldAttributeEditor](../../tree/topic/BitFieldAttributeEditor)
-- [HalfDrawer](../../tree/topic/HalfDrawer)
-- [InlineObjectProperty](../../tree/topic/InlineObjectProperty)
-- [PrefabElementEditor](../../tree/topic/PrefabElementEditor)
-- [StableTypeHashAttributeDrawer](../../tree/topic/StableTypeHashAttributeDrawer)
-- [ToggleOption](../../tree/topic/ToggleOption)
-- [UnityObjectRefInspector](../../tree/topic/UnityObjectRefInspector)
-- [WeakObjectReferenceInspector](../../tree/topic/WeakObjectReferenceInspector)
-- [EntitySelection.GetAllSelectionsInWorld](../../tree/topic/EntitySelection_GetAllSelectionsInWorld)
-- [LoadPrefabsAsEntities](../../tree/topic/LoadPrefabsAsEntities)
-- [ReloadToolbarButton](../../tree/topic/ReloadToolbarButton)
-- [WelcomeWindow](../../tree/topic/WelcomeWindow)
-- [BaseObjectWindow](../../tree/topic/BaseObjectWindow)
-- [FeatureToggle](../../tree/topic/FeatureToggle)
-- [MainToolbarPresetPostProcessor](../../tree/topic/MainToolbarPresetPostProcessor)
-- [ComponentInspectorWindow](../../tree/topic/ComponentInspectorWindow)
-- [StartupSceneSwap](../../tree/topic/StartupSceneSwap)
-- [ViewModelToolbar](../../tree/topic/ViewModelToolbar)
-
-### Source Generators
-
-- [FacetAttribute](../../tree/topic/FacetAttribute)
-- [FacetOptionalAttribute](../../tree/topic/FacetOptionalAttribute)
-- [IFacet](../../tree/topic/IFacet)
-- [FacetGenerator](../../tree/topic/FacetGenerator)
-- [BuilderBase](../../tree/topic/BuilderBase)
-- [ClassBuilder](../../tree/topic/ClassBuilder)
-- [CodeBuilder](../../tree/topic/CodeBuilder)
-- [ConstructorBuilder](../../tree/topic/ConstructorBuilder)
-- [DelegateBuilder](../../tree/topic/DelegateBuilder)
-- [EnumBuilder](../../tree/topic/EnumBuilder)
-- [EventBuilder](../../tree/topic/EventBuilder)
-- [ExpressionBlockBuilder](../../tree/topic/ExpressionBlockBuilder)
-- [LogicalConditionBuilder](../../tree/topic/LogicalConditionBuilder)
-- [MethodBuilder](../../tree/topic/MethodBuilder)
-- [PropertyBuilder](../../tree/topic/PropertyBuilder)
-- [RecordBuilder](../../tree/topic/RecordBuilder)
-- [SwitchBuilder](../../tree/topic/SwitchBuilder)
-- [CodeWriter](../../tree/topic/CodeWriter)
-- [SymbolHelpers](../../tree/topic/SymbolHelpers)
-
-### SubScene System
-
-- [SubSceneLoadData](../../tree/topic/SubSceneLoadData)
-- [SubSceneEntity](../../tree/topic/SubSceneEntity)
-- [LoadSubScene](../../tree/topic/LoadSubScene)
-- [SubSceneBuffer](../../tree/topic/SubSceneBuffer)
-- [SubSceneLoadFlags](../../tree/topic/SubSceneLoadFlags)
-- [SubSceneLoadFlagsUtility](../../tree/topic/SubSceneLoadFlagsUtility)
-- [SubSceneLoadUtil](../../tree/topic/SubSceneLoadUtil)
-- [SubSceneLoaded](../../tree/topic/SubSceneLoaded)
-- [SubSceneLoadingManagedSystem](../../tree/topic/SubSceneLoadingManagedSystem)
-- [SubSceneLoadingSystem](../../tree/topic/SubSceneLoadingSystem)
-- [SubScenePostLoadCommandBufferSystem](../../tree/topic/SubScenePostLoadCommandBufferSystem)
-- [SubSceneSetId](../../tree/topic/SubSceneSetId)
-- [SubSceneUtil](../../tree/topic/SubSceneUtil)
-- [SubSceneEditorSet](../../tree/topic/SubSceneEditorSet)
-- [SubSceneEditorSystem](../../tree/topic/SubSceneEditorSystem)
-- [SubSceneEditorToolbar](../../tree/topic/SubSceneEditorToolbar)
-- [SubScenePrebakeSystem](../../tree/topic/SubScenePrebakeSystem)
-- [DestroyOnSubSceneUnloadSystem](../../tree/topic/DestroyOnSubSceneUnloadSystem)
-
-### Pause & Time
-
-- [LimitedRateNoCatchUpManager](../../tree/topic/LimitedRateNoCatchUpManager)
-- [PauseGame](../../tree/topic/PauseGame)
-- [PauseLimitSystem](../../tree/topic/PauseLimitSystem)
-- [PauseRateManager](../../tree/topic/PauseRateManager)
-- [PauseUtility](../../tree/topic/PauseUtility)
-- [FixedStepUpdatedSystem](../../tree/topic/FixedStepUpdatedSystem)
-- [UpdateWorldTimeSystem](../../tree/topic/UpdateWorldTimeSystem)
-
-### Relevancy & Netcode
-
-- [InputBounds](../../tree/topic/InputBounds)
-- [RelevanceAlways](../../tree/topic/RelevanceAlways)
-- [RelevanceConfig](../../tree/topic/RelevanceConfig)
-- [RelevanceManual](../../tree/topic/RelevanceManual)
-- [RelevanceProvider](../../tree/topic/RelevanceProvider)
-- [RelevancySystem](../../tree/topic/RelevancySystem)
-
-### Singleton System
-
-- [SingletonAttribute](../../tree/topic/SingletonAttribute)
-- [SingletonInitialize](../../tree/topic/SingletonInitialize)
-- [SingletonInitializeSystemGroup](../../tree/topic/SingletonInitializeSystemGroup)
-- [SingletonInitializedSystem](../../tree/topic/SingletonInitializedSystem)
-- [SingletonSystem](../../tree/topic/SingletonSystem)
-- [ComponentSystemBaseInternal.RequireSingletonForUpdate](../../tree/topic/ComponentSystemBaseInternal_RequireSingletonForUpdate)
-- [ISingletonCollection](../../tree/topic/ISingletonCollection)
-- [SingletonCollectionUtil](../../tree/topic/SingletonCollectionUtil)
-
-### Object Management
-
-- [ObjectDefinition](../../tree/topic/ObjectDefinition)
-- [ObjectGroupMatcher](../../tree/topic/ObjectGroupMatcher)
-- [ObjectId](../../tree/topic/ObjectId)
-- [UIDAttribute](../../tree/topic/UIDAttribute)
-- [GroupId](../../tree/topic/GroupId)
-- [ObjectCategories](../../tree/topic/ObjectCategories)
-- [ObjectCategoryComponents](../../tree/topic/ObjectCategoryComponents)
-- [ObjectDefinitionRegistrySystem](../../tree/topic/ObjectDefinitionRegistrySystem)
-- [ObjectGroupRegistry](../../tree/topic/ObjectGroupRegistry)
-- [ObjectInstantiateSystem](../../tree/topic/ObjectInstantiateSystem)
-- [ObjectDefinitionAuthoring](../../tree/topic/ObjectDefinitionAuthoring)
-- [ObjectInstantiate.Editor](../../tree/topic/ObjectInstantiate_Editor)
-
-### Physics States
-
-- [CalculateEventMapBucketsJob](../../tree/topic/CalculateEventMapBucketsJob)
-- [CollectEventsJob](../../tree/topic/CollectEventsJob)
-- [EnsureCurrentEventsCapacityJob](../../tree/topic/EnsureCurrentEventsCapacityJob)
-
-### Life Cycle
-
-- [AfterSceneSystemGroup](../../tree/topic/AfterSceneSystemGroup)
-- [AfterTransformSystemGroup](../../tree/topic/AfterTransformSystemGroup)
-- [BeforeTransformSystemGroup](../../tree/topic/BeforeTransformSystemGroup)
-- [BeginSimulationSystemGroup](../../tree/topic/BeginSimulationSystemGroup)
-- [InstantiateCommandBufferSystem](../../tree/topic/InstantiateCommandBufferSystem)
-- [DestroyEntityCommandBufferSystem](../../tree/topic/DestroyEntityCommandBufferSystem)
-- [DestroyEntitySystem](../../tree/topic/DestroyEntitySystem)
-- [DestroyOnDestroySystem](../../tree/topic/DestroyOnDestroySystem)
-- [EndInitializeEntityCommandBufferSystem](../../tree/topic/EndInitializeEntityCommandBufferSystem)
-- [InitializeEntitySystem](../../tree/topic/InitializeEntitySystem)
-
-### Tests & Diagnostics
-
-- [FaceReadonlyTest](../../tree/topic/FaceReadonlyTest)
-- [MathExPerformanceTests](../../tree/topic/MathExPerformanceTests)
-- [Check.Assume](../../tree/topic/Check_Assume)
-- [ReflectionTestHelper](../../tree/topic/ReflectionTestHelper)
-- [TestLeakDetectionAttribute](../../tree/topic/TestLeakDetectionAttribute)
-
-### Math Extensions
-
-- [MathematicsExtensions.Encapsulate](../../tree/topic/MathematicsExtensions_Encapsulate)
-- [HSV](../../tree/topic/HSV)
-- [PolygonUtility](../../tree/topic/PolygonUtility)
-- [ShortHalfUnion](../../tree/topic/ShortHalfUnion)
-- [IntFloatUnion](../../tree/topic/IntFloatUnion)
-- [mathex.mod](../../tree/topic/mathex_mod)
-- [mathex.minMax](../../tree/topic/mathex_minMax)
-- [mathex.add](../../tree/topic/mathex_add)
-- [mathex.GenerateGaussianNoise](../../tree/topic/mathex_GenerateGaussianNoise)
-- [mathex.FromToRotation](../../tree/topic/mathex_FromToRotation)
-- [MinMaxAttributeDrawer](../../tree/topic/MinMaxAttributeDrawer)
-
-### Other
-
-- [AssetLoad](../../tree/topic/AssetLoad)
-- [GameObjectCleanup](../../tree/topic/GameObjectCleanup)
-- [HalfSizeTriangleMatrix](../../tree/topic/HalfSizeTriangleMatrix)
-- [CalculateCurrentEventsBucketsJob](../../tree/topic/CalculateCurrentEventsBucketsJob)
-- [StripLocalAttribute](../../tree/topic/StripLocalAttribute)
-- [StripLocalSystem](../../tree/topic/StripLocalSystem)
-- [AssetLoadingSystem](../../tree/topic/AssetLoadingSystem)
-- [BovineLabsBootstrap](../../tree/topic/BovineLabsBootstrap)
-- [BovineLabsBootstrap.NetCode](../../tree/topic/BovineLabsBootstrap_NetCode)
-- [CollectionCreator.CreateHashMap](../../tree/topic/CollectionCreator_CreateHashMap)
-- [INativeStreamReader](../../tree/topic/INativeStreamReader)
-- [UnsafeThreadStreamBlockData](../../tree/topic/UnsafeThreadStreamBlockData)
-- [SyncEnableStateUtil](../../tree/topic/SyncEnableStateUtil)
-- [TimeProfiler](../../tree/topic/TimeProfiler)
-- [ReferenceT](../../tree/topic/ReferenceT)
-- [ReferenceData](../../tree/topic/ReferenceData)
-- [UnsafeListDispose](../../tree/topic/UnsafeListDispose)
-- [AppAPI](../../tree/topic/AppAPI)
-- [SerializedHelper.IterateAllChildren](../../tree/topic/SerializedHelper_IterateAllChildren)
-- [TextAssetHelper](../../tree/topic/TextAssetHelper)
-- [PrefabInstance](../../tree/topic/PrefabInstance)
-- [AnalyzersProjectFileGeneration](../../tree/topic/AnalyzersProjectFileGeneration)
+  BlobAssetReference (contiguous memory)
+  ╔═══════════════════════════════════════════════════════════════════════╗
+  ║  BlobAssetHeader                                                     ║
+  ║  ┌─────────┬────────┬──────────────┬────────────────┐               ║
+  ║  │  Hash   │ Length │  Allocator   │ ValidationPtr  │               ║
+  ║  │ (uint)  │ (int)  │ (Allocator)  │   (byte*)      │               ║
+  ║  └─────────┴────────┴──────────────┴────────────────┘               ║
+  ╠═══════════════════════════════════════════════════════════════════════╣
+  ║  BlobHashMapData<TKey, TValue>   (or embedded in BlobHashMap/Multi)  ║
+  ║                                                                      ║
+  ║  Offset  Field              Type             Description             ║
+  ║  ──────  ─────────────────  ───────────────  ────────────────────    ║
+  ║                                                                      ║
+  ║  0x000   Values             BlobArray<TValue>                        ║
+  ║          ┌─────────────────────────────────────────────────────────┐ ║
+  ║          │  ┌─ BlobArray Header (8 bytes) ──────────────────────┐  │ ║
+  ║          │  │  int m_Offset    (relative to this field)         │  │ ║
+  ║          │  │  int m_Length    (= capacity)                     │  │ ║
+  ║          │  └───────────────────────────────────────────────────┘  │ ║
+  ║          │  ┌─ Data (capacity × sizeof(TValue)) ────────────────┐  │ ║
+  ║          │  │  [0]     [1]     [2]     ...  [capacity-1]       │  │ ║
+  ║          │  │  TValue  TValue  TValue  ...  TValue             │  │ ║
+  ║          │  └───────────────────────────────────────────────────┘  │ ║
+  ║          └─────────────────────────────────────────────────────────┘ ║
+  ║                                                                      ║
+  ║  0x008   Keys               BlobArray<TKey>                         ║
+  ║          ┌─────────────────────────────────────────────────────────┐ ║
+  ║          │  [offset, length] + data[capacity]                      │ ║
+  ║          │  TKey[0]  TKey[1]  TKey[2]  ...  TKey[capacity-1]     │ ║
+  ║          └─────────────────────────────────────────────────────────┘ ║
+  ║                                                                      ║
+  ║  0x010   Next               BlobArray<int>                          ║
+  ║          ┌─────────────────────────────────────────────────────────┐ ║
+  ║          │  [offset, length] + data[capacity]                      │ ║
+  ║          │  Chain links: Next[i] = next index in same bucket,      │ ║
+  ║          │              or -1 if end of chain                       │ ║
+  ║          │  int[0]  int[1]  int[2]  ...  int[capacity-1]          │ ║
+  ║          └─────────────────────────────────────────────────────────┘ ║
+  ║                                                                      ║
+  ║  0x018   Buckets            BlobArray<int>                          ║
+  ║          ┌─────────────────────────────────────────────────────────┐ ║
+  ║          │  [offset, length] + data[bucketCapacity]                │ ║
+  ║          │  Head pointers: Buckets[b] = first index in chain,     │ ║
+  ║          │                  or -1 if bucket is empty               │ ║
+  ║          │  bucketCapacity = ceilpow2(capacity × ratio)           │ ║
+  ║          │  int[0]  int[1]  ...  int[bucketCapacity-1]            │ ║
+  ║          └─────────────────────────────────────────────────────────┘ ║
+  ║                                                                      ║
+  ║  0x020   Count              BlobArray<int>  (length=1)             ║
+  ║          ┌─────────────────────────────────────────────────────────┐ ║
+  ║          │  [offset, length=1] + data[1]                           │ ║
+  ║          │  Count[0] = actual number of entries (≤ capacity)       │ ║
+  ║          └─────────────────────────────────────────────────────────┘ ║
+  ║                                                                      ║
+  ║  0x028   BucketCapacityMask int                                      ║
+  ║          ┌─────────────────────────────────────────────────────────┐ ║
+  ║          │  = Buckets.Length - 1  (always power-of-2 minus 1)     │ ║
+  ║          │  Used for: bucket = hash & BucketCapacityMask           │ ║
+  ║          └─────────────────────────────────────────────────────────┘ ║
+  ╚═══════════════════════════════════════════════════════════════════════╝
 
 
----
+Chained Bucket Scheme (Visual)
+-------------------------------
 
-Total: 358 topics across 24 categories
+  After inserting 6 entries into a map with capacity=8, 8 buckets:
+
+  Hash function: key.GetHashCode() & 7  (mask = 7, 8 buckets)
+
+  Entries inserted (index → key, value):
+    0: key=42, val="A"    hash=42&7=2  → bucket 2
+    1: key=17, val="B"    hash=17&7=1  → bucket 1
+    2: key=58, val="C"    hash=58&7=2  → bucket 2 (collision with 42!)
+    3: key=33, val="D"    hash=33&7=1  → bucket 1 (collision with 17!)
+    4: key=99, val="E"    hash=99&7=3  → bucket 3
+    5: key=10, val="F"    hash=10&7=2  → bucket 2 (triple collision!)
+
+  Buckets array (head pointers):
+    ┌───┬───┬───┬───┬───┬───┬───┬───┐
+    │ -1│ 3 │ 5 │ 4 │-1 │-1 │-1 │-1 │
+    └───┴─┬─┴─┬─┴─┬─┴───┴───┴───┴───┘
+     B0    B1  B2  B3  B4  B5  B6  B7
+
+  Chains (follow Next links):
+    Bucket 1: 3 → 1 → -1     (keys: 33, 17)
+    Bucket 2: 5 → 2 → 0 → -1 (keys: 10, 58, 42)
+    Bucket 3: 4 → -1          (key: 99)
+
+  Keys:     [42, 17, 58, 33, 99, 10, __, __]
+  Values:   [ A,  B,  C,  D,  E,  F, __, __]
+  Next:     [-1, -1,  0, -1, -1,  2, __, __]
+                        ↑         ↑
+                   58→42 chain  10→58 chain
+
+  Lookup key=58:
+    bucket = 58.GetHashCode() & 7 = 2
+    index = Buckets[2] = 5
+    Keys[5]=10 ≠ 58 → Next[5]=2
+    Keys[2]=58 == 58 → FOUND! return &Values[2] = "C"
+
+
+TryGetFirstValue Algorithm (Step by Step)
+------------------------------------------
+
+  ┌──────────────────────────────────────────────────────────────┐
+  │  TryGetFirstValue(TKey key, out Ptr<TValue> item,           │
+  │                    out BlobMultiHashMapIterator<TKey> it)    │
+  │                                                              │
+  │  1.  it.Key = key                                           │
+  │  2.  if BucketCapacityMask < 0:                             │
+  │        (map was never populated)                             │
+  │        it.NextIndex = -1; item = default; return false      │
+  │                                                              │
+  │  3.  bucket = key.GetHashCode() & BucketCapacityMask        │
+  │  4.  it.NextIndex = Buckets[bucket]                         │
+  │  5.  return TryGetNextValue(out item, ref it)               │
+  └──────────────────────────────┬───────────────────────────────┘
+                                 │
+                                 ▼
+  ┌──────────────────────────────────────────────────────────────┐
+  │  TryGetNextValue(out Ptr<TValue> item,                      │
+  │                  ref BlobMultiHashMapIterator<TKey> it)      │
+  │                                                              │
+  │  index = it.NextIndex                                       │
+  │  it.NextIndex = -1    (consume the link)                    │
+  │                                                              │
+  │  if index < 0 → return false  (end of chain / not found)    │
+  │                                                              │
+  │  ┌─────── LOOP ──────────────────────────┐                  │
+  │  │  Keys[index].Equals(it.Key)?           │                  │
+  │  │    YES:                                │                  │
+  │  │      it.NextIndex = Next[index]        │                  │
+  │  │      item = Ptr(&Values[index])        │                  │
+  │  │      return true                       │                  │
+  │  │    NO:                                 │                  │
+  │  │      index = Next[index]               │                  │
+  │  │      if index < 0 → return false       │                  │
+  │  └────────────────────────────────────────┘                  │
+  └──────────────────────────────────────────────────────────────┘
+
+  For BlobHashMap: TryGetFirstValue is called once, chain walk finds match.
+  For BlobMultiHashMap: TryGetNextValue is called repeatedly to get all
+  values for the same key.
+
+
+Builder Construction Detail (BlobBuilderHashMapData)
+-----------------------------------------------------
+
+  ┌───────────────────────────────────────────────────────────────────┐
+  │  BlobBuilderHashMapData<TKey, TValue>  (ref struct)              │
+  │                                                                   │
+  │  Stored in builder (NOT in blob):                                 │
+  │    KeyCapacity        int          (= entries capacity)           │
+  │    bucketCapacityMask int          (= Buckets.Length - 1)         │
+  │                                                                   │
+  │  Builder array handles (write-through to blob chunks):            │
+  │    values  BlobBuilderArray<TValue>   → writes to blob Values     │
+  │    keys    BlobBuilderArray<TKey>     → writes to blob Keys       │
+  │    next    BlobBuilderArray<int>      → writes to blob Next       │
+  │    buckets BlobBuilderArray<int>      → writes to blob Buckets    │
+  │    count   BlobBuilderArray<int>      → writes to blob Count      │
+  │                                                                   │
+  │  Constructor(capacity, ratio, ref blobBuilder, ref BlobHashMapData│
+  │    bucketCap = ceilpow2(capacity × ratio)                         │
+  │    mask = bucketCap - 1                                           │
+  │    data.BucketCapacityMask = mask  (set on the blob data)         │
+  │    Allocate all arrays                                            │
+  │    Clear: Buckets→-1, Next→-1                                     │
+  │                                                                   │
+  │  TryAdd(key, value, multi):                                       │
+  │    ┌────────────────────────────────────────────────────────┐     │
+  │    │  count_ref = &count[0]                                 │     │
+  │    │  if count_ref >= KeyCapacity → FULL (throw in checks)  │     │
+  │    │                                                        │     │
+  │    │  bucket = key.GetHashCode() & bucketCapacityMask       │     │
+  │    │                                                        │     │
+  │    │  if !multi && ContainsKey(bucket, key):                │     │
+  │    │    return false  (duplicate key rejected)              │     │
+  │    │                                                        │     │
+  │    │  index = count_ref++                                   │     │
+  │    │  keys[index] = key                                    │     │
+  │    │  values[index] = value                                │     │
+  │    │  next[index] = buckets[bucket]   // link to old head  │     │
+  │    │  buckets[bucket] = index         // new head          │     │
+  │    │  return true                                           │     │
+  │    └────────────────────────────────────────────────────────┘     │
+  │                                                                   │
+  │  Insert visualized:                                               │
+  │    Before Add(42, "A"):                                           │
+  │      Buckets[2] = -1                                              │
+  │    After:                                                         │
+  │      Keys[0] = 42, Values[0] = "A", Next[0] = -1                 │
+  │      Buckets[2] = 0         (head of chain)                      │
+  │                                                                   │
+  │    Before Add(58, "C"):  (hash=2, same bucket)                    │
+  │      Buckets[2] = 0                                               │
+  │    After:                                                         │
+  │      Keys[2] = 58, Values[2] = "C", Next[2] = 0  (→ old head)   │
+  │      Buckets[2] = 2         (new head)                           │
+  └───────────────────────────────────────────────────────────────────┘
+
+
+Enumeration Algorithm (BlobHashMapEnumerator)
+---------------------------------------------
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  BlobHashMapEnumerator<TKey, TValue>                            │
+  │                                                                 │
+  │  State:                                                         │
+  │    data: BlobHashMapData*   (pointer into blob)                 │
+  │    index: int               (current entry index, -1 = start)   │
+  │    bucketIndex: int         (next bucket to scan)               │
+  │    nextIndex: int           (next chain link, -1 = need scan)   │
+  │                                                                 │
+  │  MoveNext():                                                    │
+  │    if nextIndex != -1:                                          │
+  │      // Continue current chain                                  │
+  │      index = nextIndex                                         │
+  │      nextIndex = data->Next[nextIndex]                          │
+  │      return true                                                │
+  │    else:                                                        │
+  │      // Find next non-empty bucket                              │
+  │      return MoveNextSearch(...)                                 │
+  │                                                                 │
+  │  MoveNextSearch():                                              │
+  │    for i = bucketIndex to (BucketCapacityMask + 1):             │
+  │      idx = Buckets[i]                                           │
+  │      if idx != -1:                                              │
+  │        index = idx                                              │
+  │        bucketIndex = i + 1                                      │
+  │        nextIndex = Next[idx]                                    │
+  │        return true                                              │
+  │    return false  (all buckets exhausted)                        │
+  └─────────────────────────────────────────────────────────────────┘
+
+  Traversal order for the example above:
+    bucket 0: empty → skip
+    bucket 1: head=3 → emit 3, chain→1 → emit 1, chain→-1 → done
+    bucket 2: head=5 → emit 5, chain→2 → emit 2, chain→0 → emit 0, done
+    bucket 3: head=4 → emit 4, chain→-1 → done
+    buckets 4-7: empty → skip
+    Total: emits indices [3, 1, 5, 2, 0, 4] (insertion-order within chains)
+
+
+KVPair Struct (Enumerator Output)
+----------------------------------
+
+  ┌────────────────────────────────────────────────────────────┐
+  │  KVPair<TKey, TValue>  (readonly unsafe struct)            │
+  │                                                            │
+  │  data:  BlobHashMapData*   (pointer to the blob data)      │
+  │  index: int                (entry index)                   │
+  │                                                            │
+  │  Key:   ref TKey   → data->Keys[index]                     │
+  │  Value: ref TValue → data->Values[index]                   │
+  │                                                            │
+  │  Uses raw pointer to blob data, no managed references.     │
+  │  DebuggerDisplay: "Key = {Key}, Value = {Value}"           │
+  └────────────────────────────────────────────────────────────┘
+
+
+BlobMultiHashMapIterator
+-------------------------
+
+  ┌──────────────────────────────────────────────┐
+  │  BlobMultiHashMapIterator<TKey>               │
+  │                                               │
+  │  Key:       TKey    (the key being iterated)  │
+  │  NextIndex: int     (next chain link or -1)   │
+  │                                               │
+  │  Used by BlobMultiHashMap to walk all values  │
+  │  for a given key:                             │
+  │                                               │
+  │    it.Key = key                               │
+  │    it.NextIndex = Buckets[hash & mask]        │
+  │    while TryGetNextValue(out val, ref it):    │
+  │      process(val)                             │
+  └──────────────────────────────────────────────┘
+
+
+Struct Layout Summary (byte offsets, 64-bit)
+---------------------------------------------
+
+  BlobHashMapData<int, int> (example: TKey=int, TValue=int):
+
+  Offset  Field            Size   Content
+  ──────  ────────          ────   ───────
+  0x00    Values.offset     4      relative offset to values data
+  0x04    Values.length     4      = capacity
+          Values data       cap×4  follows at resolved offset
+
+  0x08    Keys.offset       4      relative offset to keys data
+  0x0C    Keys.length       4      = capacity
+          Keys data         cap×4  follows at resolved offset
+
+  0x10    Next.offset       4      relative offset to next data
+  0x14    Next.length       4      = capacity
+          Next data         cap×4  follows at resolved offset
+
+  0x18    Buckets.offset    4      relative offset to buckets data
+  0x1C    Buckets.length    4      = bucketCapacity
+          Buckets data      bCap×4 follows at resolved offset
+
+  0x20    Count.offset      4      relative offset
+  0x24    Count.length      4      = 1
+          Count data        4      actual count
+
+  0x28    BucketCapacityMask 4     = bucketCapacity - 1
+  ──────
+  0x2C    Total fixed       44 bytes (data arrays allocated separately)
+
+
+Key Design Decisions
+--------------------
+
+1. **Parallel arrays, not structs-of-kv-pairs.**  Keys, Values, and Next
+   are stored in separate arrays rather than interleaved as KVPair structs.
+   This improves cache locality when searching by key (only the Keys array
+   is walked) and when reading values (only the Values array is touched).
+
+2. **BlobArray<int> Count[1] instead of a plain int.**  Unity's blob system
+   does not allow writing to scalar fields after ConstructRoot.  Wrapping
+   the count in a single-element BlobArray lets the builder update it via
+   BlobBuilderArray<int>[0] during construction.
+
+3. **BucketCapacityMask instead of length.**  Storing `length - 1` as a mask
+   eliminates the subtraction during every lookup.  A negative mask (< 0)
+   doubles as a "never populated" sentinel (empty map).
+
+4. **Forward-chaining with head insertion.**  New entries are prepended to
+   the bucket chain (next[new] = buckets[b]; buckets[b] = new).  This is
+   O(1) insertion and works naturally with the append-only builder pattern.
+
+5. **Shared between HashMap and MultiHashMap.**  The same BlobHashMapData
+   and BlobBuilderHashMapData types serve both single-value and multi-value
+   maps.  The `multi` flag on TryAdd controls whether duplicate keys are
+   rejected (HashMap) or accepted (MultiHashMap).
+
+6. **Ptr<TValue> return for safe pointer wrapping.**  TryGetValue and
+   TryGetNextValue return `Ptr<TValue>` rather than a raw pointer or ref,
+   providing a safe, nullable wrapper that can be checked with `.IsCreated`.
+
+
+Performance Characteristics
+---------------------------
+
+| Operation            | Time Complexity   | Notes                          |
+|----------------------|-------------------|--------------------------------|
+| TryGetFirstValue     | O(1 + c)          | c = chain length in bucket     |
+| TryGetNextValue      | O(c)              | walk chain for multi-map       |
+| Builder TryAdd       | O(1 + c)          | check existing + insert head   |
+| Builder AddUnique    | O(1 + c)          | same + return ref to value     |
+| Enumeration          | O(n + b)          | n = entries, b = bucket count  |
+| Construction         | O(n)              | per-element add + O(b) clear   |
+
+Memory:
+  Fixed overhead:   5 × BlobArray headers (40 bytes) + 1 int (4 bytes)
+  Variable:         capacity × (sizeof(TKey) + sizeof(TValue) + 4)
+                    + bucketCapacity × 4
+                    + 4 (count)
+
+  With ratio=3, capacity=N:
+    bucketCapacity ≈ 3N (rounded up to power of 2)
+    Total ≈ N × (sizeof(K) + sizeof(V) + 4) + 3N × 4 + 44
+
+Cache behavior:
+  - Best case: hash distributes evenly, chains of length 1
+  - Worst case: all keys in one bucket, linear scan
+  - Buckets array is scanned once per lookup (1 cache line typically)
+  - Chain walks touch scattered Keys/Next entries
+  - Values array is only touched once the correct index is found
