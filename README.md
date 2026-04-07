@@ -101,3 +101,9 @@
  detect changes. GetNativeArrayReadOnly guarantees the RO path is used,
  keeping the change version clean.
 ```
+
+## Source
+
+- [BovineLabs.Core/Extensions/ArchetypeChunkExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/ArchetypeChunkExtensions.cs)
+- [BovineLabs.Core/Internal/ArchetypeChunkInternal.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Internal/ArchetypeChunkInternal.cs)
+- [BovineLabs.Core.Editor/Inspectors/ArchetypeChunkInspector.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Editor/Inspectors/ArchetypeChunkInspector.cs)
