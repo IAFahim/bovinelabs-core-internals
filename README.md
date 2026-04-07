@@ -101,3 +101,9 @@
  • Direct pointer for high-performance write access
  • Version bumped via GlobalSystemVersion (proper RW semantics)
 ```
+
+## Source
+
+- [BovineLabs.Core/Extensions/ComponentLookupExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/ComponentLookupExtensions.cs)
+- [BovineLabs.Core/Iterators/UnsafeComponentLookup.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/UnsafeComponentLookup.cs)
+- [BovineLabs.Core/Iterators/SharedComponentLookup.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/SharedComponentLookup.cs)
