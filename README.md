@@ -205,3 +205,7 @@ Constructor: TimerFixed(float duration)  -- fixed duration for ALL entities
 4. **Temp Buffer**: Uses a `NativeList<bool>` (reused across chunks) to compute new `On` values before comparing, avoiding read-write aliasing issues.
 
 5. **Change Detection**: Both `TActive` changes and `TRemaining` changes trigger recalculation, ensuring `TOn` stays consistent.
+
+## Source
+
+- [BovineLabs.Core/Model/TimerFixed.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Model/TimerFixed.cs)
