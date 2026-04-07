@@ -119,3 +119,7 @@ to N*(N+1)/2 — roughly a 2x savings.
 ## Source File
 
 - `BovineLabs.Core/Utility/HalfSizeTriangleMatrix.cs`
+
+## Source
+
+- [BovineLabs.Core/Utility/HalfSizeTriangleMatrix.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/HalfSizeTriangleMatrix.cs)
