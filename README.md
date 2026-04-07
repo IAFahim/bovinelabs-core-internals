@@ -151,3 +151,9 @@
  IsClientWorld returns TRUE for thin clients. This is intentional —
  thin clients are clients. Use IsThinClientWorld() when you need
  to distinguish full clients from thin clients.
+
+## Source
+
+- [BovineLabs.Core/Worlds.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Worlds.cs)
+- [BovineLabs.Core/Extensions/WorldExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/WorldExtensions.cs)
+- [BovineLabs.Core/Utility/WorldUtility.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/WorldUtility.cs)
