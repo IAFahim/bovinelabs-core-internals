@@ -138,3 +138,7 @@ while preserving mesh shape. Operates entirely on native collections.
 ## Source
 
 `BovineLabs.Core/Utility/Mesh/MeshSimplifier.cs`
+
+## Source
+
+- [BovineLabs.Core/Utility/Mesh/MeshSimplifier.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/Mesh/MeshSimplifier.cs)
