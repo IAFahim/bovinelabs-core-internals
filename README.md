@@ -52,3 +52,7 @@ descending distance, placing the furthest hits first.
 ## Source
 
 `BovineLabs.Core/Sort/DistanceHitSortDescending.cs`
+
+## Source
+
+- [BovineLabs.Core/Sort/DistanceHitSortDescending.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Sort/DistanceHitSortDescending.cs)
