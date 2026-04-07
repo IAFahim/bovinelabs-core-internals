@@ -2,9 +2,12 @@
 
 ASCII architecture diagrams for every topic in `com.bovinelabs.core`.
 
+Source code: [gitlab.com/tertle/com.bovinelabs.core](https://gitlab.com/tertle/com.bovinelabs.core)
+
 Each topic lives on its own branch. Switch to a branch to see the detailed
 README.md with full ASCII diagrams explaining the internal data structures,
-algorithms, and design decisions.
+algorithms, and design decisions. Each diagram links directly to the source
+files on GitLab.
 
 ## How to Use
 
