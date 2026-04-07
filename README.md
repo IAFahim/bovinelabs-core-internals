@@ -116,3 +116,9 @@ BURST COMPILATION DETAILS
     ARM64: LD1 → ADD (vector + scalar broadcast) → ST1
     x86-64: MOVAPS/MOVUPS → PADDD → MOVAPS/MOVUPS
 ```
+
+## Source
+
+- [BovineLabs.Core/Utility/mathex.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/mathex.cs)
+- [BovineLabs.Core.Tests/Utility/mathexTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Utility/mathexTests.cs)
+- [BovineLabs.Core.Tests/Utility/MathExPerformanceTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Utility/MathExPerformanceTests.cs)
