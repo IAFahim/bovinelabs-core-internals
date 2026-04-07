@@ -137,3 +137,7 @@ job scheduling. Modified from Unity's rendering light-transport implementation.
 ## Source
 
 `BovineLabs.Core/Utility/Mesh/TerrainToMesh.cs`
+
+## Source
+
+- [BovineLabs.Core/Utility/Mesh/TerrainToMesh.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/Mesh/TerrainToMesh.cs)
