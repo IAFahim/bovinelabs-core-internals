@@ -142,3 +142,7 @@ full parallel-safe multi-map.
 ## Source
 
 `BovineLabs.Core/Spatial/LocalSpatialMap.cs`
+
+## Source
+
+- [BovineLabs.Core/Spatial/LocalSpatialMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Spatial/LocalSpatialMap.cs)
