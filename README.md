@@ -113,3 +113,9 @@
  There is also QueryHasSharedFilter<T>(int index) which checks if the
  filter at a specific position matches type T, without iterating.
 ```
+
+## Source
+
+- [BovineLabs.Core/Extensions/EntityQueryExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/EntityQueryExtensions.cs)
+- [BovineLabs.Core/Internal/EntityQueryInternal.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Internal/EntityQueryInternal.cs)
+- [BovineLabs.Core/Extensions/EntityQueryBuilderExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/EntityQueryBuilderExtensions.cs)
