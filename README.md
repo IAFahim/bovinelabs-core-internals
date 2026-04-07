@@ -153,3 +153,8 @@ per-entity spin locks provide fine-grained mutual exclusion.
 
 - `BovineLabs.Core/Utility/EntityLock.cs`
 - `BovineLabs.Core/Utility/SpinLock.cs` (used internally)
+
+## Source
+
+- [BovineLabs.Core/Utility/EntityLock.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/EntityLock.cs)
+- [BovineLabs.Core.Tests/Utility/EntityLockTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Utility/EntityLockTests.cs)
