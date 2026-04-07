@@ -109,3 +109,9 @@
  • WithAnyWriteGroup<T>() → auto-resolve write group components
  • WithNoneWriteGroup<T>() → auto-resolve write group exclusions
 ```
+
+## Source
+
+- [BovineLabs.Core/Extensions/EntityQueryBuilderExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/EntityQueryBuilderExtensions.cs)
+- [BovineLabs.Core/Utility/SubSceneUtil.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/SubSceneUtil.cs)
+- [SourceGenerators~/BovineLabs.FacetGenerator/FacetGenerator.CodeGen.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/SourceGenerators~/BovineLabs.FacetGenerator/FacetGenerator.CodeGen.cs)
