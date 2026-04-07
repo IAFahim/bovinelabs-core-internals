@@ -129,3 +129,9 @@ KEY PROPERTIES
   * Allocated():       slabs.Length × countPerSlab × sizeof(T)
   * Safety:            No bounds checking, no AtomicSafetyHandle
   * Burst Compatible:  Yes (uses unsafe pointers, NativeDisableUnsafePtrRestriction)
+
+## Source
+
+- [BovineLabs.Core/Memory/UnsafeSlabAllocator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Memory/UnsafeSlabAllocator.cs)
+- [BovineLabs.Core/Memory/UnsafePoolAllocator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Memory/UnsafePoolAllocator.cs)
+- [BovineLabs.Core/Memory/NativeSlabAllocator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Memory/NativeSlabAllocator.cs)
