@@ -162,3 +162,8 @@ KEY PROPERTIES
   * Burst Compatible:  Yes
   * List Capacity:     Minimum 64/sizeof(T), always power-of-2
   * List Ownership:    Buffer tracked by MemoryAllocator, not by list
+
+## Source
+
+- [BovineLabs.Core/Memory/MemoryAllocator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Memory/MemoryAllocator.cs)
+- [BovineLabs.Core/Collections/Reference.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/Reference.cs)
