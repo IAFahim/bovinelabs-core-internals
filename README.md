@@ -303,3 +303,8 @@ Thread 3 | OnWorkerBegin | bucket5[entries] OnBucketEnd | OnWorkerEnd
 | `Read<T>` helper with `entryIndex` | Direct array element access; no bucket lookup needed since we already have the index |
 | `OnBucketEnd` in parallel variant | Enables flushing per-bucket aggregations (e.g., sort within bucket, write to stream) |
 | `bucketCapacityMask` adjustment | Parallel variant stores mask instead of capacity; +1 needed for last bucket to be inclusive |
+
+## Source
+
+- [BovineLabs.Core/Jobs/IJobHashMapDefer.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Jobs/IJobHashMapDefer.cs)
+- [BovineLabs.Core.Tests/Jobs/IJobHashMapDeferTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Jobs/IJobHashMapDeferTests.cs)
