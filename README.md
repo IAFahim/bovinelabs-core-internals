@@ -244,3 +244,8 @@ Parameter: maxHistorySize - maximum entries in each buffer
 5. **EntityCommandBuffer**: Still uses ECB for structural changes (add/remove tag components), same as the base `StateModel`.
 
 6. **Single Byte State**: Only supports 1-byte state values (like StateModel), enabling simple equality comparison for pop detection.
+
+## Source
+
+- [BovineLabs.Core/States/StateModelWithHistory.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/States/StateModelWithHistory.cs)
+- [BovineLabs.Core.Tests/States/StateModelWithHistoryTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/States/StateModelWithHistoryTests.cs)
