@@ -351,3 +351,9 @@ Thread C |--- Acquire() CAS(fail) -------------------------------->|
 | No `pause` instruction | Noted as future improvement; current approach is portable |
 | `TryAcquire` checks `Volatile.Read` first | Avoids unnecessary CAS (and cache miss) when lock is already held |
 | Adapted from Unity Collections | Battle-tested pattern in Unity's own allocator code |
+
+## Source
+
+- [BovineLabs.Core/Utility/SpinLock.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/SpinLock.cs)
+- [BovineLabs.Core/Utility/EntityLock.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/EntityLock.cs)
+- [BovineLabs.Core/Collections/UnmanagedPool.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/UnmanagedPool.cs)
