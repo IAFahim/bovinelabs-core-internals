@@ -215,3 +215,8 @@ Key: TOn and TActive use ENABLED BITS, not bool data values
 4. **v128 Copy-by-Value**: The enable bits (`EnabledMask`/`v128`) are copied by value (`var updated = original`), modified, then compared. This avoids read-write aliasing.
 
 5. **Per-Entity Duration**: Unlike TimerFixed, each entity can have a different duration via the `TDuration` component.
+
+## Source
+
+- [BovineLabs.Core/Model/TimerEnableable.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Model/TimerEnableable.cs)
+- [BovineLabs.Core.Tests/Models/TimerEnableableTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Models/TimerEnableableTests.cs)
