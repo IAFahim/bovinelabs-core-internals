@@ -175,3 +175,7 @@ USAGE PATTERNS
   Note: Any unmanaged struct with sufficient size can serve as TS.
   Common choices: float4, float4x4, ulong, or custom fixed-buffer structs.
 ```
+
+## Source
+
+- [BovineLabs.Core/Collections/FixedArray.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/FixedArray.cs)
