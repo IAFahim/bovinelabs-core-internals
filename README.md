@@ -101,3 +101,4 @@
  • Marking a component dirty after external modification (e.g. network sync)
  • Triggering re-processing without actually changing values
  • Manual change propagation in custom job pipelines
+```
