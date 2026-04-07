@@ -100,3 +100,4 @@
  • No exception overhead for missing components
  • Direct pointer for high-performance write access
  • Version bumped via GlobalSystemVersion (proper RW semantics)
+```
