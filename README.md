@@ -98,3 +98,9 @@ spatial map types.
 
 `BovineLabs.Core/Spatial/ISpatialPosition.cs`
 `BovineLabs.Core/Spatial/PositionBuilder.cs`
+
+## Source
+
+- [BovineLabs.Core/Spatial/ISpatialPosition.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Spatial/ISpatialPosition.cs)
+- [BovineLabs.Core/Spatial/SpatialMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Spatial/SpatialMap.cs)
+- [BovineLabs.Core/Spatial/SpatialKeyedMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Spatial/SpatialKeyedMap.cs)
