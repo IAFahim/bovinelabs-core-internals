@@ -128,3 +128,9 @@ Standard vs GetROAndChunk
  EntityCache also exposes: public int Chunk => EntityInChunk.Chunk;
  This int is used for chunk-based filtering, ordering, and indexing.
 ```
+
+## Source
+
+- [BovineLabs.Core/Extensions/BufferLookupExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/BufferLookupExtensions.cs)
+- [BovineLabs.Core/Iterators/UnsafeBufferLookup.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/UnsafeBufferLookup.cs)
+- [SourceGenerators~/BovineLabs.FacetGenerator/FacetGenerator.Semantics.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/SourceGenerators~/BovineLabs.FacetGenerator/FacetGenerator.Semantics.cs)
