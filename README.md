@@ -119,3 +119,7 @@ Burst-compiled jobs where `float.ToString()` is unavailable.
 ## Source File
 
 - `BovineLabs.Core/Utility/DebugUtil.cs`
+
+## Source
+
+- [BovineLabs.Core/Utility/DebugUtil.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/DebugUtil.cs)
