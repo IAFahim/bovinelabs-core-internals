@@ -238,3 +238,7 @@ PERFORMANCE CHARACTERISTICS
   │ Memory overhead      │ 3 ints + T[Capacity]                    │
   │ Load balancing       │ Automatic — work-stealing via atomics   │
   └──────────────────────┴─────────────────────────────────────────┘
+
+## Source
+
+- [BovineLabs.Core/Collections/NativeWorkQueue.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/NativeWorkQueue.cs)
