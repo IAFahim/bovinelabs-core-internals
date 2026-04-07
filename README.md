@@ -2,7 +2,7 @@
 
 ## Overview
 
-`ButtonEvent` is a simple struct that provides thread-safe, single-consumer boolean event semantics. It supports `TryConsume()` and `TryProduce()` operations, ensuring that an event is consumed exactly once and produced only when not already set. This prevents duplicate events in multi-system scenarios.
+`ButtonEvent` is a simple struct that provides single-consumer boolean event semantics via plain bool read/write. It supports `TryConsume()` and `TryProduce()` operations, ensuring that an event is consumed exactly once per check and produced only when not already set. This prevents duplicate events in sequentially-scheduled system scenarios.
 
 ```
 File: BovineLabs.Core/Utility/ButtonEvent.cs
@@ -25,7 +25,7 @@ Methods: TryConsume() → bool, TryProduce(bool) → bool
   │                                                            │
   │  ┌──────────────────────────────────────────────────────┐ │
   │  │  TryConsume() → bool                                 │ │
-  │  │  Atomically reads and resets the event               │ │
+  │  │  Reads and resets the event (not atomic)             │ │
   │  └──────────────────────────────────────────────────────┘ │
   │                                                            │
   │  ┌──────────────────────────────────────────────────────┐ │
@@ -241,7 +241,7 @@ Methods: TryConsume() → bool, TryProduce(bool) → bool
 
 3. **Try-Prefix Pattern**: Both methods use the `Try` prefix convention, returning `bool` to indicate success. Callers can check the return value or ignore it.
 
-4. **Single-Consumer Guarantee**: `TryConsume` atomically reads and resets, ensuring only one consumer processes the event even if multiple systems try.
+4. **Single-Consumer Guarantee**: `TryConsume` reads and resets the bool, ensuring only one consumer processes the event per check. This works when systems run sequentially on the main thread or when jobs are properly ordered. Not safe for concurrent access without external synchronization.
 
 5. **No Thread Safety Primitives**: The struct itself has no locks or atomics. Thread safety depends on Unity ECS scheduling (e.g., systems run on main thread, or jobs are properly ordered).
 
