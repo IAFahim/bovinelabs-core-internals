@@ -98,3 +98,9 @@
  │  created by [GenerateTestsForBurstCompatibility] or system       │
  │  managed singletons) are found.                                  │
  └──────────────────────────────────────────────────────────────────┘
+
+## Source
+
+- [BovineLabs.Core/Extensions/SystemStateExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/SystemStateExtensions.cs)
+- [BovineLabs.Core/Internal/WorldInternal.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Internal/WorldInternal.cs)
+- [SourceGenerators~/BovineLabs.FacetGenerator/FacetGenerator.CodeGen.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/SourceGenerators~/BovineLabs.FacetGenerator/FacetGenerator.CodeGen.cs)
