@@ -479,3 +479,9 @@ Writes larger than one block's usable area (4088 bytes) are chunked:
 
 *Write with new block involves a heap allocation, making it amortized O(1) rather than
  true O(1). In practice, Unity's Allocator handles fixed-size allocations very efficiently.
+
+## Source
+
+- [BovineLabs.Core/Collections/EventStream/NativeThreadStream.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/EventStream/NativeThreadStream.cs)
+- [BovineLabs.Core/Collections/EventStream/NativeThreadStream.Writer.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/EventStream/NativeThreadStream.Writer.cs)
+- [BovineLabs.Core/Collections/EventStream/NativeThreadStream.Reader.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/EventStream/NativeThreadStream.Reader.cs)
