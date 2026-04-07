@@ -455,3 +455,9 @@ cat README.md
 ---
 
 Total: 358 topics across 24 categories
+
+
+## Factual Corrections
+
+- The `v128` struct in `Unity.Mathematics` is accessed via `As<T>()` methods.
+- `load128(&bitArray)` is not a standard Burst intrinsic; use `Burst.Intrinsics.X86.Sse2.load_si128`.
