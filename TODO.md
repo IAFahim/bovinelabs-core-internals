@@ -135,30 +135,30 @@ Track progress of all topic branches. Each branch = one topic = one README.md.
 - [x] SingletonInitialize
 - [x] SingletonInitializeSystemGroup
 - [x] SingletonInitializedSystem
-- [ ] SingletonSystem
-- [ ] StripLocalAttribute
-- [ ] StripLocalSystem
-- [ ] AssetLoadingSystem
-- [ ] LoadSubScene
-- [ ] SubSceneBuffer
-- [ ] SubSceneLoadFlags
-- [ ] SubSceneLoadFlagsUtility
-- [ ] SubSceneLoadUtil
-- [ ] SubSceneLoaded
-- [ ] SubSceneLoadingManagedSystem
-- [ ] SubSceneLoadingSystem
-- [ ] SubScenePostLoadCommandBufferSystem
-- [ ] SubSceneSetId
-- [ ] UpdateWorldTimeSystem
-- [ ] BovineLabsBootstrap
-- [ ] BovineLabsBootstrap.NetCode
-- [ ] PhysicsTags
-- [ ] WorldSafeShutdown
-- [ ] BlobHashMapTests
-- [ ] UnsafeListPoolTests
-- [ ] NativeThreadStreamExTests
-- [ ] DynamicHashMapPerformanceTests
-- [ ] FaceReadonlyTest
+- [x] SingletonSystem
+- [x] StripLocalAttribute
+- [x] StripLocalSystem
+- [x] AssetLoadingSystem
+- [x] LoadSubScene
+- [x] SubSceneBuffer
+- [x] SubSceneLoadFlags
+- [x] SubSceneLoadFlagsUtility
+- [x] SubSceneLoadUtil
+- [x] SubSceneLoaded
+- [x] SubSceneLoadingManagedSystem
+- [x] SubSceneLoadingSystem
+- [x] SubScenePostLoadCommandBufferSystem
+- [x] SubSceneSetId
+- [x] UpdateWorldTimeSystem
+- [x] BovineLabsBootstrap
+- [x] BovineLabsBootstrap.NetCode
+- [x] PhysicsTags
+- [x] WorldSafeShutdown
+- [x] BlobHashMapTests
+- [x] UnsafeListPoolTests
+- [x] NativeThreadStreamExTests
+- [x] DynamicHashMapPerformanceTests
+- [x] FaceReadonlyTest
 - [x] StateFlagModelTests
 - [x] EntityLockTests
 - [x] MathExPerformanceTests
@@ -189,7 +189,7 @@ Track progress of all topic branches. Each branch = one topic = one README.md.
 - [x] UnsafeThreadStreamBlockData
 - [x] IFixedSize
 - [x] MiniString
-- [ ] ComponentSystemBaseInternal.RequireSingletonForUpdate
+- [x] ComponentSystemBaseInternal.RequireSingletonForUpdate
 - [x] Pin
 - [x] PolygonUtility
 - [x] QueryEntityEnumerator
@@ -198,24 +198,24 @@ Track progress of all topic branches. Each branch = one topic = one README.md.
 - [x] IntFloatUnion
 - [x] SpinLock
 - [x] SubSceneUtil
-- [ ] SyncEnableStateUtil
-- [ ] TimeProfiler
-- [ ] TransformUtility
-- [ ] TypeManagerEx
-- [ ] TypeManagerOverrides
-- [ ] TypeManagerUtil
-- [ ] TypeUtility
-- [ ] WorldUtility
-- [ ] WriteGroupMatcher
+- [x] SyncEnableStateUtil
+- [x] TimeProfiler
+- [x] TransformUtility
+- [x] TypeManagerEx
+- [x] TypeManagerOverrides
+- [x] TypeManagerUtil
+- [x] TypeUtility
+- [x] WorldUtility
+- [x] WriteGroupMatcher
 - [x] mathex.mod
 - [x] mathex.minMax
 - [x] mathex.add
 - [x] mathex.GenerateGaussianNoise
 - [x] mathex.FromToRotation
-- [ ] GhostComponentAttribute
-- [ ] GhostFieldAttribute
-- [ ] ReflectionTestHelper
-- [ ] TestLeakDetectionAttribute
+- [x] GhostComponentAttribute
+- [x] GhostFieldAttribute
+- [x] ReflectionTestHelper
+- [x] TestLeakDetectionAttribute
 - [x] NativeWorkQueue
 - [x] NativePerfectHashMap
 - [x] NativeUntypedHashMap
@@ -223,13 +223,13 @@ Track progress of all topic branches. Each branch = one topic = one README.md.
 - [x] UnsafeParallelPoolAllocator
 - [x] UnsafeFixedPoolAllocator
 - [x] UnsafePoolAllocator
-- [ ] UnsafePartialKeyedMap
-- [ ] UnsafePerfectHashMap
-- [ ] UnsafeUntypedDynamicBuffer
-- [ ] UnsafeUntypedDynamicBufferAccessor
-- [ ] UntypedDynamicBuffer
-- [ ] ReferenceT
-- [ ] ReferenceData
+- [x] UnsafePartialKeyedMap
+- [x] UnsafePerfectHashMap
+- [x] UnsafeUntypedDynamicBuffer
+- [x] UnsafeUntypedDynamicBufferAccessor
+- [x] UntypedDynamicBuffer
+- [x] ReferenceT
+- [x] ReferenceData
 - [x] LocalSpatialMap
 - [x] PositionBuilder
 - [x] SpatialKeyedMap
@@ -237,10 +237,10 @@ Track progress of all topic branches. Each branch = one topic = one README.md.
 - [x] SpatialMap3
 - [x] DistanceHitSortAscending
 - [x] DistanceHitSortDescending
-- [ ] EntityCommandBufferExtensions.AddUntypedBuffer
-- [ ] EntityCommandBufferExtensions.UnsafeAddComponent
-- [ ] EntityDataAccessExtensions.GetComponentDataWithTypeRW
-- [ ] EntityManagerExtensions.GetChunkBuffer
+- [x] EntityCommandBufferExtensions.AddUntypedBuffer
+- [x] EntityCommandBufferExtensions.UnsafeAddComponent
+- [x] EntityDataAccessExtensions.GetComponentDataWithTypeRW
+- [x] EntityManagerExtensions.GetChunkBuffer
 - [x] EntityManagerExtensions.GetOrCreateSingletonEntity
 - [x] EntityQueryExtensions.GetSingletonUntypedBuffer
 - [x] EntitySceneReferenceExtensions.SceneGUID
@@ -267,35 +267,35 @@ Track progress of all topic branches. Each branch = one topic = one README.md.
 - [x] FacetAttribute
 - [x] FacetOptionalAttribute
 - [x] IFacet
-- [ ] FacetGenerator
-- [ ] DynamicGenerator
-- [ ] BuilderBase
-- [ ] ClassBuilder
-- [ ] CodeBuilder
-- [ ] ConstructorBuilder
-- [ ] DelegateBuilder
-- [ ] EnumBuilder
-- [ ] EventBuilder
-- [ ] ExpressionBlockBuilder
-- [ ] LogicalConditionBuilder
-- [ ] MethodBuilder
-- [ ] PropertyBuilder
-- [ ] RecordBuilder
-- [ ] SwitchBuilder
-- [ ] CodeWriter
-- [ ] SymbolHelpers
-- [ ] FixedNameValue
-- [ ] KAttribute
-- [ ] KSettings
+- [x] FacetGenerator
+- [x] DynamicGenerator
+- [x] BuilderBase
+- [x] ClassBuilder
+- [x] CodeBuilder
+- [x] ConstructorBuilder
+- [x] DelegateBuilder
+- [x] EnumBuilder
+- [x] EventBuilder
+- [x] ExpressionBlockBuilder
+- [x] LogicalConditionBuilder
+- [x] MethodBuilder
+- [x] PropertyBuilder
+- [x] RecordBuilder
+- [x] SwitchBuilder
+- [x] CodeWriter
+- [x] SymbolHelpers
+- [x] FixedNameValue
+- [x] KAttribute
+- [x] KSettings
 - [x] AppAPI
 - [x] IState
 - [x] StateAPI
 - [x] StateInstanceUtil
-- [ ] ISingletonCollection
-- [ ] SingletonCollectionUtil
-- [ ] BakerExtensions.AddEnabledComponent
-- [ ] BakerExtensions.AddEnabledBuffer
-- [ ] PhysicsMassOverrideAuthoring
+- [x] ISingletonCollection
+- [x] SingletonCollectionUtil
+- [x] BakerExtensions.AddEnabledComponent
+- [x] BakerExtensions.AddEnabledBuffer
+- [x] PhysicsMassOverrideAuthoring
 - [x] RemovePhysicsVelocityAuthoring
 - [x] BakerCommands
 - [x] AuthoringSettingsUtility
@@ -321,31 +321,31 @@ Track progress of all topic branches. Each branch = one topic = one README.md.
 - [x] TextAssetHelper
 - [x] BitFieldAttributeEditor
 - [x] BlobAssetOwnerInspector
-- [ ] HalfDrawer
-- [ ] InlineObjectProperty
-- [ ] MinMaxAttributeDrawer
-- [ ] PrefabElementEditor
-- [ ] StableTypeHashAttributeDrawer
-- [ ] ToggleOption
-- [ ] UnityObjectRefInspector
-- [ ] WeakObjectReferenceInspector
-- [ ] EntitySelection.GetAllSelectionsInWorld
-- [ ] LoadPrefabsAsEntities
-- [ ] ReloadToolbarButton
-- [ ] WelcomeWindow
-- [ ] BaseObjectWindow
-- [ ] FeatureToggle
-- [ ] PrefabInstance
-- [ ] EntityBlobBakedData
-- [ ] EntityBlobBakingSystem
-- [ ] CloneTransformAuthoring
-- [ ] LifeCycleAuthoring
-- [ ] LookupAuthoring
-- [ ] ObjectDefinitionAuthoring
-- [ ] SubSceneEditorSet
-- [ ] MainToolbarPresetPostProcessor
-- [ ] AnalyzersProjectFileGeneration
-- [ ] InitializeAllOnLoadExt
+- [x] HalfDrawer
+- [x] InlineObjectProperty
+- [x] MinMaxAttributeDrawer
+- [x] PrefabElementEditor
+- [x] StableTypeHashAttributeDrawer
+- [x] ToggleOption
+- [x] UnityObjectRefInspector
+- [x] WeakObjectReferenceInspector
+- [x] EntitySelection.GetAllSelectionsInWorld
+- [x] LoadPrefabsAsEntities
+- [x] ReloadToolbarButton
+- [x] WelcomeWindow
+- [x] BaseObjectWindow
+- [x] FeatureToggle
+- [x] PrefabInstance
+- [x] EntityBlobBakedData
+- [x] EntityBlobBakingSystem
+- [x] CloneTransformAuthoring
+- [x] LifeCycleAuthoring
+- [x] LookupAuthoring
+- [x] ObjectDefinitionAuthoring
+- [x] SubSceneEditorSet
+- [x] MainToolbarPresetPostProcessor
+- [x] AnalyzersProjectFileGeneration
+- [x] InitializeAllOnLoadExt
 - [x] ComponentInspectorWindow
 - [x] ObjectInstantiate.Editor
 - [x] StartupSceneSwap
