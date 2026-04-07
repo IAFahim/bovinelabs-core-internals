@@ -122,3 +122,4 @@
  • Carries element size/alignment for untyped element access
  • Supports both RO and RW via handle.IsReadOnly flag
  • Enables generic/system-driven buffer processing without generics
+```
