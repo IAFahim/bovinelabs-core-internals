@@ -118,3 +118,9 @@
  │  Safe for all query types        │  No enableable components       │
  └──────────────────────────────────┴─────────────────────────────────┘
 ```
+
+## Source
+
+- [BovineLabs.Core/Extensions/EntityQueryExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/EntityQueryExtensions.cs)
+- [BovineLabs.Core/Internal/EntityQueryInternal.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Internal/EntityQueryInternal.cs)
+- [BovineLabs.Core/Extensions/EntityQueryBuilderExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/EntityQueryBuilderExtensions.cs)
