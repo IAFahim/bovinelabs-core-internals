@@ -254,3 +254,9 @@ KEY PROPERTIES
   * Failure Mode:      Returns false (not exception) when full/empty
   * Tracking:          MallocTracked/FreeTracked (visible in profiler)
   * Use Case:          Object pooling for lists, buffers, reusable objects
+
+## Source
+
+- [BovineLabs.Core/Collections/UnmanagedPool.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/UnmanagedPool.cs)
+- [BovineLabs.Core/Collections/UnsafeListPool.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/UnsafeListPool.cs)
+- [BovineLabs.Core.Tests/Collections/UnsafeListPoolTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Collections/UnsafeListPoolTests.cs)
