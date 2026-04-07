@@ -179,3 +179,9 @@ USE CASES
   ● BitArray32 — Unity layer mask compatibility (32 layers)
   ● BitArray64 — Extended flags, category masks, up to 64 features
 ```
+
+## Source
+
+- [BovineLabs.Core/Collections/BitArray.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/BitArray.cs)
+- [BovineLabs.Core.Tests/Models/TimerEnableableTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Models/TimerEnableableTests.cs)
+- [BovineLabs.Core/Iterators/DynamicHashMap/DynamicVariableMapHelper2.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/DynamicHashMap/DynamicVariableMapHelper2.cs)
