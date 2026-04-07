@@ -112,3 +112,4 @@
  ═════════
  There is also QueryHasSharedFilter<T>(int index) which checks if the
  filter at a specific position matches type T, without iterating.
+```
