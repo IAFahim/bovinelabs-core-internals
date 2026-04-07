@@ -212,3 +212,7 @@ Purpose: Register state-to-tag mappings during OnCreate
 5. **Decoupled Design**: `StateAPI` only handles registration. `StateImpl` reads all registrations to build the map. This allows registration to happen across multiple systems independently.
 
 6. **TypeIndex-Based Matching**: Uses `TypeManager.GetTypeIndex<TState>()` for type identity, ensuring the same state component type is used consistently.
+
+## Source
+
+- [BovineLabs.Core/States/StateAPI.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/States/StateAPI.cs)
