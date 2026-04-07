@@ -228,3 +228,7 @@ Key: Uses UnsafeEnableableLookup to toggle components in-place
 5. **UnsafeEnableableLookup**: Uses the unsafe variant for burst-compatible, direct chunk enable bit manipulation without safety checks.
 
 6. **No EntityCommandBuffer**: Since we're only toggling enable bits (not adding/removing), no ECB is needed. Changes apply immediately within the job.
+
+## Source
+
+- [BovineLabs.Core/States/StateModelEnableable.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/States/StateModelEnableable.cs)
