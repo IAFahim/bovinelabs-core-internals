@@ -426,3 +426,9 @@ parameters without pre-defining each as a separate component or buffer.
 The RemoveAt compaction is the most expensive operation (O(N)), as it must re-layout
 all remaining data with proper alignment. For workloads with frequent removals, consider
 using a "swap and pop" pattern or marking entries as invalid instead.
+
+## Source
+
+- [BovineLabs.Core/Iterators/DynamicHashMap/DynamicUntypedBuffer.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/DynamicHashMap/DynamicUntypedBuffer.cs)
+- [BovineLabs.Core/Iterators/DynamicHashMap/DynamicUntypedBufferHelper.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/DynamicHashMap/DynamicUntypedBufferHelper.cs)
+- [BovineLabs.Core.Tests/Iterators/DynamicUntypedBufferTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Iterators/DynamicUntypedBufferTests.cs)
