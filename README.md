@@ -1,457 +1,246 @@
-# BovineLabs Core - Inner Workings
+# StateModelWithHistory - Inner Workings
 
-ASCII architecture diagrams for every topic in `com.bovinelabs.core`.
+## Overview
 
-Each topic lives on its own branch. Switch to a branch to see the detailed
-README.md with full ASCII diagrams explaining the internal data structures,
-algorithms, and design decisions.
+`StateModelWithHistory` extends `StateModel` with a **ring buffer** of previous states, enabling undo/redo-style rollbacks. Two dynamic buffers (`HistoryBack` and `HistoryForward`) track the navigation stack. When a state reverts to a value found in the back buffer, it's treated as a "pop" (undo), and the old state moves to the forward buffer.
 
-## How to Use
-
-```bash
-# List all topic branches
-git branch -a
-
-# View a specific topic
-git checkout topic/NativeThreadStream
-
-# View the diagram
-cat README.md
+```
+File: BovineLabs.Core/States/StateModelWithHistory.cs
+State Size: 1 byte (single state value)
+Extra Components: HistoryBack (DynamicBuffer<byte>), HistoryForward (DynamicBuffer<byte>)
+Parameter: maxHistorySize - maximum entries in each buffer
 ```
 
-## Topics
+## Architecture
 
-### Core Collections
+```
+ ┌───────────────────────────────────────────────────────────────────────────┐
+ │                     StateModelWithHistory                                 │
+ │                                                                           │
+ │  ┌─────────────────────────────────────────────────────────────────────┐  │
+ │  │  Constructor                                                        │  │
+ │  │                                                                     │  │
+ │  │  Parameters:                                                        │  │
+ │  │    stateComponent         - current state byte component            │  │
+ │  │    previousStateComponent  - previous state byte component          │  │
+ │  │    historyBackComponent   - DynamicBuffer for undo stack            │  │
+ │  │    historyForwardComponent - DynamicBuffer for redo stack           │  │
+ │  │    maxHistorySize         - max entries per buffer                  │  │
+ │  │                                                                     │  │
+ │  │  Assert: stateSize == 1 byte                                        │  │
+ │  │  Assert: maxHistorySize > 0                                         │  │
+ │  │                                                                     │  │
+ │  │  impl = StateImpl(stateComponent, previousStateComponent)           │  │
+ │  │  historyBackType = GetDynamicComponentTypeHandle(historyBack)       │  │
+ │  │  historyForwardType = GetDynamicComponentTypeHandle(historyForward) │  │
+ │  └─────────────────────────────────────────────────────────────────────┘  │
+ │                                                                           │
+ │  ┌─────────────────────────────────────────────────────────────────────┐  │
+ │  │  Per-Entity Data Layout:                                            │  │
+ │  │                                                                     │  │
+ │  │  Entity: [State(byte), Previous(byte), HistoryBack(buf),           │  │
+ │  │           HistoryForward(buf)]                                      │  │
+ │  │                                                                     │  │
+ │  │  HistoryBack buffer:    [old1, old2, old3, ...]  (undo stack)      │  │
+ │  │  HistoryForward buffer: [new1, new2, new3, ...]  (redo stack)      │  │
+ │  └─────────────────────────────────────────────────────────────────────┘  │
+ └───────────────────────────────────────────────────────────────────────────┘
+```
 
-- [NativeThreadStream](../../tree/topic/NativeThreadStream)
-- [NativeCounter](../../tree/topic/NativeCounter)
-- [NativeKeyedMap](../../tree/topic/NativeKeyedMap)
-- [NativeLinearCongruentialGenerator](../../tree/topic/NativeLinearCongruentialGenerator)
-- [NativeParallelMultiHashMapFallback](../../tree/topic/NativeParallelMultiHashMapFallback)
-- [NativePartialKeyedMap](../../tree/topic/NativePartialKeyedMap)
-- [ThreadList](../../tree/topic/ThreadList)
-- [ThreadRandom](../../tree/topic/ThreadRandom)
-- [UnsafeArray](../../tree/topic/UnsafeArray)
-- [BitArray256](../../tree/topic/BitArray256)
-- [FixedArray](../../tree/topic/FixedArray)
-- [NativeHashMapExtensions.GetOrAddRef](../../tree/topic/NativeHashMapExtensions_GetOrAddRef)
-- [NativeHashMapExtensions.ClearAndAddBatchUnsafe](../../tree/topic/NativeHashMapExtensions_ClearAndAddBatchUnsafe)
-- [NativeListExtensions.ReserveNoResize](../../tree/topic/NativeListExtensions_ReserveNoResize)
-- [NativeThreadStreamExTests](../../tree/topic/NativeThreadStreamExTests)
-- [BitArray8_16_32_64](../../tree/topic/BitArray8_16_32_64)
-- [BitArray128](../../tree/topic/BitArray128)
-- [BitArrayUtilities](../../tree/topic/BitArrayUtilities)
-- [NativeThreadStream.Reader](../../tree/topic/NativeThreadStream_Reader)
-- [NativeThreadStream.Writer](../../tree/topic/NativeThreadStream_Writer)
-- [NativeWorkQueue](../../tree/topic/NativeWorkQueue)
-- [NativePerfectHashMap](../../tree/topic/NativePerfectHashMap)
-- [NativeUntypedHashMap](../../tree/topic/NativeUntypedHashMap)
-- [UnsafePartialKeyedMap](../../tree/topic/UnsafePartialKeyedMap)
-- [UnsafePerfectHashMap](../../tree/topic/UnsafePerfectHashMap)
-- [NativeListExtensions.ClearAddRange](../../tree/topic/NativeListExtensions_ClearAddRange)
-- [NativeParallelMultiHashMapExtensions.GetUniqueKeyArray](../../tree/topic/NativeParallelMultiHashMapExtensions_GetUniqueKeyArray)
+## History Decision Tree
 
-### Blob System
+```
+                    State change detected
+                    (state != previous)
+                           │
+                           ▼
+              ┌────────────────────────────┐
+              │ Is HistoryBack empty?      │
+              └─────────┬──────────────────┘
+                        │
+           ┌────────────┴────────────┐
+           │ NO                      │ YES
+           ▼                         ▼
+  ┌──────────────────────┐   ┌──────────────────────────┐
+  │ back[^1] == state?   │   │ Always treat as NEW      │
+  │ (Pop / Undo?)        │   │ state transition          │
+  └─────────┬────────────┘   └────────────┬─────────────┘
+            │                               │
+   ┌────────┴────────┐                      │
+   │ YES             │ NO                   │
+   │ (UNDO/POP)      │ (NEW STATE)          │
+   ▼                 ▼                      ▼
+  ┌──────────┐  ┌──────────────────────────────────────┐
+  │ UNDO     │  │ NEW STATE TRANSITION                  │
+  │          │  │                                       │
+  │ 1. Push  │  │ 1. Check Forward buffer:              │
+  │ previous │  │    ┌─────────────────────────────────┐│
+  │ to       │  │    │ forward.Length > 0?              ││
+  │ Forward  │  │    │   YES: forward[^1] == state?     ││
+  │          │  │    │     YES → forward.RemoveAt(last) ││
+  │ 2. Pop   │  │    │     NO  → forward.Clear()        ││
+  │ from     │  │    │         (new branch, redo=garbage)││
+  │ Back     │  │    └─────────────────────────────────┘│
+  │          │  │                                       │
+  │          │  │ 2. Push previous to Back buffer       │
+  │          │  │    (with capacity limit)              │
+  └──────────┘  └──────────────────────────────────────┘
+```
 
-- [BlobHashMap](../../tree/topic/BlobHashMap)
-- [BlobPerfectHashMap](../../tree/topic/BlobPerfectHashMap)
-- [BlobCurve](../../tree/topic/BlobCurve)
-- [BlobBuilderExtensions](../../tree/topic/BlobBuilderExtensions)
-- [BlobHashMapTests](../../tree/topic/BlobHashMapTests)
-- [BlobCurve2_3_4](../../tree/topic/BlobCurve2_3_4)
-- [BlobCurveCache](../../tree/topic/BlobCurveCache)
-- [BlobCurveHeader](../../tree/topic/BlobCurveHeader)
-- [BlobCurveSampler](../../tree/topic/BlobCurveSampler)
-- [BlobCurveSegment](../../tree/topic/BlobCurveSegment)
-- [BlobShared](../../tree/topic/BlobShared)
-- [IBlobCurve](../../tree/topic/IBlobCurve)
-- [BlobBuilderExtensions.Allocate](../../tree/topic/BlobBuilderExtensions_Allocate)
-- [BlobBuilderExtensions.ConstructHashMap](../../tree/topic/BlobBuilderExtensions_ConstructHashMap)
-- [BlobBuilderHashMap](../../tree/topic/BlobBuilderHashMap)
-- [BlobBuilderMultiHashMap](../../tree/topic/BlobBuilderMultiHashMap)
-- [BlobBuilderPerfectHashMap](../../tree/topic/BlobBuilderPerfectHashMap)
-- [BlobHashMapData](../../tree/topic/BlobHashMapData)
-- [BlobMultiHashMapIterator](../../tree/topic/BlobMultiHashMapIterator)
-- [BlobSpline](../../tree/topic/BlobSpline)
-- [BlobAssetOwnerInspector](../../tree/topic/BlobAssetOwnerInspector)
-- [EntityBlobBakedData](../../tree/topic/EntityBlobBakedData)
-- [EntityBlobBakingSystem](../../tree/topic/EntityBlobBakingSystem)
+## State Transition with History Tracking
 
-### Memory & Allocators
+```
+  Entity: State=0, Prev=0, Back=[], Forward=[]
 
-- [PooledNativeList](../../tree/topic/PooledNativeList)
-- [UnmanagedPool](../../tree/topic/UnmanagedPool)
-- [UnsafeSlabAllocator](../../tree/topic/UnsafeSlabAllocator)
-- [MemoryLabelAllocator](../../tree/topic/MemoryLabelAllocator)
-- [MemoryAllocator](../../tree/topic/MemoryAllocator)
-- [NoAllocHelpers](../../tree/topic/NoAllocHelpers)
-- [UnsafeListPoolTests](../../tree/topic/UnsafeListPoolTests)
-- [NativeSlabAllocator](../../tree/topic/NativeSlabAllocator)
-- [UnsafeParallelPoolAllocator](../../tree/topic/UnsafeParallelPoolAllocator)
-- [UnsafeFixedPoolAllocator](../../tree/topic/UnsafeFixedPoolAllocator)
-- [UnsafePoolAllocator](../../tree/topic/UnsafePoolAllocator)
-- [NativeArrayExtensions.WhereNoAlloc](../../tree/topic/NativeArrayExtensions_WhereNoAlloc)
+  ┌─ Frame 1: State → 1 (Idle) ──────────────────────────────────────────┐
+  │                                                                        │
+  │  State=1, Prev=0 → Change detected                                    │
+  │  Back is empty → NEW STATE transition                                 │
+  │  Forward is empty → nothing to clear                                  │
+  │  Back.Push(0) → Back = [0]                                            │
+  │  Prev = 1                                                             │
+  │  RemoveComponent: none (prev was 0)                                   │
+  │  AddComponent: TagIdle (state=1)                                      │
+  └────────────────────────────────────────────────────────────────────────┘
+       │
+       ▼
+  ┌─ Frame 2: State → 2 (Running) ──────────────────────────────────────┐
+  │                                                                        │
+  │  State=2, Prev=1 → Change detected                                    │
+  │  Back = [0], Back[^1]=0 != 2 → NEW STATE                             │
+  │  Forward is empty → nothing to clear                                  │
+  │  Back.Push(1) → Back = [0, 1]                                         │
+  │  Prev = 2                                                             │
+  │  RemoveComponent: TagIdle (prev=1)                                    │
+  │  AddComponent: TagRunning (state=2)                                   │
+  └────────────────────────────────────────────────────────────────────────┘
+       │
+       ▼
+  ┌─ Frame 3: State → 3 (Jumping) ──────────────────────────────────────┐
+  │                                                                        │
+  │  State=3, Prev=2 → Change detected                                    │
+  │  Back = [0, 1], Back[^1]=1 != 3 → NEW STATE                         │
+  │  Forward is empty → nothing to clear                                  │
+  │  Back.Push(2) → Back = [0, 1, 2]                                      │
+  │  Prev = 3                                                             │
+  │  RemoveComponent: TagRunning (prev=2)                                 │
+  │  AddComponent: TagJumping (state=3)                                   │
+  └────────────────────────────────────────────────────────────────────────┘
+       │
+       ▼
+  ┌─ Frame 4: State → 1 (UNDO to Idle) ─────────────────────────────────┐
+  │                                                                        │
+  │  State=1, Prev=3 → Change detected                                    │
+  │  Back = [0, 1, 2], Back[^1]=2 != 1                                   │
+  │  BUT Back[0]=0 != 1, Back[1]=1 == 1 → POP!                           │
+  │                                                                        │
+  │  POP operation:                                                        │
+  │    Forward.Push(3) → Forward = [3]                                     │
+  │    Back.RemoveAt(last) → Back = [0, 1]                                │
+  │    Wait, Back[^1]=2 ≠ 1...                                            │
+  │    Actually: Back[^1]=2 ≠ 1, so it's a NEW state, not pop             │
+  │    Forward.Clear() (was empty, skip)                                  │
+  │    Back.Push(3) → Back = [0, 1, 2, 3]                                │
+  │  Prev = 1                                                             │
+  │  RemoveComponent: TagJumping (prev=3)                                 │
+  │  AddComponent: TagIdle (state=1)                                      │
+  └────────────────────────────────────────────────────────────────────────┘
 
-### Dynamic Buffers
+  NOTE: Pop only triggers when the new state matches Back[^1] (the most
+  recent entry). The check is: Back.Length > 0 && Back[^1] == state
+```
 
-- [Hydrodynamics](../../tree/topic/Hydrodynamics)
-- [DynamicMultiHashMap](../../tree/topic/DynamicMultiHashMap)
-- [DynamicHashSet](../../tree/topic/DynamicHashSet)
-- [DynamicUntypedBuffer](../../tree/topic/DynamicUntypedBuffer)
-- [DynamicVariableMap](../../tree/topic/DynamicVariableMap)
-- [ArchetypeChunk.GetDynamicBufferAccessor](../../tree/topic/ArchetypeChunk_GetDynamicBufferAccessor)
-- [DynamicHashMapPerformanceTests](../../tree/topic/DynamicHashMapPerformanceTests)
-- [UnsafeUntypedDynamicBuffer](../../tree/topic/UnsafeUntypedDynamicBuffer)
-- [UnsafeUntypedDynamicBufferAccessor](../../tree/topic/UnsafeUntypedDynamicBufferAccessor)
-- [UntypedDynamicBuffer](../../tree/topic/UntypedDynamicBuffer)
-- [DynamicGenerator](../../tree/topic/DynamicGenerator)
+## Ring Buffer Capacity Management
 
-### ECS Extensions
+```
+  Back Buffer (maxHistorySize = 3):
+  ══════════════════════════════════
 
-- [ArchetypeChunk.DidChange](../../tree/topic/ArchetypeChunk_DidChange)
-- [ArchetypeChunk.GetNativeArrayReadOnly](../../tree/topic/ArchetypeChunk_GetNativeArrayReadOnly)
-- [BufferAccessor.GetUnsafe](../../tree/topic/BufferAccessor_GetUnsafe)
-- [BufferLookup.GetROAndChunk](../../tree/topic/BufferLookup_GetROAndChunk)
-- [ComponentLookup.GetOptionalComponentDataRW](../../tree/topic/ComponentLookup_GetOptionalComponentDataRW)
-- [ComponentLookup.SetChangeFilter](../../tree/topic/ComponentLookup_SetChangeFilter)
-- [EntityQueryBuilder.WithAllRW](../../tree/topic/EntityQueryBuilder_WithAllRW)
-- [EntityQuery.QueryHasSharedFilter](../../tree/topic/EntityQuery_QueryHasSharedFilter)
-- [EntityQuery.ReplaceSharedComponentFilter](../../tree/topic/EntityQuery_ReplaceSharedComponentFilter)
-- [EntityQuery.GetFirstEntity](../../tree/topic/EntityQuery_GetFirstEntity)
-- [EntityQuery.GetSingletonBufferNoSync](../../tree/topic/EntityQuery_GetSingletonBufferNoSync)
-- [SystemState.GetSingletonEntity](../../tree/topic/SystemState_GetSingletonEntity)
-- [SystemState.GetManagedSingleton](../../tree/topic/SystemState_GetManagedSingleton)
-- [World.IsClientWorld](../../tree/topic/World_IsClientWorld)
-- [CopyEnableable](../../tree/topic/CopyEnableable)
-- [TimerEnableable](../../tree/topic/TimerEnableable)
-- [StateModelEnableable](../../tree/topic/StateModelEnableable)
-- [EnableMaskCreator](../../tree/topic/EnableMaskCreator)
-- [EntityLock](../../tree/topic/EntityLock)
-- [EntityLockTests](../../tree/topic/EntityLockTests)
-- [ChangeFilterTrackingAttribute](../../tree/topic/ChangeFilterTrackingAttribute)
-- [TypeManagerEx](../../tree/topic/TypeManagerEx)
-- [TypeManagerOverrides](../../tree/topic/TypeManagerOverrides)
-- [TypeManagerUtil](../../tree/topic/TypeManagerUtil)
-- [TypeUtility](../../tree/topic/TypeUtility)
-- [WriteGroupMatcher](../../tree/topic/WriteGroupMatcher)
-- [EntityDataAccessExtensions.GetComponentDataWithTypeRW](../../tree/topic/EntityDataAccessExtensions_GetComponentDataWithTypeRW)
-- [EntityManagerExtensions.GetChunkBuffer](../../tree/topic/EntityManagerExtensions_GetChunkBuffer)
-- [EntityManagerExtensions.GetOrCreateSingletonEntity](../../tree/topic/EntityManagerExtensions_GetOrCreateSingletonEntity)
-- [EntityQueryExtensions.GetSingletonUntypedBuffer](../../tree/topic/EntityQueryExtensions_GetSingletonUntypedBuffer)
-- [EntitySceneReferenceExtensions.SceneGUID](../../tree/topic/EntitySceneReferenceExtensions_SceneGUID)
-- [EntityStorageInfoLookupExtensions.GetNameUnsafe](../../tree/topic/EntityStorageInfoLookupExtensions_GetNameUnsafe)
-- [RefRWExtensions.Create](../../tree/topic/RefRWExtensions_Create)
-- [SystemStateExtensions.GetUnsafeEntityDataAccess](../../tree/topic/SystemStateExtensions_GetUnsafeEntityDataAccess)
-- [ChangeFilterTrackingSystem](../../tree/topic/ChangeFilterTrackingSystem)
+  Step 1: Back = [0]             Length=1, cap ok
+  Step 2: Back = [0, 1]          Length=2, cap ok
+  Step 3: Back = [0, 1, 2]       Length=3, cap ok
+  Step 4: Push 3 → Length == maxHistorySize
+          ┌────────────────────────────────────────┐
+          │  RemoveAt(0) → evict oldest entry      │
+          │  Back = [1, 2]                          │
+          │  Push(3)                                │
+          │  Back = [1, 2, 3]                       │
+          └────────────────────────────────────────┘
 
-### Jobs & Threading
+  Forward Buffer (maxHistorySize = 3):
+  ═════════════════════════════════════
 
-- [IJobParallelForDeferExtensions](../../tree/topic/IJobParallelForDeferExtensions)
-- [IJobChunkWorkerBeginEnd](../../tree/topic/IJobChunkWorkerBeginEnd)
-- [IJobForThread](../../tree/topic/IJobForThread)
-- [IJobHashMapDefer](../../tree/topic/IJobHashMapDefer)
-- [IJobParallelForDeferBatch](../../tree/topic/IJobParallelForDeferBatch)
-- [IJobParallelForDeferExtensions.Schedule](../../tree/topic/IJobParallelForDeferExtensions_Schedule)
+  Similar capacity management. When forward buffer is full and a new
+  entry needs to be added, the oldest entry (index 0) is evicted.
+```
 
-### State & Model
+## Complete Data Flow
 
-- [TimerFixed](../../tree/topic/TimerFixed)
-- [TimerTriggerResetJob](../../tree/topic/TimerTriggerResetJob)
-- [StateFlagModel](../../tree/topic/StateFlagModel)
-- [StateModelWithHistory](../../tree/topic/StateModelWithHistory)
-- [StatefulCollisionEvent](../../tree/topic/StatefulCollisionEvent)
-- [StatefulTriggerEvent](../../tree/topic/StatefulTriggerEvent)
-- [StatefulCollisionEventClearSystem](../../tree/topic/StatefulCollisionEventClearSystem)
-- [StatefulTriggerEventClearSystem](../../tree/topic/StatefulTriggerEventClearSystem)
-- [StateFlagModelTests](../../tree/topic/StateFlagModelTests)
-- [IState](../../tree/topic/IState)
-- [StateAPI](../../tree/topic/StateAPI)
-- [StateInstanceUtil](../../tree/topic/StateInstanceUtil)
-- [DestroyTimer](../../tree/topic/DestroyTimer)
+```
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  StateJob.Execute(chunk):                                       │
+  │                                                                 │
+  │  1. Get state, previous, historyBack, historyForward arrays     │
+  │  2. For each entity:                                            │
+  │     a. IF state == previous → CONTINUE (skip)                   │
+  │     b. IF previous != 0 → RemoveComponent(registered[prev])    │
+  │     c. IF state != 0 → AddComponent(registered[state])         │
+  │     d. Navigate history buffers (see decision tree above)       │
+  │     e. previous = state                                         │
+  └─────────────────────────────────────────────────────────────────┘
+```
 
-### Spatial & Physics
+## Navigation Example (Undo/Redo)
 
-- [AabbExtensions](../../tree/topic/AabbExtensions)
-- [AlwaysUpdatePhysicsWorld](../../tree/topic/AlwaysUpdatePhysicsWorld)
-- [IntersectionTests](../../tree/topic/IntersectionTests)
-- [ConvexHullBuilder](../../tree/topic/ConvexHullBuilder)
-- [MeshSimplifier](../../tree/topic/MeshSimplifier)
-- [TerrainToMesh](../../tree/topic/TerrainToMesh)
-- [PhysicsLayerUtil](../../tree/topic/PhysicsLayerUtil)
-- [AlwaysUpdatePhysicsWorldSystem](../../tree/topic/AlwaysUpdatePhysicsWorldSystem)
-- [PhysicsTags](../../tree/topic/PhysicsTags)
-- [LocalSpatialMap](../../tree/topic/LocalSpatialMap)
-- [PositionBuilder](../../tree/topic/PositionBuilder)
-- [SpatialKeyedMap](../../tree/topic/SpatialKeyedMap)
-- [SpatialMap](../../tree/topic/SpatialMap)
-- [SpatialMap3](../../tree/topic/SpatialMap3)
-- [DistanceHitSortAscending](../../tree/topic/DistanceHitSortAscending)
-- [DistanceHitSortDescending](../../tree/topic/DistanceHitSortDescending)
-- [PhysicsExtensions.Raycast](../../tree/topic/PhysicsExtensions_Raycast)
-- [PhysicsMassOverrideAuthoring](../../tree/topic/PhysicsMassOverrideAuthoring)
-- [RemovePhysicsVelocityAuthoring](../../tree/topic/RemovePhysicsVelocityAuthoring)
+```
+  Timeline:
+  ════════
 
-### Utility
+  State:  0 ──► 1 ──► 2 ──► 3 ──► 2 ──► 1 ──► 3
+          start Idle Run  Jump  UNDO  UNDO  REDO
+                                 to    to    to
+                                 Run   Idle  Jump
 
-- [Ptr](../../tree/topic/Ptr)
-- [BurstTrampoline](../../tree/topic/BurstTrampoline)
-- [BurstUtil.IsEmpty](../../tree/topic/BurstUtil_IsEmpty)
-- [ButtonEvent](../../tree/topic/ButtonEvent)
-- [CurveRemapUtility](../../tree/topic/CurveRemapUtility)
-- [DebugUtil.SplitInt](../../tree/topic/DebugUtil_SplitInt)
-- [GlobalRandom](../../tree/topic/GlobalRandom)
-- [InitSystemBase](../../tree/topic/InitSystemBase)
-- [LibraryLoader](../../tree/topic/LibraryLoader)
-- [SceneInitializeSystem](../../tree/topic/SceneInitializeSystem)
-- [WorldSafeShutdown](../../tree/topic/WorldSafeShutdown)
-- [IFixedSize](../../tree/topic/IFixedSize)
-- [MiniString](../../tree/topic/MiniString)
-- [Pin](../../tree/topic/Pin)
-- [QueryEntityEnumerator](../../tree/topic/QueryEntityEnumerator)
-- [ReflectionUtility](../../tree/topic/ReflectionUtility)
-- [SpinLock](../../tree/topic/SpinLock)
-- [TransformUtility](../../tree/topic/TransformUtility)
-- [WorldUtility](../../tree/topic/WorldUtility)
-- [GhostComponentAttribute](../../tree/topic/GhostComponentAttribute)
-- [GhostFieldAttribute](../../tree/topic/GhostFieldAttribute)
-- [InitializeAllOnLoadExt](../../tree/topic/InitializeAllOnLoadExt)
-- [CloneTransformSystem](../../tree/topic/CloneTransformSystem)
+  After "0 → 1":  Back=[0],         Forward=[]
+  After "1 → 2":  Back=[0,1],       Forward=[]
+  After "2 → 3":  Back=[0,1,2],     Forward=[]
 
-### Extension Methods
+  After UNDO (3→2):
+    Back[^1]=2 == state=2 → POP!
+    Forward.Push(3) → Forward=[3]
+    Back.Pop()      → Back=[0,1]
 
-- [ListExtensions.AddRangeNative](../../tree/topic/ListExtensions_AddRangeNative)
-- [NativeStreamExtensions.WriteLarge](../../tree/topic/NativeStreamExtensions_WriteLarge)
-- [EntityCommandBufferExtensions.AddUntypedBuffer](../../tree/topic/EntityCommandBufferExtensions_AddUntypedBuffer)
-- [EntityCommandBufferExtensions.UnsafeAddComponent](../../tree/topic/EntityCommandBufferExtensions_UnsafeAddComponent)
-- [EnumerableExtensions.IndexOf](../../tree/topic/EnumerableExtensions_IndexOf)
-- [GameObjectExtensions.IsPrefab](../../tree/topic/GameObjectExtensions_IsPrefab)
-- [NativeArrayExtensions.ElementAtRO](../../tree/topic/NativeArrayExtensions_ElementAtRO)
-- [NativeArrayExtensions.Select](../../tree/topic/NativeArrayExtensions_Select)
-- [NativeSliceExtensions.ReadArrayElementWithStrideRef](../../tree/topic/NativeSliceExtensions_ReadArrayElementWithStrideRef)
-- [NativeStreamExtensions.ReadLarge](../../tree/topic/NativeStreamExtensions_ReadLarge)
-- [StringExtensions.ToDotNotation](../../tree/topic/StringExtensions_ToDotNotation)
-- [SystemStateExtensions.GetAllSystemDependencies](../../tree/topic/SystemStateExtensions_GetAllSystemDependencies)
-- [UnsafeHashMapExtensions.GetOrAddRef](../../tree/topic/UnsafeHashMapExtensions_GetOrAddRef)
-- [UnsafeParallelHashMapDataExtensions.ReserveParallel](../../tree/topic/UnsafeParallelHashMapDataExtensions_ReserveParallel)
-- [WorldUnmanagedExtensions.GetTrackedJobHandle](../../tree/topic/WorldUnmanagedExtensions_GetTrackedJobHandle)
+  After UNDO (2→1):
+    Back[^1]=1 == state=1 → POP!
+    Forward.Push(2) → Forward=[3,2]
+    Back.Pop()      → Back=[0]
 
-### ConfigVars
+  After REDO (1→3):
+    Back[^1]=0 != state=3 → NEW STATE (not a pop)
+    Forward[^1]=2 != state=3 → CLEAR FORWARD
+    Forward.Clear() → Forward=[]
+    Back.Push(1)    → Back=[0,1]
+    (forward history lost because it's a new branch)
 
-- [KSettingsBase](../../tree/topic/KSettingsBase)
-- [ConfigVarAttribute](../../tree/topic/ConfigVarAttribute)
-- [ConfigVarManager](../../tree/topic/ConfigVarManager)
-- [SharedStaticStringContainer](../../tree/topic/SharedStaticStringContainer)
-- [CodecService](../../tree/topic/CodecService)
-- [CommandLineArgs](../../tree/topic/CommandLineArgs)
-- [Deserializer](../../tree/topic/Deserializer)
-- [Serializer](../../tree/topic/Serializer)
-- [FixedNameValue](../../tree/topic/FixedNameValue)
-- [KAttribute](../../tree/topic/KAttribute)
-- [KSettings](../../tree/topic/KSettings)
-- [ConfigVarPanel](../../tree/topic/ConfigVarPanel)
+  After REDO (1→2):
+    Back[^1]=1 != state=2 → NEW STATE
+    Forward is empty → nothing to check
+    Back.Push(1) → Back=[0,1,1]
+    Wait... state=2, prev=1
+    Back.Push(1) → Back=[0,1,1]
+    Prev = 2
+```
 
-### Authoring & Baking
+## Key Design Decisions
 
-- [BakerExtensions.AddEnabledComponent](../../tree/topic/BakerExtensions_AddEnabledComponent)
-- [BakerExtensions.AddEnabledBuffer](../../tree/topic/BakerExtensions_AddEnabledBuffer)
-- [BakerCommands](../../tree/topic/BakerCommands)
-- [AuthoringSettingsUtility](../../tree/topic/AuthoringSettingsUtility)
-- [SettingsAuthoring](../../tree/topic/SettingsAuthoring)
-- [TagAuthoring](../../tree/topic/TagAuthoring)
-- [TransformAuthoring](../../tree/topic/TransformAuthoring)
-- [GameObjectHelper.AddAuthoringComponent](../../tree/topic/GameObjectHelper_AddAuthoringComponent)
-- [CloneTransformAuthoring](../../tree/topic/CloneTransformAuthoring)
-- [LifeCycleAuthoring](../../tree/topic/LifeCycleAuthoring)
-- [LookupAuthoring](../../tree/topic/LookupAuthoring)
+1. **Two-Buffer Undo/Redo**: Classic undo/redo pattern. Back buffer stores states you can undo to. Forward buffer stores states you can redo to.
 
-### Editor Tools
+2. **Pop Detection**: When `back[^1] == state`, the system recognizes this as an undo operation rather than a new state, preserving the forward history.
 
-- [AssemblyBuilderWindow](../../tree/topic/AssemblyBuilderWindow)
-- [ComponentAssetBaseDrawer](../../tree/topic/ComponentAssetBaseDrawer)
-- [TypeSearchProvider](../../tree/topic/TypeSearchProvider)
-- [CoreBuildSetup](../../tree/topic/CoreBuildSetup)
-- [CreateEditorWorld](../../tree/topic/CreateEditorWorld)
-- [EditorMenus.DataModeHierarchySet](../../tree/topic/EditorMenus_DataModeHierarchySet)
-- [InspectorSearch](../../tree/topic/InspectorSearch)
-- [SelectedEntityEditorSystem](../../tree/topic/SelectedEntityEditorSystem)
-- [AssemblyGraphWindow](../../tree/topic/AssemblyGraphWindow)
-- [ComponentDependencyWindow](../../tree/topic/ComponentDependencyWindow)
-- [SystemDependencyWindow](../../tree/topic/SystemDependencyWindow)
-- [CoreEditorPreferencesProvider](../../tree/topic/CoreEditorPreferencesProvider)
-- [BitFieldAttributeEditor](../../tree/topic/BitFieldAttributeEditor)
-- [HalfDrawer](../../tree/topic/HalfDrawer)
-- [InlineObjectProperty](../../tree/topic/InlineObjectProperty)
-- [PrefabElementEditor](../../tree/topic/PrefabElementEditor)
-- [StableTypeHashAttributeDrawer](../../tree/topic/StableTypeHashAttributeDrawer)
-- [ToggleOption](../../tree/topic/ToggleOption)
-- [UnityObjectRefInspector](../../tree/topic/UnityObjectRefInspector)
-- [WeakObjectReferenceInspector](../../tree/topic/WeakObjectReferenceInspector)
-- [EntitySelection.GetAllSelectionsInWorld](../../tree/topic/EntitySelection_GetAllSelectionsInWorld)
-- [LoadPrefabsAsEntities](../../tree/topic/LoadPrefabsAsEntities)
-- [ReloadToolbarButton](../../tree/topic/ReloadToolbarButton)
-- [WelcomeWindow](../../tree/topic/WelcomeWindow)
-- [BaseObjectWindow](../../tree/topic/BaseObjectWindow)
-- [FeatureToggle](../../tree/topic/FeatureToggle)
-- [MainToolbarPresetPostProcessor](../../tree/topic/MainToolbarPresetPostProcessor)
-- [ComponentInspectorWindow](../../tree/topic/ComponentInspectorWindow)
-- [StartupSceneSwap](../../tree/topic/StartupSceneSwap)
-- [ViewModelToolbar](../../tree/topic/ViewModelToolbar)
+3. **Forward History Invalidation**: When entering a genuinely new state (not a redo), the entire forward buffer is cleared (like a browser navigation: going back then navigating to a new page loses forward history).
 
-### Source Generators
+4. **Capacity Limits**: Both buffers respect `maxHistorySize`. When full, the oldest entry (index 0) is evicted.
 
-- [FacetAttribute](../../tree/topic/FacetAttribute)
-- [FacetOptionalAttribute](../../tree/topic/FacetOptionalAttribute)
-- [IFacet](../../tree/topic/IFacet)
-- [FacetGenerator](../../tree/topic/FacetGenerator)
-- [BuilderBase](../../tree/topic/BuilderBase)
-- [ClassBuilder](../../tree/topic/ClassBuilder)
-- [CodeBuilder](../../tree/topic/CodeBuilder)
-- [ConstructorBuilder](../../tree/topic/ConstructorBuilder)
-- [DelegateBuilder](../../tree/topic/DelegateBuilder)
-- [EnumBuilder](../../tree/topic/EnumBuilder)
-- [EventBuilder](../../tree/topic/EventBuilder)
-- [ExpressionBlockBuilder](../../tree/topic/ExpressionBlockBuilder)
-- [LogicalConditionBuilder](../../tree/topic/LogicalConditionBuilder)
-- [MethodBuilder](../../tree/topic/MethodBuilder)
-- [PropertyBuilder](../../tree/topic/PropertyBuilder)
-- [RecordBuilder](../../tree/topic/RecordBuilder)
-- [SwitchBuilder](../../tree/topic/SwitchBuilder)
-- [CodeWriter](../../tree/topic/CodeWriter)
-- [SymbolHelpers](../../tree/topic/SymbolHelpers)
+5. **EntityCommandBuffer**: Still uses ECB for structural changes (add/remove tag components), same as the base `StateModel`.
 
-### SubScene System
-
-- [SubSceneLoadData](../../tree/topic/SubSceneLoadData)
-- [SubSceneEntity](../../tree/topic/SubSceneEntity)
-- [LoadSubScene](../../tree/topic/LoadSubScene)
-- [SubSceneBuffer](../../tree/topic/SubSceneBuffer)
-- [SubSceneLoadFlags](../../tree/topic/SubSceneLoadFlags)
-- [SubSceneLoadFlagsUtility](../../tree/topic/SubSceneLoadFlagsUtility)
-- [SubSceneLoadUtil](../../tree/topic/SubSceneLoadUtil)
-- [SubSceneLoaded](../../tree/topic/SubSceneLoaded)
-- [SubSceneLoadingManagedSystem](../../tree/topic/SubSceneLoadingManagedSystem)
-- [SubSceneLoadingSystem](../../tree/topic/SubSceneLoadingSystem)
-- [SubScenePostLoadCommandBufferSystem](../../tree/topic/SubScenePostLoadCommandBufferSystem)
-- [SubSceneSetId](../../tree/topic/SubSceneSetId)
-- [SubSceneUtil](../../tree/topic/SubSceneUtil)
-- [SubSceneEditorSet](../../tree/topic/SubSceneEditorSet)
-- [SubSceneEditorSystem](../../tree/topic/SubSceneEditorSystem)
-- [SubSceneEditorToolbar](../../tree/topic/SubSceneEditorToolbar)
-- [SubScenePrebakeSystem](../../tree/topic/SubScenePrebakeSystem)
-- [DestroyOnSubSceneUnloadSystem](../../tree/topic/DestroyOnSubSceneUnloadSystem)
-
-### Pause & Time
-
-- [LimitedRateNoCatchUpManager](../../tree/topic/LimitedRateNoCatchUpManager)
-- [PauseGame](../../tree/topic/PauseGame)
-- [PauseLimitSystem](../../tree/topic/PauseLimitSystem)
-- [PauseRateManager](../../tree/topic/PauseRateManager)
-- [PauseUtility](../../tree/topic/PauseUtility)
-- [FixedStepUpdatedSystem](../../tree/topic/FixedStepUpdatedSystem)
-- [UpdateWorldTimeSystem](../../tree/topic/UpdateWorldTimeSystem)
-
-### Relevancy & Netcode
-
-- [InputBounds](../../tree/topic/InputBounds)
-- [RelevanceAlways](../../tree/topic/RelevanceAlways)
-- [RelevanceConfig](../../tree/topic/RelevanceConfig)
-- [RelevanceManual](../../tree/topic/RelevanceManual)
-- [RelevanceProvider](../../tree/topic/RelevanceProvider)
-- [RelevancySystem](../../tree/topic/RelevancySystem)
-
-### Singleton System
-
-- [SingletonAttribute](../../tree/topic/SingletonAttribute)
-- [SingletonInitialize](../../tree/topic/SingletonInitialize)
-- [SingletonInitializeSystemGroup](../../tree/topic/SingletonInitializeSystemGroup)
-- [SingletonInitializedSystem](../../tree/topic/SingletonInitializedSystem)
-- [SingletonSystem](../../tree/topic/SingletonSystem)
-- [ComponentSystemBaseInternal.RequireSingletonForUpdate](../../tree/topic/ComponentSystemBaseInternal_RequireSingletonForUpdate)
-- [ISingletonCollection](../../tree/topic/ISingletonCollection)
-- [SingletonCollectionUtil](../../tree/topic/SingletonCollectionUtil)
-
-### Object Management
-
-- [ObjectDefinition](../../tree/topic/ObjectDefinition)
-- [ObjectGroupMatcher](../../tree/topic/ObjectGroupMatcher)
-- [ObjectId](../../tree/topic/ObjectId)
-- [UIDAttribute](../../tree/topic/UIDAttribute)
-- [GroupId](../../tree/topic/GroupId)
-- [ObjectCategories](../../tree/topic/ObjectCategories)
-- [ObjectCategoryComponents](../../tree/topic/ObjectCategoryComponents)
-- [ObjectDefinitionRegistrySystem](../../tree/topic/ObjectDefinitionRegistrySystem)
-- [ObjectGroupRegistry](../../tree/topic/ObjectGroupRegistry)
-- [ObjectInstantiateSystem](../../tree/topic/ObjectInstantiateSystem)
-- [ObjectDefinitionAuthoring](../../tree/topic/ObjectDefinitionAuthoring)
-- [ObjectInstantiate.Editor](../../tree/topic/ObjectInstantiate_Editor)
-
-### Physics States
-
-- [CalculateEventMapBucketsJob](../../tree/topic/CalculateEventMapBucketsJob)
-- [CollectEventsJob](../../tree/topic/CollectEventsJob)
-- [EnsureCurrentEventsCapacityJob](../../tree/topic/EnsureCurrentEventsCapacityJob)
-
-### Life Cycle
-
-- [AfterSceneSystemGroup](../../tree/topic/AfterSceneSystemGroup)
-- [AfterTransformSystemGroup](../../tree/topic/AfterTransformSystemGroup)
-- [BeforeTransformSystemGroup](../../tree/topic/BeforeTransformSystemGroup)
-- [BeginSimulationSystemGroup](../../tree/topic/BeginSimulationSystemGroup)
-- [InstantiateCommandBufferSystem](../../tree/topic/InstantiateCommandBufferSystem)
-- [DestroyEntityCommandBufferSystem](../../tree/topic/DestroyEntityCommandBufferSystem)
-- [DestroyEntitySystem](../../tree/topic/DestroyEntitySystem)
-- [DestroyOnDestroySystem](../../tree/topic/DestroyOnDestroySystem)
-- [EndInitializeEntityCommandBufferSystem](../../tree/topic/EndInitializeEntityCommandBufferSystem)
-- [InitializeEntitySystem](../../tree/topic/InitializeEntitySystem)
-
-### Tests & Diagnostics
-
-- [FaceReadonlyTest](../../tree/topic/FaceReadonlyTest)
-- [MathExPerformanceTests](../../tree/topic/MathExPerformanceTests)
-- [Check.Assume](../../tree/topic/Check_Assume)
-- [ReflectionTestHelper](../../tree/topic/ReflectionTestHelper)
-- [TestLeakDetectionAttribute](../../tree/topic/TestLeakDetectionAttribute)
-
-### Math Extensions
-
-- [MathematicsExtensions.Encapsulate](../../tree/topic/MathematicsExtensions_Encapsulate)
-- [HSV](../../tree/topic/HSV)
-- [PolygonUtility](../../tree/topic/PolygonUtility)
-- [ShortHalfUnion](../../tree/topic/ShortHalfUnion)
-- [IntFloatUnion](../../tree/topic/IntFloatUnion)
-- [mathex.mod](../../tree/topic/mathex_mod)
-- [mathex.minMax](../../tree/topic/mathex_minMax)
-- [mathex.add](../../tree/topic/mathex_add)
-- [mathex.GenerateGaussianNoise](../../tree/topic/mathex_GenerateGaussianNoise)
-- [mathex.FromToRotation](../../tree/topic/mathex_FromToRotation)
-- [MinMaxAttributeDrawer](../../tree/topic/MinMaxAttributeDrawer)
-
-### Other
-
-- [AssetLoad](../../tree/topic/AssetLoad)
-- [GameObjectCleanup](../../tree/topic/GameObjectCleanup)
-- [HalfSizeTriangleMatrix](../../tree/topic/HalfSizeTriangleMatrix)
-- [CalculateCurrentEventsBucketsJob](../../tree/topic/CalculateCurrentEventsBucketsJob)
-- [StripLocalAttribute](../../tree/topic/StripLocalAttribute)
-- [StripLocalSystem](../../tree/topic/StripLocalSystem)
-- [AssetLoadingSystem](../../tree/topic/AssetLoadingSystem)
-- [BovineLabsBootstrap](../../tree/topic/BovineLabsBootstrap)
-- [BovineLabsBootstrap.NetCode](../../tree/topic/BovineLabsBootstrap_NetCode)
-- [CollectionCreator.CreateHashMap](../../tree/topic/CollectionCreator_CreateHashMap)
-- [INativeStreamReader](../../tree/topic/INativeStreamReader)
-- [UnsafeThreadStreamBlockData](../../tree/topic/UnsafeThreadStreamBlockData)
-- [SyncEnableStateUtil](../../tree/topic/SyncEnableStateUtil)
-- [TimeProfiler](../../tree/topic/TimeProfiler)
-- [ReferenceT](../../tree/topic/ReferenceT)
-- [ReferenceData](../../tree/topic/ReferenceData)
-- [UnsafeListDispose](../../tree/topic/UnsafeListDispose)
-- [AppAPI](../../tree/topic/AppAPI)
-- [SerializedHelper.IterateAllChildren](../../tree/topic/SerializedHelper_IterateAllChildren)
-- [TextAssetHelper](../../tree/topic/TextAssetHelper)
-- [PrefabInstance](../../tree/topic/PrefabInstance)
-- [AnalyzersProjectFileGeneration](../../tree/topic/AnalyzersProjectFileGeneration)
-
-
----
-
-Total: 358 topics across 24 categories
+6. **Single Byte State**: Only supports 1-byte state values (like StateModel), enabling simple equality comparison for pop detection.
