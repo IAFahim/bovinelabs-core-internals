@@ -196,3 +196,8 @@ KEY PROPERTIES
   * Allocator Check:   CollectionHelper.CheckAllocator in constructor
   * Burst Compatible:  Yes
   * Zero Runtime Cost: All checks behind #if ENABLE_UNITY_COLLECTIONS_CHECKS
+
+## Source
+
+- [BovineLabs.Core/Memory/NativeSlabAllocator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Memory/NativeSlabAllocator.cs)
+- [BovineLabs.Core.Tests/Memory/SlabAllocatorTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Memory/SlabAllocatorTests.cs)
