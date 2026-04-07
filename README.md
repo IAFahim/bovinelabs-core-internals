@@ -122,3 +122,4 @@
  No query rebuild. The EntityQueryImpl's matching archetype list
  stays valid — only the filter value changes. This avoids expensive
  archetype scanning and chunk list reconstruction.
+```
