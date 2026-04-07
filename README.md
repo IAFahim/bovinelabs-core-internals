@@ -117,3 +117,4 @@
  │  Must dispose array              │  Returns Entity directly        │
  │  Safe for all query types        │  No enableable components       │
  └──────────────────────────────────┴─────────────────────────────────┘
+```
