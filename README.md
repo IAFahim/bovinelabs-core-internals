@@ -102,3 +102,4 @@
 
  The typeLookupCache (short) persists across calls for the same archetype,
  skipping the O(N) type-array scan on subsequent invocations.
+```
