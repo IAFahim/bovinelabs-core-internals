@@ -208,3 +208,9 @@ PERFORMANCE CHARACTERISTICS
   │ RecalculateBuckets      │ O(Length)                          │
   │ Memory overhead         │ Buckets[maxKey] — can be large     │
   └─────────────────────────┴─────────────────────────────────────┘
+
+## Source
+
+- [BovineLabs.Core/Collections/NativeKeyedMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/NativeKeyedMap.cs)
+- [BovineLabs.Core.Tests/Collections/NativeKeyedMapTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Collections/NativeKeyedMapTests.cs)
+- [BovineLabs.Core/Spatial/SpatialKeyedMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Spatial/SpatialKeyedMap.cs)
