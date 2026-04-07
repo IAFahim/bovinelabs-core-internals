@@ -424,3 +424,9 @@ are linked via the Next array (each slot stores the index of the next entry in t
 
 **Fragmentation**: Removed entries create holes in the dense arrays. Call `Flatten()` to
 compact if needed. Holes do not affect correctness, only waste space.
+
+## Source
+
+- [BovineLabs.Core/Iterators/DynamicHashMap/DynamicMultiHashMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/DynamicHashMap/DynamicMultiHashMap.cs)
+- [BovineLabs.Core.Tests/Iterators/DynamicMultiHashMapTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Iterators/DynamicMultiHashMapTests.cs)
+- [BovineLabs.Core/Iterators/DynamicHashMap/IDynamicMultiHashMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/DynamicHashMap/IDynamicMultiHashMap.cs)
