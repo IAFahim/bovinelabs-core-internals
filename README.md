@@ -213,3 +213,8 @@ PERFORMANCE CHARACTERISTICS
   Key insight: The hot path (direct write) bypasses normal
   NativeParallelMultiHashMap.Add() and writes directly to reserved
   array slots, computing the hash inline for maximum throughput.
+
+## Source
+
+- [BovineLabs.Core/Collections/NativeParallelMultiHashMapFallback.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/NativeParallelMultiHashMapFallback.cs)
+- [BovineLabs.Core.Tests/Collections/NativeParallelMultiHashMapFallbackTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Collections/NativeParallelMultiHashMapFallbackTests.cs)
