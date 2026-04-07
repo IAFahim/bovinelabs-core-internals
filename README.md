@@ -175,3 +175,8 @@ Method: GetAllStateInstances(ref SystemState, Allocator) → NativeArray<StateIn
 4. **Single Responsibility**: This utility does ONE thing - find all `StateInstance` components. The filtering and map-building logic lives in `StateImpl`.
 
 5. **Static Class**: No state, no allocation, no disposal concerns for the utility itself. Pure function over `SystemState`.
+
+## Source
+
+- [BovineLabs.Core/States/StateInstanceUtil.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/States/StateInstanceUtil.cs)
+- [BovineLabs.Core/States/StateImpl.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/States/StateImpl.cs)
