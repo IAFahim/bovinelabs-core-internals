@@ -108,3 +108,4 @@
  • WithNone(type)    → exclusion filter
  • WithAnyWriteGroup<T>() → auto-resolve write group components
  • WithNoneWriteGroup<T>() → auto-resolve write group exclusions
+```
