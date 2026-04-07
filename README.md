@@ -172,3 +172,7 @@ PERFORMANCE CHARACTERISTICS
   indexer operators compile down to raw bit instructions with
   zero function call overhead in Burst-compiled code.
 ```
+
+## Source
+
+- [BovineLabs.Core/Collections/BitArray.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/BitArray.cs)
