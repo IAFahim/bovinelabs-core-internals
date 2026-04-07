@@ -137,3 +137,9 @@
      #if !UNITY_DISABLE_MANAGED_COMPONENTS
  This means it compiles away entirely in builds that disable managed
  components (e.g. some console/platform targets).
+
+## Source
+
+- [BovineLabs.Core/Extensions/SystemStateExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/SystemStateExtensions.cs)
+- [BovineLabs.Core/Internal/WorldInternal.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Internal/WorldInternal.cs)
+- [SourceGenerators~/BovineLabs.FacetGenerator/FacetGenerator.CodeGen.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/SourceGenerators~/BovineLabs.FacetGenerator/FacetGenerator.CodeGen.cs)
