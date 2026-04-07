@@ -166,3 +166,8 @@ plus no-resize variants for performance-critical paths.
 ## Source File
 
 - `BovineLabs.Core/Utility/Serializer.cs`
+
+## Source
+
+- [BovineLabs.Core/Utility/Serializer.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/Serializer.cs)
+- [BovineLabs.Core/Utility/Deserializer.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/Deserializer.cs)
