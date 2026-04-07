@@ -114,3 +114,8 @@ All methods are `AggressiveInlining` for zero overhead in Burst-compiled code.
 ## Source
 
 `BovineLabs.Core/Extensions/AabbExtensions.cs`
+
+## Source
+
+- [BovineLabs.Core/Extensions/AabbExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/AabbExtensions.cs)
+- [BovineLabs.Core/Extensions/MinMaxAABBExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/MinMaxAABBExtensions.cs)
