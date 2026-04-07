@@ -103,3 +103,8 @@
  The typeLookupCache (short) persists across calls for the same archetype,
  skipping the O(N) type-array scan on subsequent invocations.
 ```
+
+## Source
+
+- [BovineLabs.Core/Extensions/ArchetypeChunkExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/ArchetypeChunkExtensions.cs)
+- [BovineLabs.Core/Internal/ArchetypeChunkInternal.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Internal/ArchetypeChunkInternal.cs)
