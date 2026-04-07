@@ -247,3 +247,7 @@ thread per spatial partition), rather than letting the job scheduler decide the 
 | `endWorkerIdx == Threads` check for remainder | Last worker always picks up slack, ensuring all items are processed exactly once |
 | No `OnWorkerBegin/End` hooks | Simpler interface; use `IJobChunkWorkerBeginEnd` or `IJobParallelHashMapDefer` if you need per-thread setup |
 | `threadCount = math.max(1, ...)` | Prevents zero-thread degenerate case when jobs preference disables worker threads |
+
+## Source
+
+- [BovineLabs.Core/Jobs/IJobForThread.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Jobs/IJobForThread.cs)
