@@ -132,3 +132,9 @@ USE CASES IN ECS
   ● Serialization-friendly via [SerializeField] on each ulong
   ● UI editing via BitArray256Converter (PropertyDrawer)
 ```
+
+## Source
+
+- [BovineLabs.Core.Editor/UI/BitArray256Converter.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Editor/UI/BitArray256Converter.cs)
+- [BovineLabs.Core/Collections/BitArray.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/BitArray.cs)
+- [BovineLabs.Core/States/AppAPI.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/States/AppAPI.cs)
