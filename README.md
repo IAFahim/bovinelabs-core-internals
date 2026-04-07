@@ -100,3 +100,4 @@
  This causes downstream jobs using DidChange/change filters to falsely
  detect changes. GetNativeArrayReadOnly guarantees the RO path is used,
  keeping the change version clean.
+```
