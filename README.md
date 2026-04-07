@@ -254,3 +254,7 @@ PERFORMANCE CHARACTERISTICS
   │ Safety overhead    │ ZERO in release builds                   │
   │ Struct size        │ ~16 bytes (vs ~40+ for NativeArray)      │
   └────────────────────┴──────────────────────────────────────────┘
+
+## Source
+
+- [BovineLabs.Core/Collections/UnsafeArray.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/UnsafeArray.cs)
