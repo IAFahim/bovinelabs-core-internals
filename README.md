@@ -257,3 +257,7 @@ Key Insight:
 | `OnWorkerBegin/End` are virtual (interface default) | Opt-in: most jobs don't need them, zero cost if unused |
 | Work-stealing loop wraps entire begin/end cycle | One thread can steal multiple ranges with one init/cleanup |
 | Fast path skips iterator when no filtering | Eliminates per-chunk filter checks for simple queries |
+
+## Source
+
+- [BovineLabs.Core/Jobs/IJobChunkWorkerBeginEnd.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Jobs/IJobChunkWorkerBeginEnd.cs)
