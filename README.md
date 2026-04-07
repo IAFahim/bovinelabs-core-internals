@@ -142,3 +142,7 @@ operating directly on raw byte pointers and NativeArrays with zero managed overh
 ## Source File
 
 - `BovineLabs.Core/Utility/CodecService.cs`
+
+## Source
+
+- [BovineLabs.Core/Utility/CodecService.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/CodecService.cs)
