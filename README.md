@@ -126,3 +126,9 @@ same double-buffered event comparison pattern.
 `BovineLabs.Core.Extensions/PhysicsStates/Data/StatefulTriggerEvent.cs`
 `BovineLabs.Core.Extensions/PhysicsStates/StatefulTriggerEventSystem.cs`
 `BovineLabs.Core.Extensions/PhysicsStates/StatefulEventImpl.cs`
+
+## Source
+
+- [BovineLabs.Core.Extensions/PhysicsStates/Data/StatefulTriggerEvent.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Extensions/PhysicsStates/Data/StatefulTriggerEvent.cs)
+- [BovineLabs.Core.Extensions/PhysicsStates/StatefulTriggerEventSystem.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Extensions/PhysicsStates/StatefulTriggerEventSystem.cs)
+- [BovineLabs.Core.Extensions/PhysicsStates/StatefulTriggerEventClearSystem.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Extensions/PhysicsStates/StatefulTriggerEventClearSystem.cs)
