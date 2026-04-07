@@ -108,3 +108,7 @@ overrides) into an ECS `CollisionFilter` for use with Unity Physics.
 ## Source
 
 `BovineLabs.Core/Utility/PhysicsLayerUtil.cs`
+
+## Source
+
+- [BovineLabs.Core/Utility/PhysicsLayerUtil.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/PhysicsLayerUtil.cs)
