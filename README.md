@@ -297,3 +297,7 @@ PERFORMANCE CHARACTERISTICS
   │ Memory overhead          │ Types[] + Data[] for large values    │
   │ Type safety              │ Runtime hash check per access        │
   └──────────────────────────┴──────────────────────────────────────┘
+
+## Source
+
+- [BovineLabs.Core/Collections/NativeUntypedHashMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/NativeUntypedHashMap.cs)
