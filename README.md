@@ -390,3 +390,9 @@ inserts if the element is not already present.
 **Advantage over full HashMap**: Saves sizeof(TValue) * Capacity bytes — for large value types,
 this is significant. For a set of ints with Capacity=1024: saves 0 bytes (SizeOfTValue=0 already)
 but conceptually cleaner than a HashMap<T, byte>.
+
+## Source
+
+- [BovineLabs.Core/Iterators/DynamicHashMap/DynamicHashSet.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/DynamicHashMap/DynamicHashSet.cs)
+- [BovineLabs.Core.Tests/Iterators/DynamicHashSetTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Iterators/DynamicHashSetTests.cs)
+- [BovineLabs.Core.Editor/Inspectors/DynamicHashSetListElement.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Editor/Inspectors/DynamicHashSetListElement.cs)
