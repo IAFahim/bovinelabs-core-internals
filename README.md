@@ -158,3 +158,9 @@ new, ongoing, or ended relative to the previous frame.
 `BovineLabs.Core.Extensions/PhysicsStates/Data/StatefulCollisionEvent.cs`
 `BovineLabs.Core.Extensions/PhysicsStates/StatefulCollisionEventSystem.cs`
 `BovineLabs.Core.Extensions/PhysicsStates/StatefulEventImpl.cs`
+
+## Source
+
+- [BovineLabs.Core.Extensions/PhysicsStates/Data/StatefulCollisionEvent.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Extensions/PhysicsStates/Data/StatefulCollisionEvent.cs)
+- [BovineLabs.Core.Extensions/PhysicsStates/StatefulCollisionEventSystem.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Extensions/PhysicsStates/StatefulCollisionEventSystem.cs)
+- [BovineLabs.Core.Extensions/PhysicsStates/StatefulCollisionEventClearSystem.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Extensions/PhysicsStates/StatefulCollisionEventClearSystem.cs)
