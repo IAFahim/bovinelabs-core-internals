@@ -266,3 +266,8 @@ over inner-loop optimization.
 | NativeList, NativeReference, and raw `int*` overloads | Flexibility from safe to unsafe APIs |
 | No job wrapper struct (unlike IJobChunk) | Simpler; `ref T jobData` is passed directly to Execute |
 | `ScheduleByRef` variants | Support for unusually large job structs that shouldn't be copied |
+
+## Source
+
+- [BovineLabs.Core/Jobs/IJobParallelForDeferBatch.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Jobs/IJobParallelForDeferBatch.cs)
+- [BovineLabs.Core.Extensions/PhysicsStates/Jobs/CollectEventsJob.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Extensions/PhysicsStates/Jobs/CollectEventsJob.cs)
