@@ -49,19 +49,33 @@
 
  WHY TWO PASSES?
  ┌──────────────────────────────────────────────────────────────────┐
- │  Each pass processes ONE corner (3 floats = min3 + max3).        │
- │  Two passes = all 6 min/max operations for 2 AABB corners.      │
- │                                                                  │
- │  This is SIMPLER than the naive approach:                        │
+ │  The source code processes bounds.Min and bounds.Max in          │
+ │  separate passes. For a valid AABB (Min <= Max), the result     │
+ │  is mathematically identical to the straightforward approach:   │
  │  ┌────────────────────────────────────────────────────────────┐  │
- │  │  Naive: result.Min = min(a.Min, b.Min);                    │  │
- │  │         result.Max = max(a.Max, b.Max);                    │  │
- │  │         // Works! But the source does it in 2 steps        │  │
- │  │         // to stay consistent with MinMaxAABB constructor  │  │
+ │  │  Straightforward: result.Min = min(a.Min, b.Min);          │  │
+ │  │                   result.Max = max(a.Max, b.Max);          │  │
  │  └────────────────────────────────────────────────────────────┘  │
  │                                                                  │
- │  The 2-pass approach ensures the intermediate state is always    │
- │  a valid AABB even if bounds.Min > bounds.Max (degenerate).     │
+ │  Proof (trace through the 2 passes for valid AABB):             │
+ │  ┌────────────────────────────────────────────────────────────┐  │
+ │  │  After Pass 1:                                             │  │
+ │  │    Min = min(aabb.Min, bounds.Min)                         │  │
+ │  │    Max = max(aabb.Max, bounds.Min)                         │  │
+ │  │         ↑ may shrink if bounds.Min < aabb.Max              │  │
+ │  │                                                            │  │
+ │  │  After Pass 2:                                             │  │
+ │  │    Min = min(min(aabb.Min, bounds.Min), bounds.Max)       │  │
+ │  │       = min(aabb.Min, bounds.Min)  [b.Max >= b.Min]       │  │
+ │  │    Max = max(max(aabb.Max, bounds.Min), bounds.Max)       │  │
+ │  │       = max(aabb.Max, bounds.Max)  [b.Max >= b.Min]       │  │
+ │  │                                                            │  │
+ │  │  Result is identical to straightforward version.           │  │
+ │  └────────────────────────────────────────────────────────────┘  │
+ │                                                                  │
+ │  NOTE: If bounds is degenerate (Min > Max), the intermediate    │
+ │  state after Pass 1 may be invalid, but Pass 2 corrects it.     │
+ │  This is likely the author's intent with the 2-pass structure.  │
  └──────────────────────────────────────────────────────────────────┘
 
 
