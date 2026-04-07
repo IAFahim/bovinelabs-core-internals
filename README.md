@@ -500,3 +500,9 @@ Variants exist for 1 column (`DynamicVariableMap<TKey, TValue, T, TC>`) and
 - Column: sizeof(T) + 2*sizeof(int) = 4 + 8 = 12 bytes (prev+next instead of buckets)
 - No bucket overhead for the column — uses head pointer + linked list
 - Trade-off: O(N) lookup by column value, but O(1) sorted traversal
+
+## Source
+
+- [BovineLabs.Core/Iterators/DynamicHashMap/DynamicVariableMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/DynamicHashMap/DynamicVariableMap.cs)
+- [BovineLabs.Core/Iterators/DynamicHashMap/DynamicVariableMapHelper2.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/DynamicHashMap/DynamicVariableMapHelper2.cs)
+- [BovineLabs.Core/Iterators/DynamicHashMap/DynamicVariableMapHelper.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/DynamicHashMap/DynamicVariableMapHelper.cs)
