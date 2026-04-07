@@ -95,3 +95,9 @@ Burst-compiled jobs to check query emptiness directly without leaving Burst cont
 ## Source File
 
 - `BovineLabs.Core/Utility/BurstUtil.cs`
+
+## Source
+
+- [BovineLabs.Core/Utility/BurstUtil.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/BurstUtil.cs)
+- [BovineLabs.Core.Extensions/Settings/SingletonInitializeSystemGroup.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Extensions/Settings/SingletonInitializeSystemGroup.cs)
+- [BovineLabs.Core.Extensions/LifeCycle/InitializeSystemGroup.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Extensions/LifeCycle/InitializeSystemGroup.cs)
