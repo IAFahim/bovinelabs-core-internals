@@ -154,3 +154,9 @@ EDGE CASE SUMMARY
   │ General case       │ normalize(cross(f,t), 1+dot(f,t))        │
   └────────────────────┴───────────────────────────────────────────┘
 ```
+
+## Source
+
+- [BovineLabs.Core/Utility/mathex.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/mathex.cs)
+- [BovineLabs.Core.Tests/Utility/mathexTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Utility/mathexTests.cs)
+- [BovineLabs.Core.Tests/Utility/MathExPerformanceTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Utility/MathExPerformanceTests.cs)
