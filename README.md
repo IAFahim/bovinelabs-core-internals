@@ -109,3 +109,7 @@ zero-cost type reinterpretation between the two representations.
 ## Source File
 
 - `BovineLabs.Core/Utility/ShortHalfUnion.cs`
+
+## Source
+
+- [BovineLabs.Core/Utility/ShortHalfUnion.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/ShortHalfUnion.cs)
