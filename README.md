@@ -208,3 +208,7 @@ needing to know the buffer's length.
 | Targets `IJobParallelForDefer`, not `IJobParallelForDeferBatch` | Per-item execution; use `IJobParallelForDeferBatch` with manual length pointer if batch API needed |
 | `DynamicBufferInternal` is private nested struct | Encapsulates the unsafe layout knowledge; users never see it |
 | Uses existing `IJobParallelForDefer.Schedule(int*, ...)` | Delegates all job registration and deferred mechanics to Unity's built-in implementation |
+
+## Source
+
+- [BovineLabs.Core/Extensions/IJobParallelForDeferExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/IJobParallelForDeferExtensions.cs)
