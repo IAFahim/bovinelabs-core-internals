@@ -66,3 +66,7 @@ Array.Sort(sortedHits, new DistanceHitSortAscending());
 ## Source
 
 `BovineLabs.Core/Sort/DistanceHitSortAscending.cs`
+
+## Source
+
+- [BovineLabs.Core/Sort/DistanceHitSortAscending.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Sort/DistanceHitSortAscending.cs)
