@@ -8,7 +8,7 @@ suitable for use inside Burst-compiled jobs.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                        HSV (readonly struct)                                │
+│                        HSV (struct)                                         │
 │                                                                             │
 │  ┌───────────────────────────────────────────────────────────────────────┐  │
 │  │  float H   (Hue:        0–360°)                                       │  │
@@ -92,7 +92,7 @@ suitable for use inside Burst-compiled jobs.
   │  V = clamp(v, 0, 1)                                          │
   │                                                               │
   │  All values are clamped to valid ranges.                      │
-  │  Note: readonly struct — values can't change after construct. │
+  │  Note: get-only properties — values can't change after construct. │
   └───────────────────────────────────────────────────────────────┘
 ```
 
