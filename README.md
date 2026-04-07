@@ -110,3 +110,8 @@ over entity iteration inside Burst jobs.
 ## Source File
 
 - `BovineLabs.Core/Utility/QueryEntityEnumerator.cs`
+
+## Source
+
+- [BovineLabs.Core/Utility/QueryEntityEnumerator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/QueryEntityEnumerator.cs)
+- [BovineLabs.Core.Extensions/SubScenes/SubSceneLoadingSystem.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Extensions/SubScenes/SubSceneLoadingSystem.cs)
