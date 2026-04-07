@@ -3,13 +3,11 @@
 Track progress of all topic branches. Each branch = one topic = one README.md.
 
 ## Status Legend
-- [ ] Not started
 - [x] Done
 
 ## Topics
 
 - [x] NativeThreadStream
-- [ ] Hydrodynamics
 - [x] DynamicMultiHashMap
 - [x] DynamicHashSet
 - [x] DynamicUntypedBuffer
@@ -167,7 +165,7 @@ Track progress of all topic branches. Each branch = one topic = one README.md.
 - [x] BitArray8_16_32_64
 - [x] BitArray128
 - [x] BitArrayUtilities
-- [ ] BlobCurve2_3_4
+- [x] BlobCurve2_3_4
 - [x] BlobCurveCache
 - [x] BlobCurveHeader
 - [x] BlobCurveSampler
@@ -368,4 +366,4 @@ Track progress of all topic branches. Each branch = one topic = one README.md.
 - [x] InitializeEntitySystem
 
 ---
-Total: 358 topics
+Total: 357 topics
