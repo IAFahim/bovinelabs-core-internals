@@ -109,3 +109,8 @@ loop, eliminating per-frame overhead.
 ## Source File
 
 - `BovineLabs.Core/Utility/InitSystemBase.cs`
+
+## Source
+
+- [BovineLabs.Core/Utility/InitSystemBase.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/InitSystemBase.cs)
+- [BovineLabs.Core/Debug/BLDebugSystem.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Debug/BLDebugSystem.cs)
