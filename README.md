@@ -267,3 +267,9 @@ Thread-safe reads:  Yes (immutable after construction)
 Cache-friendly:     Excellent (single flat array access, sequential layout)
 Best suited for:    Small-to-medium static lookup tables accessed at high
                     frequency (e.g., entity property maps, type registries)
+
+## Source
+
+- [BovineLabs.Core/Collections/Blobs/HashMap/BlobPerfectHashMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/Blobs/HashMap/BlobPerfectHashMap.cs)
+- [BovineLabs.Core/Collections/Blobs/HashMap/BlobBuilderPerfectHashMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/Blobs/HashMap/BlobBuilderPerfectHashMap.cs)
+- [BovineLabs.Core/Collections/Blobs/HashMap/BlobBuilderExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/Blobs/HashMap/BlobBuilderExtensions.cs)
