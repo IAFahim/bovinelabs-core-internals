@@ -322,3 +322,9 @@ BlobCurve4:  segments are float4x4 = 64 bytes each
 Burst-compatible:   Yes (100% unmanaged, no managed references)
 Thread-safe reads:  Yes (blob is immutable; cache is per-thread)
 SIMD-friendly:      Yes (float4 dot product, float2 reads)
+
+## Source
+
+- [BovineLabs.Core/Collections/Blobs/Curve/BlobCurve.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/Blobs/Curve/BlobCurve.cs)
+- [BovineLabs.Core/Collections/Blobs/Curve/BlobCurveSamplerT.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/Blobs/Curve/BlobCurveSamplerT.cs)
+- [BovineLabs.Core/Collections/Blobs/Curve/BlobCurveSampler.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/Blobs/Curve/BlobCurveSampler.cs)
