@@ -116,3 +116,7 @@ enabling zero-cost bit reinterpretation between the two.
 ## Source File
 
 - `BovineLabs.Core/Utility/IntFloatUnion.cs`
+
+## Source
+
+- [BovineLabs.Core/Utility/IntFloatUnion.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/IntFloatUnion.cs)
