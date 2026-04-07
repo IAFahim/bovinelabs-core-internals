@@ -110,3 +110,8 @@ then provides instant lookup without re-allocating string arrays on each call.
 ## Source File
 
 - `BovineLabs.Core/Utility/CommandLineArgs.cs`
+
+## Source
+
+- [BovineLabs.Core/Utility/CommandLineArgs.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/CommandLineArgs.cs)
+- [BovineLabs.Core/ConfigVars/ConfigVarManager.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/ConfigVars/ConfigVarManager.cs)
