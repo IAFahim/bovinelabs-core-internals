@@ -126,3 +126,7 @@ Uses `NativeParallelMultiHashMap<long, int>` for storage.
 ## Source
 
 `BovineLabs.Core/Spatial/SpatialMap3.cs`
+
+## Source
+
+- [BovineLabs.Core/Spatial/SpatialMap3.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Spatial/SpatialMap3.cs)
