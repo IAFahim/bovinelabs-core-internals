@@ -175,3 +175,8 @@ Property: T Value { get; set; }
 4. **BitArray Reuse**: Leverages the existing `IBitArray<T>` interface from `BovineLabs.Core.Collections`, providing standard bit-level indexing by byte key.
 
 5. **Singleton Pattern**: Typically used as a singleton component representing global application state (game state, UI state, input state).
+
+## Source
+
+- [BovineLabs.Core/States/IState.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/States/IState.cs)
+- [BovineLabs.Core/States/AppAPI.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/States/AppAPI.cs)
