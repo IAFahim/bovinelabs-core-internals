@@ -17,7 +17,7 @@ loop, eliminating per-frame overhead.
 │    2. RemoveSystemFromUpdateList(this)                                      │
 │    3. NEVER RUNS AGAIN                                                      │
 │                                                                             │
-│  Subclass overrides: NOTHING (OnUpdate is sealed by design)                 │
+│  Subclass overrides: NOTHING (OnUpdate runs once then self-removes)           │
 │  Subclass implements: protected override void OnDestroy() etc.              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
