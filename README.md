@@ -218,3 +218,8 @@ KEY PROPERTIES
   * Burst Compatible:  Yes
   * Fragmentation:     None within slabs; freed slots are reused
   * Use Case:          General purpose pool with individual free support
+
+## Source
+
+- [BovineLabs.Core/Memory/UnsafePoolAllocator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Memory/UnsafePoolAllocator.cs)
+- [BovineLabs.Core/Memory/UnsafeParallelPoolAllocator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Memory/UnsafeParallelPoolAllocator.cs)
