@@ -177,3 +177,9 @@ USE CASE
     │ // ... use list.List in job ...         │
     │ list.Dispose(); // returns to TLS pool  │
   └─────────────────────────────────────────┘
+
+## Source
+
+- [BovineLabs.Core/Utility/PooledNativeList.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/PooledNativeList.cs)
+- [BovineLabs.Core.Tests/Utility/PooledNativeListTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Utility/PooledNativeListTests.cs)
+- [BovineLabs.Core.Tests/Utility/PooledNativeListPerformanceTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Utility/PooledNativeListPerformanceTests.cs)
