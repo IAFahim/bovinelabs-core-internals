@@ -20,8 +20,8 @@ job scheduling. Modified from Unity's rendering light-transport implementation.
   │  Input:  TerrainData                                         │
   │           .heightmapTexture.width/height                     │
   │           .heightmapScale (Vector3)                          │
-  │           .GetHeights() → float[,]                           │
-  │           .GetHoles()   → bool[,]                            │
+  │           .GetHeights(0, 0, w, h) → float[,]                  │
+  │           .GetHoles(0, 0, w-1, h-1) → bool[,]                 │
   │                                                              │
   │  Output: Result                                               │
   │           .GetMesh()  → UnityEngine.Mesh                     │
