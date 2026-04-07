@@ -141,3 +141,8 @@
    • x86: VMINPS / VMAXPS (AVX)
    • ARM: FMIN / FMAX (NEON)
  This means all 3 components (x,y,z) are compared in parallel.
+
+## Source
+
+- [BovineLabs.Core/Extensions/MathematicsExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/MathematicsExtensions.cs)
+- [BovineLabs.Core.Tests/Extensions/MathematicsExtensionsTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Extensions/MathematicsExtensionsTests.cs)
