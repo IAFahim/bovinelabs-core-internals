@@ -106,3 +106,4 @@
  The caller is responsible for ensuring no concurrent writes are
  happening. Only use when you KNOW the singleton is safe to read
  (e.g. from main thread, or after manual dependency management).
+```
