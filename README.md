@@ -112,3 +112,9 @@
  ensuring the returned DynamicBuffer allows write access even when
  the accessor was created with read-only semantics.
 ```
+
+## Source
+
+- [BovineLabs.Core/Extensions/BufferAccessorExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/BufferAccessorExtensions.cs)
+- [BovineLabs.Core/Collections/UnsafeUntypedDynamicBufferAccessor.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/UnsafeUntypedDynamicBufferAccessor.cs)
+- [BovineLabs.Core/Collections/DynamicBufferAccessor.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/DynamicBufferAccessor.cs)
