@@ -109,3 +109,7 @@ suitable for use inside Burst-compiled jobs.
 ## Source File
 
 - `BovineLabs.Core/Utility/HSV.cs`
+
+## Source
+
+- [BovineLabs.Core/Utility/HSV.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/HSV.cs)
