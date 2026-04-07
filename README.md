@@ -334,3 +334,7 @@ Performance Characteristics
 Memory overhead: None beyond what the underlying blob structures require.
 All methods allocate exactly the capacity requested (plus bucket over-provision
 for hash maps).
+
+## Source
+
+- [BovineLabs.Core/Collections/Blobs/HashMap/BlobBuilderExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/Blobs/HashMap/BlobBuilderExtensions.cs)
