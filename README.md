@@ -107,3 +107,9 @@
  happening. Only use when you KNOW the singleton is safe to read
  (e.g. from main thread, or after manual dependency management).
 ```
+
+## Source
+
+- [BovineLabs.Core/Extensions/EntityQueryExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/EntityQueryExtensions.cs)
+- [BovineLabs.Core/Internal/EntityQueryInternal.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Internal/EntityQueryInternal.cs)
+- [BovineLabs.Core/Extensions/EntityQueryBuilderExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/EntityQueryBuilderExtensions.cs)
