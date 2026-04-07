@@ -246,3 +246,7 @@ Methods: TryConsume() → bool, TryProduce(bool) → bool
 5. **No Thread Safety Primitives**: The struct itself has no locks or atomics. Thread safety depends on Unity ECS scheduling (e.g., systems run on main thread, or jobs are properly ordered).
 
 6. **Coalescing Semantics**: Multiple `TryProduce` calls between `TryConsume` calls result in a single event. This is intentional for button-like inputs where only the "pressed" state matters, not the count.
+
+## Source
+
+- [BovineLabs.Core/Utility/ButtonEvent.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/ButtonEvent.cs)
