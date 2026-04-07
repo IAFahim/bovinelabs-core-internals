@@ -196,3 +196,7 @@ TYPICAL USAGE IN JOBS
   │ int total = counter.Count;                               │
   │ counter.Dispose();                                       │
   └──────────────────────────────────────────────────────────┘
+
+## Source
+
+- [BovineLabs.Core/Collections/NativeCounter.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/NativeCounter.cs)
