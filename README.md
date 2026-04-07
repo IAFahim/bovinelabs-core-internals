@@ -234,3 +234,9 @@ PERFORMANCE CHARACTERISTICS
   │ Uses Unity.Mathematics   │ Yes — high quality xorshift       │
   │ Random quality           │ Good (not cryptographic)          │
   └──────────────────────────┴───────────────────────────────────┘
+
+## Source
+
+- [BovineLabs.Core/Collections/ThreadRandom.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/ThreadRandom.cs)
+- [BovineLabs.Core/Utility/GlobalRandom.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/GlobalRandom.cs)
+- [BovineLabs.Core.Tests/Collections/NativeParallelMultiHashMapFallbackTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Collections/NativeParallelMultiHashMapFallbackTests.cs)
