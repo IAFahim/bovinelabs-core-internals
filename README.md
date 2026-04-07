@@ -148,3 +148,9 @@ USE CASES
   ● 128-bit component type matching in archetype queries
   ● Interop with v128 for vectorized bit manipulation
 ```
+
+## Source
+
+- [BovineLabs.Core/Collections/BitArray.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/BitArray.cs)
+- [BovineLabs.Core/Utility/WriteGroupMatcher.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/WriteGroupMatcher.cs)
+- [BovineLabs.Core/Extensions/ArchetypeChunkExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/ArchetypeChunkExtensions.cs)
