@@ -170,3 +170,8 @@ KEY PROPERTIES
   * Memory Layout:     Single contiguous block for all items
   * Overhead:          UnsafeParallelHashSet<Ptr> with maxItems entries
   * Use Case:          Fixed-capacity pools where max count is known upfront
+
+## Source
+
+- [BovineLabs.Core/Memory/UnsafeFixedPoolAllocator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Memory/UnsafeFixedPoolAllocator.cs)
+- [BovineLabs.Core.Tests/Memory/PoolAllocatorTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Memory/PoolAllocatorTests.cs)
