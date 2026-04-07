@@ -179,3 +179,8 @@ USE CASES
   ● Serialization-safe string fields (no GC pressure)
   ● Interop with FixedString32Bytes for Unity APIs
 ```
+
+## Source
+
+- [BovineLabs.Core/Collections/MiniString.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/MiniString.cs)
+- [BovineLabs.Core.Tests/Collections/FixedHashMapTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Collections/FixedHashMapTests.cs)
