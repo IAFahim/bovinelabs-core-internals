@@ -141,3 +141,7 @@ slopes accordingly. Only works with Clamp wrap modes.
 ## Source File
 
 - `BovineLabs.Core/Utility/CurveRemapUtility.cs`
+
+## Source
+
+- [BovineLabs.Core/Utility/CurveRemapUtility.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/CurveRemapUtility.cs)
