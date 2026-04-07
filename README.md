@@ -141,3 +141,7 @@ Generic Parameters:
 4. **TFrom is ReadOnly**: The source component's enable mask is only read, never written to.
 
 5. **TTo is ReadWrite**: Only the target's enable bits are modified.
+
+## Source
+
+- [BovineLabs.Core/Model/CopyEnableable.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Model/CopyEnableable.cs)
