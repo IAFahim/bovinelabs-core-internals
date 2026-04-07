@@ -211,3 +211,9 @@ Key: Bit-level diffing → add/remove tag components per-bit
 5. **StateImpl Reuse**: Shares the `StateImpl` infrastructure with `StateModel`, including the `RegisteredStatesMap` populated from `StateInstance` components on systems.
 
 6. **Dynamic Component Handles**: Uses `DynamicComponentTypeHandle` to support any state component type regardless of size, reinterpreted as byte arrays.
+
+## Source
+
+- [BovineLabs.Core/States/StateFlagModel.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/States/StateFlagModel.cs)
+- [BovineLabs.Core.Tests/States/StateFlagModelTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/States/StateFlagModelTests.cs)
+- [BovineLabs.Core/States/StateFlagModelWithHistory.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/States/StateFlagModelWithHistory.cs)
