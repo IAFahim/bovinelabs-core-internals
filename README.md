@@ -210,3 +210,7 @@ Method: Create(SafeBitRef, int*) → EnabledMask
 5. **Minimal Implementation**: The method is a single `new EnabledMask(...)` call. The value is in exposing this capability, not in complex logic.
 
 6. **Integration Point**: Works alongside `GetRequiredEnabledBitsRW` and `GetRequiredEnabledBitsRO` extension methods to provide full manual control over enableable component iteration.
+
+## Source
+
+- [BovineLabs.Core/Utility/EnableMaskCreator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/EnableMaskCreator.cs)
