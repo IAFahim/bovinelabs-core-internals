@@ -137,3 +137,8 @@ native wrapper trampoline.
 
 - `BovineLabs.Core/Utility/BurstTrampoline.cs` — Core struct
 - `BovineLabs.Core/Utility/BurstTrampolineExtensions.cs` — Generic overloads & pair/triple structs
+
+## Source
+
+- [BovineLabs.Core/Utility/BurstTrampoline.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/BurstTrampoline.cs)
+- [BovineLabs.Core/Utility/BurstTrampolineExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/BurstTrampolineExtensions.cs)
