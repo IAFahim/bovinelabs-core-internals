@@ -116,3 +116,8 @@ fully Burst-compatible.
 ## Source
 
 `BovineLabs.Core/Utility/IntersectionTests.cs`
+
+## Source
+
+- [BovineLabs.Core/Utility/IntersectionTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/IntersectionTests.cs)
+- [BovineLabs.Core.Tests/Utility/IntersectionTestsTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Utility/IntersectionTestsTests.cs)
