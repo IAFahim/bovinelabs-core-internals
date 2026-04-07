@@ -123,3 +123,9 @@
  • Supports both RO and RW via handle.IsReadOnly flag
  • Enables generic/system-driven buffer processing without generics
 ```
+
+## Source
+
+- [BovineLabs.Core/Extensions/ArchetypeChunkExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/ArchetypeChunkExtensions.cs)
+- [BovineLabs.Core/Internal/ArchetypeChunkInternal.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Internal/ArchetypeChunkInternal.cs)
+- [BovineLabs.Core.Editor/Inspectors/ArchetypeChunkInspector.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Editor/Inspectors/ArchetypeChunkInspector.cs)
