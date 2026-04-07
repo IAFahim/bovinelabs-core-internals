@@ -247,3 +247,9 @@ Burst-compatible:   Yes (100% unmanaged, no managed allocations)
 Thread-safe reads:  Yes (immutable after construction)
 Cache-friendly:     Moderate (bucket chains may scatter, but all data
                     is within the same contiguous blob allocation)
+
+## Source
+
+- [BovineLabs.Core/Collections/Blobs/HashMap/BlobHashMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/Blobs/HashMap/BlobHashMap.cs)
+- [BovineLabs.Core.Tests/Collections/Blobs/BlobHashMapTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Collections/Blobs/BlobHashMapTests.cs)
+- [BovineLabs.Core/Collections/Blobs/HashMap/BlobHashMapEnumerator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/Blobs/HashMap/BlobHashMapEnumerator.cs)
