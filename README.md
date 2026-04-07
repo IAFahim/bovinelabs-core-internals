@@ -124,3 +124,9 @@ PERFORMANCE ANALYSIS
 
   Tail loop handles remainder: numSamples4 << 2 (or << 1) to length
 ```
+
+## Source
+
+- [BovineLabs.Core/Utility/mathex.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/mathex.cs)
+- [BovineLabs.Core.Tests/Utility/mathexTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Utility/mathexTests.cs)
+- [BovineLabs.Core.Tests/Utility/MathExPerformanceTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Utility/MathExPerformanceTests.cs)
