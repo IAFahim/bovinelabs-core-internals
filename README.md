@@ -102,3 +102,9 @@
  • Triggering re-processing without actually changing values
  • Manual change propagation in custom job pipelines
 ```
+
+## Source
+
+- [BovineLabs.Core/Extensions/ComponentLookupExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/ComponentLookupExtensions.cs)
+- [BovineLabs.Core/Iterators/UnsafeComponentLookup.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/UnsafeComponentLookup.cs)
+- [BovineLabs.Core/Iterators/SharedComponentLookup.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/SharedComponentLookup.cs)
