@@ -179,3 +179,8 @@ TYPICAL USAGE
   │                                                          │
   │ rng.Dispose();                                           │
   └──────────────────────────────────────────────────────────┘
+
+## Source
+
+- [BovineLabs.Core/Collections/NativeLinearCongruentialGenerator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/NativeLinearCongruentialGenerator.cs)
+- [BovineLabs.Core.Tests/Collections/NativeLinearCongruentialGeneratorTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Collections/NativeLinearCongruentialGeneratorTests.cs)
