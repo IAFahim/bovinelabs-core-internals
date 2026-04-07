@@ -148,3 +148,7 @@ reinterpretation — no copying, no boxing, no allocations.
 ## Source File
 
 - `BovineLabs.Core/Utility/Deserializer.cs`
+
+## Source
+
+- [BovineLabs.Core/Utility/Deserializer.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/Deserializer.cs)
