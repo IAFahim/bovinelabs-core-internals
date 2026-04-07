@@ -163,3 +163,8 @@ to prevent false sharing between threads.
 
 - `BovineLabs.Core/Utility/GlobalRandom.cs`
 - `BovineLabs.Core/Collections/ThreadRandom.cs` (underlying per-thread storage)
+
+## Source
+
+- [BovineLabs.Core/Utility/GlobalRandom.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/GlobalRandom.cs)
+- [BovineLabs.Core.Editor/InitializeAllOnLoad.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Editor/InitializeAllOnLoad.cs)
