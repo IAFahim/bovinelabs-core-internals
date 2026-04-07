@@ -129,3 +129,8 @@ burst-compiled `IJobChunk` job with stride-aware `MemCpy`.
 ## Source
 
 `BovineLabs.Core/Spatial/PositionBuilder.cs`
+
+## Source
+
+- [BovineLabs.Core/Spatial/PositionBuilder.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Spatial/PositionBuilder.cs)
+- [BovineLabs.Core.Extensions/Relevancy/RelevancySystem.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Extensions/Relevancy/RelevancySystem.cs)
