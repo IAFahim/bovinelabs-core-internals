@@ -225,3 +225,7 @@ Methods: StateCurrent, StateIsEnabled, StateSet, StateEnable, StateDisable
 5. **AggressiveInlining**: All public methods are marked `[MethodImpl(AggressiveInlining)]` for zero-overhead abstraction.
 
 6. **Conditional Debug Logging**: Log messages only in `UNITY_EDITOR` or `BL_DEBUG` builds, ensuring zero overhead in release.
+
+## Source
+
+- [BovineLabs.Core/States/AppAPI.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/States/AppAPI.cs)
