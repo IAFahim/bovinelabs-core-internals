@@ -200,3 +200,7 @@ KEY PROPERTIES
   * Burst Compatible:  Yes (static P/Invoke callback)
   * Safety Checks:     Logs outstanding allocations on dispose (editor only)
   * Atomic Count:      allocationCount via Interlocked ops
+
+## Source
+
+- [BovineLabs.Core/Memory/MemoryLabelAllocator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Memory/MemoryLabelAllocator.cs)
