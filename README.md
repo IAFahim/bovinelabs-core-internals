@@ -140,3 +140,7 @@ causing more slowness, ad infinitum.
 ## Source File
 
 - `BovineLabs.Core/Utility/LimitedRateNoCatchUpManager.cs`
+
+## Source
+
+- [BovineLabs.Core/Utility/LimitedRateNoCatchUpManager.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/LimitedRateNoCatchUpManager.cs)
