@@ -234,3 +234,7 @@ PERFORMANCE CHARACTERISTICS
   │ Collision rate          │ ZERO by construction                 │
   │ Cache friendliness      │ Excellent — linear array access      │
   └─────────────────────────┴──────────────────────────────────────┘
+
+## Source
+
+- [BovineLabs.Core/Collections/NativePerfectHashMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/NativePerfectHashMap.cs)
