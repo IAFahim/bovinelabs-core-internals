@@ -449,3 +449,7 @@ cat README.md
 ---
 
 Total: 358 topics across 24 categories
+
+## Source
+
+- [BovineLabs.Core/Utility/SubSceneUtil.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/SubSceneUtil.cs)
