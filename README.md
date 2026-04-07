@@ -205,3 +205,7 @@ KEY PROPERTIES
   * Burst Compatible:  Yes
   * Memory Overhead:   N × UnsafePoolAllocator<T> (one per worker thread)
   * Constraint:        Free must be on same thread that allocated
+
+## Source
+
+- [BovineLabs.Core/Memory/UnsafeParallelPoolAllocator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Memory/UnsafeParallelPoolAllocator.cs)
