@@ -387,3 +387,9 @@ Cache behavior:
   - Buckets array is scanned once per lookup (1 cache line typically)
   - Chain walks touch scattered Keys/Next entries
   - Values array is only touched once the correct index is found
+
+## Source
+
+- [BovineLabs.Core/Collections/Blobs/HashMap/BlobHashMapData.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/Blobs/HashMap/BlobHashMapData.cs)
+- [BovineLabs.Core/Collections/Blobs/HashMap/BlobHashMapDataBuilder.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/Blobs/HashMap/BlobHashMapDataBuilder.cs)
+- [BovineLabs.Core/Collections/Blobs/HashMap/BlobMultiHashMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/Blobs/HashMap/BlobMultiHashMap.cs)
