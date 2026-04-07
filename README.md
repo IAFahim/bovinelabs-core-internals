@@ -151,3 +151,9 @@ provides fast bucket-based proximity queries.
 ## Source
 
 `BovineLabs.Core/Spatial/SpatialMap.cs`
+
+## Source
+
+- [BovineLabs.Core/Spatial/SpatialMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Spatial/SpatialMap.cs)
+- [BovineLabs.Core/Spatial/SpatialMap3.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Spatial/SpatialMap3.cs)
+- [BovineLabs.Core/Spatial/LocalSpatialMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Spatial/LocalSpatialMap.cs)
