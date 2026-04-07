@@ -232,3 +232,7 @@ PERFORMANCE CHARACTERISTICS
   │ Memory (allocated)        │ Next[count] + Buckets[maxKey]   │
   │ Memory (external)         │ keys + values (zero copy)       │
   └───────────────────────────┴──────────────────────────────────┘
+
+## Source
+
+- [BovineLabs.Core/Collections/NativePartialKeyedMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/NativePartialKeyedMap.cs)
