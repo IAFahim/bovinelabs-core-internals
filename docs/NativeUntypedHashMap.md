@@ -298,6 +298,16 @@ PERFORMANCE CHARACTERISTICS
   │ Type safety              │ Runtime hash check per access        │
   └──────────────────────────┴──────────────────────────────────────┘
 
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/NativeUntypedHashMap.cs) — 38 assertions passing
+>
+> Key findings:
+> - Generic struct NativeUntypedHashMap<TKey>; supports mixed value types (int, float, float3) in same map
+> - AddOrSet<TValue>, GetOrAddRef<TValue>, TryGetValue<TValue> are generic methods
+> - ContainsKey, Clear, IsCreated, Count, Capacity, IsEmpty properties all verified
+> - GetOrAddRef returns ref allowing in-place mutation; updates preserve Count
+
 ## Source
 
 - [BovineLabs.Core/Collections/NativeUntypedHashMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/NativeUntypedHashMap.cs)

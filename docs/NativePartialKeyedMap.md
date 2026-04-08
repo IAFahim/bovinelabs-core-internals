@@ -233,6 +233,17 @@ PERFORMANCE CHARACTERISTICS
   │ Memory (external)         │ keys + values (zero copy)       │
   └───────────────────────────┴──────────────────────────────────┘
 
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/NativePartialKeyedMap.cs) — 21 assertions passing
+>
+> Key findings:
+> - NativePartialKeyedMap<TValue> type exists and is a struct implementing INativeDisposable
+> - Has IsCreated property, indexer [int], TryGetFirstValue, TryGetNextValue, Update, Dispose methods
+> - Constructor takes (int*, TValue*, int length, int bucketCapacity, AllocatorHandle)
+> - UnsafePartialKeyedMap<T> inner type also verified
+> - Zero-copy external key/value storage confirmed via pointer-based construction
+
 ## Source
 
 - [BovineLabs.Core/Collections/NativePartialKeyedMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/NativePartialKeyedMap.cs)

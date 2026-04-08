@@ -238,6 +238,18 @@ PERFORMANCE CHARACTERISTICS
   │ Memory overhead      │ 3 ints + T[Capacity]                    │
   │ Load balancing       │ Automatic — work-stealing via atomics   │
   └──────────────────────┴─────────────────────────────────────────┘
+```
+
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/NativeWorkQueue.cs) — 35 assertions passing
+>
+> Key findings:
+> - Generic struct NativeWorkQueue<T>; ctor(int capacity, AllocatorHandle)
+> - Update(), Add(int)→int*, TryAdd(int)→int, Dispose()
+> - Properties: Length, Capacity, HasCapacity
+> - ParallelWriter and ParallelReader nested types with TryAdd/TryGetNext
+> - Functional: Capacity==10, Length==0 initially, HasCapacity==true when empty
 
 ## Source
 

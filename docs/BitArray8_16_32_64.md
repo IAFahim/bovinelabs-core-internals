@@ -180,6 +180,17 @@ USE CASES
   ● BitArray64 — Extended flags, category masks, up to 64 features
 ```
 
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/BitArray8_16_32_64.cs) — 65 assertions passing
+>
+> Key findings:
+> - BitArray8: 1 byte, Capacity=8; BitArray16: 2 bytes, Capacity=16
+> - BitArray32: 4 bytes, Capacity=32; BitArray64: 8 bytes, Capacity=64
+> - All sizes support indexer, CountBits, AllFalse/AllTrue, BitOr/BitAnd/BitNot
+> - Static fields All (all bits set) and None (no bits set) verified for all sizes
+> - BitArray64 operator overloads |, &, ~ and equality verified
+
 ## Source
 
 - [BovineLabs.Core/Collections/BitArray.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/BitArray.cs)

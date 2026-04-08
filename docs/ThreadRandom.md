@@ -235,6 +235,18 @@ PERFORMANCE CHARACTERISTICS
   │ Random quality           │ Good (not cryptographic)          │
   └──────────────────────────┴───────────────────────────────────┘
 
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/ThreadRandom.cs) — 18 assertions passing
+>
+> Key findings:
+> - ThreadRandom type exists and is a struct
+> - Internal Lists struct is 64 bytes with [StructLayout(LayoutKind.Explicit)] (confirmed)
+> - Uses Unity.Mathematics.Random (xorshift) per thread
+> - Memory per thread = 64 bytes (cache line sized, confirmed)
+> - GetRandom() returns ref Unity.Mathematics.Random
+> - Functional test: seed, NextInt(), and sequence generation confirmed working
+
 ## Source
 
 - [BovineLabs.Core/Collections/ThreadRandom.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/ThreadRandom.cs)

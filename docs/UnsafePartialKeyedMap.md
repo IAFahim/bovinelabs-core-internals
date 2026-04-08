@@ -35,6 +35,17 @@
  └────────────────────────────────────────────────────────────────────┘
 ```
 
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/UnsafePartialKeyedMap.cs) — 22 assertions passing
+>
+> Key findings:
+> - Generic struct UnsafePartialKeyedMap<TValue>; pointer-based (int* keys, TValue* values)
+> - 5-parameter constructor (keys, values, length, bucketCapacity, allocator)
+> - TryGetFirstValue/TryGetNextValue for multi-value enumeration
+> - Static Create/Destroy factory methods; IsCreated property, indexer
+> - Update(int*, TValue*, int) for refreshing data; multiple Dispose overloads
+
 ## Source
 
 - [BovineLabs.Core/Collections/UnsafePartialKeyedMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/UnsafePartialKeyedMap.cs)

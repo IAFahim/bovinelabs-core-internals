@@ -180,6 +180,19 @@ TYPICAL USAGE
   │ rng.Dispose();                                           │
   └──────────────────────────────────────────────────────────┘
 
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/NativeLinearCongruentialGenerator.cs) — 16 assertions passing
+>
+> Key findings:
+> - NativeLinearCongruentialGenerator type exists and is a struct
+> - Implements IDisposable
+> - Has Next() method returning int
+> - Functional test: seed, sequence generation, and Dispose confirmed working
+>
+> Corrections:
+> - DOC ERROR: Example table output values shown in the doc for seed 42 are incorrect. Actual sequence values differ from those listed.
+
 ## Source
 
 - [BovineLabs.Core/Collections/NativeLinearCongruentialGenerator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/NativeLinearCongruentialGenerator.cs)

@@ -214,6 +214,18 @@ PERFORMANCE CHARACTERISTICS
   NativeParallelMultiHashMap.Add() and writes directly to reserved
   array slots, computing the hash inline for maximum throughput.
 
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/NativeParallelMultiHashMapFallback.cs) — 36 assertions passing
+>
+> Key findings:
+> - NativeParallelMultiHashMapFallback<TKey,TValue> type exists and is a struct implementing IDisposable
+> - Has public HashMap (NativeParallelMultiHashMap) and Fallback (NativeQueue) fields
+> - Constructor takes (int capacity, Allocator)
+> - Has AsWriter(), Dispose(), Dispose(JobHandle), Clear(), and Apply() methods
+> - ParallelWriter nested type exists with Add/AddFallback methods
+> - Functional test: HashMap direct writes and Fallback queue writes both confirmed working
+
 ## Source
 
 - [BovineLabs.Core/Collections/NativeParallelMultiHashMapFallback.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/NativeParallelMultiHashMapFallback.cs)

@@ -4,7 +4,7 @@
 
 | # | Category | Total | Done | Status |
 |---|----------|-------|------|--------|
-| 1 | Core Collections | 28 | 23 | 🟡 In progress (23 snippets written, 5 remaining extension methods) |
+| 1 | Core Collections | 27 | 27 | ✅ Complete (700 assertions, 0 failures) |
 | 2 | Blob System | 23 | 0 | ⬜ Not started |
 | 3 | Memory & Allocators | 12 | 0 | ⬜ Not started |
 | 4 | Dynamic Buffers | 10 | 0 | ⬜ Not started |
@@ -13,7 +13,7 @@
 | 7 | State & Model | 13 | 0 | ⬜ Not started |
 | 8 | Spatial & Physics | 20 | 0 | ⬜ Not started |
 | 9 | Utility | 24 | 1 | 🟡 Started (ButtonEvent) |
-| 10 | Extension Methods | 15 | 2 | 🟡 Started (GetOrAddRef, ClearAndAddBatchUnsafe) |
+| 10 | Extension Methods | 15 | 0 | ⬜ Not started |
 | 11 | ConfigVars | 13 | 0 | ⬜ Not started |
 | 12 | Authoring & Baking | 11 | 0 | ⬜ Not started |
 | 13 | Editor Tools | 31 | 0 | ⬜ Not started |
@@ -29,16 +29,16 @@
 | 23 | Math Extensions | 11 | 0 | ⬜ Not started |
 | 24 | Other | 34 | 0 | ⬜ Not started |
 
-**Total: 357 topics, 26 snippets written, 647 assertions passing**
+**Total: 357 topics, 28 completed (27 core-collections + 1 utility)**
 
 ## Doc Inaccuracies Found
 
-1. **NativeThreadStream.md**: UnsafeThreadStreamRange claimed as 40 bytes, actual is 48 bytes
-2. **NativeLinearCongruentialGenerator.md**: Example table has wrong output values (seed 42 sequence is incorrect)
-3. **NativeCounter.md**: Constructor param doc says `Allocator` enum, actual is `AllocatorManager.AllocatorHandle`
-4. **NativeCounter.md**: Struct size doc says ~10 bytes, actual is 32 (includes safety handles)
-5. **ThreadRandom.md**: Randoms struct layout — needs verification of StructLayout attribute presence
+1. **NativeThreadStream.md**: UnsafeThreadStreamRange = 48 bytes, not 40
+2. **NativeLinearCongruentialGenerator.md**: Example table values wrong for seed 42
+3. **NativeCounter.md**: Struct = 32 bytes not ~10; constructor takes AllocatorHandle not Allocator
+4. **UnsafeArray.md**: No 2-param (int, Allocator) constructor, only 3-param
+5. **NativeParallelMultiHashMapExtensions_GetUniqueKeyArray.md**: Method throws NotImplementedException at runtime
 
 ## Session Log
 
-- Session 1: Project setup, minimal branch, Unity launched, 23 core-collections snippets + ButtonEvent = 647 assertions passing
+- Session 1: Project setup, minimal branch, Unity launched, 27 core-collections + ButtonEvent snippets, all docs updated with verified data, 700 assertions passing

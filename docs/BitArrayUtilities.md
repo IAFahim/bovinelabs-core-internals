@@ -173,6 +173,16 @@ PERFORMANCE CHARACTERISTICS
   zero function call overhead in Burst-compiled code.
 ```
 
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/BitArrayUtilities.cs) — 30 assertions passing
+>
+> Key findings:
+> - Static class (abstract + sealed) with Get8/16/32/64/128/256 and Set8/16/32/64/128/256 methods
+> - Get32(index, data) correctly returns bit state; Get64, Get8, Get16 verified
+> - Get128 has (int, ulong, ulong) overload for dual-field dispatch
+> - Set32 signature: (uint index, ref uint data, bool value)
+
 ## Source
 
 - [BovineLabs.Core/Collections/BitArray.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/BitArray.cs)

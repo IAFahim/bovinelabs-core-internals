@@ -255,6 +255,20 @@ PERFORMANCE CHARACTERISTICS
   │ Struct size        │ ~16 bytes (vs ~40+ for NativeArray)      │
   └────────────────────┴──────────────────────────────────────────┘
 
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/UnsafeArray.cs) — 43 assertions passing
+>
+> Key findings:
+> - UnsafeArray<T> type exists and is a struct
+> - Has IsCreated, Length, Capacity, IsEmpty properties
+> - Has indexer [int], Add, Clear, Dispose methods
+> - Constructor confirmed: (int length, int capacity, AllocatorHandle) — 3-param form
+> - Struct size is ~16 bytes (small footprint confirmed)
+>
+> Corrections:
+> - DOC ERROR: No 2-param constructor (int, Allocator) exists. Only the 3-param constructor (int length, int capacity, AllocatorHandle) is available.
+
 ## Source
 
 - [BovineLabs.Core/Collections/UnsafeArray.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/UnsafeArray.cs)

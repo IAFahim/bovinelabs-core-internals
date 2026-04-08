@@ -38,12 +38,12 @@ t("Lists nested type exists", listsType != null);
 if (listsType != null)
 {
     t("Lists is struct", listsType.IsValueType);
-    var attr = listsType.GetCustomAttributes(typeof(System.Runtime.InteropServices.StructLayoutAttribute), false);
-    bool hasExplicitLayout = false; int explicitSize = 0;
-    foreach (var a in attr) { var sla = (StructLayoutAttribute)a; if (sla.Value == LayoutKind.Explicit) { hasExplicitLayout = true; explicitSize = sla.Size; } }
+    var layout = listsType.StructLayoutAttribute;
+    bool hasExplicitLayout = layout != null && layout.Value == System.Runtime.InteropServices.LayoutKind.Explicit;
+    int explicitSize = hasExplicitLayout ? layout.Size : 0;
     t("Lists has [StructLayout(LayoutKind.Explicit)]", hasExplicitLayout);
     int cacheLineSize = Unity.Jobs.LowLevel.Unsafe.JobsUtility.CacheLineSize;
-    t($"Lists Size = CacheLineSize ({cacheLineSize}), actual = {explicitSize}", explicitSize == cacheLineSize);
+    t($"Lists Size = CacheLineSize ({cacheLineSize})", explicitSize == cacheLineSize);
     var listField = listsType.GetField("List", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
     t("Lists has List field of UnsafeList<byte>", listField != null && listField.FieldType.Name == "UnsafeList`1");
 }

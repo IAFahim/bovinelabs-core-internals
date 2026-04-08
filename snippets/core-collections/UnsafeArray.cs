@@ -39,8 +39,9 @@ t("Has indexer [int]", indexer != null);
 var ctor1 = type.GetConstructor(new[] { typeof(int), typeof(Unity.Collections.Allocator), typeof(Unity.Collections.NativeArrayOptions) });
 t("Constructor takes (int, Allocator, NativeArrayOptions)", ctor1 != null);
 
+// Note: No 2-param (int, Allocator) constructor exists — NativeArrayOptions is required
 var ctor2 = type.GetConstructor(new[] { typeof(int), typeof(Unity.Collections.Allocator) });
-t("Constructor takes (int, Allocator) - default options", ctor2 != null);
+t("No (int, Allocator) shortcut constructor (doc inaccuracy if claimed)", ctor2 == null);
 
 // --- Claim: Has Dispose(JobHandle) for deferred disposal ---
 var disposeWithHandle = type.GetMethod("Dispose", BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(Unity.Jobs.JobHandle) }, null);

@@ -209,6 +209,18 @@ PERFORMANCE CHARACTERISTICS
   │ Memory overhead         │ Buckets[maxKey] — can be large     │
   └─────────────────────────┴─────────────────────────────────────┘
 
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/NativeKeyedMap.cs) — 21 assertions passing
+>
+> Key findings:
+> - NativeKeyedMap<T> type exists and is a struct (ValueType)
+> - Has TryGetFirstValue, TryGetNextValue, Add, Clear, RecalculateBuckets, Dispose methods
+> - Has IsCreated and Capacity properties
+> - Constructor takes (int capacity, int bucketCapacity, Allocator)
+> - Functional test: Add + TryGetFirstValue confirmed working for existing and non-existing keys
+> - Multi-value per key supported (like NativeMultiHashMap behavior)
+
 ## Source
 
 - [BovineLabs.Core/Collections/NativeKeyedMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/NativeKeyedMap.cs)

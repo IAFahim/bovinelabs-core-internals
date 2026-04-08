@@ -247,6 +247,18 @@ Methods: TryConsume() → bool, TryProduce(bool) → bool
 
 6. **Coalescing Semantics**: Multiple `TryProduce` calls between `TryConsume` calls result in a single event. This is intentional for button-like inputs where only the "pressed" state matters, not the count.
 
+## Verified Data
+
+> [Run test snippet](../snippets/utility/ButtonEvent.cs) — 25 assertions passing
+>
+> Key findings:
+> - Value property (bool) tracks pending state; default is false
+> - TryProduce(true) on idle returns true and sets Value=true; on pending returns false (dedup)
+> - TryProduce(false) always returns false; does not change state
+> - TryConsume on pending returns true and resets Value=false; on idle returns false
+> - Full produce-consume-produce-consume cycle verified
+> - Single-consumer guarantee: second TryConsume after first returns false
+
 ## Source
 
 - [BovineLabs.Core/Utility/ButtonEvent.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/ButtonEvent.cs)

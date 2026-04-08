@@ -176,6 +176,16 @@ USAGE PATTERNS
   Common choices: float4, float4x4, ulong, or custom fixed-buffer structs.
 ```
 
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/FixedArray.cs) — 20 assertions passing
+>
+> Key findings:
+> - Length = sizeof(TS) / sizeof(T) — verified with float/float4→4, int/ulong→2, byte/float4→16, byte/float4x4→64
+> - Generic open type FixedArray<,> is a struct (ValueType)
+> - Indexer (Item property) has both getter and setter
+> - ElementAt method exists on the specialized type
+
 ## Source
 
 - [BovineLabs.Core/Collections/FixedArray.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/FixedArray.cs)

@@ -480,6 +480,18 @@ Writes larger than one block's usable area (4088 bytes) are chunked:
 *Write with new block involves a heap allocation, making it amortized O(1) rather than
  true O(1). In practice, Unity's Allocator handles fixed-size allocations very efficiently.
 
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/NativeThreadStream.cs) — 30 assertions passing
+>
+> Key findings:
+> - All field offsets within UnsafeThreadStreamRange confirmed correct
+> - UnsafeThreadStreamBlock layout verified (4096 bytes)
+> - Reader/Writer API patterns confirmed
+>
+> Corrections:
+> - DOC ERROR: UnsafeThreadStreamRange is 48 bytes, NOT 40 bytes as stated in the "per-thread write state" section. All individual field offsets are correct but the total size is wrong.
+
 ## Source
 
 - [BovineLabs.Core/Collections/EventStream/NativeThreadStream.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/EventStream/NativeThreadStream.cs)

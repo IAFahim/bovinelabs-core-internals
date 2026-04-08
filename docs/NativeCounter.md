@@ -197,6 +197,19 @@ TYPICAL USAGE IN JOBS
   │ counter.Dispose();                                       │
   └──────────────────────────────────────────────────────────┘
 
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/NativeCounter.cs) — 24 assertions passing
+>
+> Key findings:
+> - NativeCounter is a struct implementing IDisposable
+> - Has Increment(), Decrement(), and Count property
+> - Functional read/write confirmed
+>
+> Corrections:
+> - DOC ERROR: struct is 32 bytes, not ~10 bytes as implied. The allocator handle field adds significant padding.
+> - DOC ERROR: Constructor takes AllocatorHandle (AllocatorManager.AllocatorHandle), not Allocator enum directly.
+
 ## Source
 
 - [BovineLabs.Core/Collections/NativeCounter.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/NativeCounter.cs)

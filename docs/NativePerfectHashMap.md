@@ -234,6 +234,17 @@ PERFORMANCE CHARACTERISTICS
   │ Collision rate          │ ZERO by construction                 │
   │ Cache friendliness      │ Excellent — linear array access      │
   └─────────────────────────┴──────────────────────────────────────┘
+```
+
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/NativePerfectHashMap.cs) — 31 assertions passing
+>
+> Key findings:
+> - Generic struct NativePerfectHashMap<TKey,TValue>; 4-param ctor (NativeArray keys, NativeArray values, int nullValue, Allocator)
+> - TryGetValue returns true for known keys, false for unknown
+> - Indexer get/set works; set updates value in-place
+> - 3-key and 4-key maps verified with correct lookups
 
 ## Source
 

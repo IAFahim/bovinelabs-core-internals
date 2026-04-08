@@ -133,6 +133,17 @@ USE CASES IN ECS
   ● UI editing via BitArray256Converter (PropertyDrawer)
 ```
 
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/BitArray256.cs) — 39 assertions passing
+>
+> Key findings:
+> - 32 bytes total (4 × ulong fields: data1, data2, data3, data4)
+> - Capacity property returns 256
+> - Indexer get/set verified at boundaries: bit 0, 64 (data2), 128 (data3), 192 (data4), 255
+> - CountBits() accurate across all 4 ulong fields
+> - BitOr, BitAnd, BitNot produce correct results (BitNot on single bit → 255 bits set)
+
 ## Source
 
 - [BovineLabs.Core.Editor/UI/BitArray256Converter.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Editor/UI/BitArray256Converter.cs)

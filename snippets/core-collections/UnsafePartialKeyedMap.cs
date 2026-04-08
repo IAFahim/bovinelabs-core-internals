@@ -18,7 +18,7 @@ t("UnsafePartialKeyedMap<int>: is a struct (ValueType)", mapType.IsValueType);
 // --- Verify it's generic ---
 var genericArgs = mapType.GetGenericArguments();
 t("UnsafePartialKeyedMap: has 1 generic parameter (TValue)", genericArgs.Length == 1);
-t("UnsafePartialKeyedMap: generic param name starts with T", genericArgs[0].Name.StartsWith("T"));
+t("UnsafePartialKeyedMap: generic param is int (closed type)", genericArgs[0] == typeof(int));
 
 // --- Has expected methods ---
 var tryGetFirst = mapType.GetMethod("TryGetFirstValue");

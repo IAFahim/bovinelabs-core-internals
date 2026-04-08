@@ -37,6 +37,16 @@
  └────────────────────────────────────────────────────────────────────┘
 ```
 
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/NativeThreadStream_Reader.cs) — 19 assertions passing
+>
+> Key findings:
+> - Reader is a nested struct inside NativeThreadStream with 3 fields (reader, remainingBlocks, m_Safety)
+> - Methods: BeginForEachIndex, EndForEachIndex, Read<T>, ReadUnsafePtr, ReadLarge, Count
+> - Properties: RemainingItemCount, ForEachCount
+> - Writer nested type also confirmed with Write<T>, Allocate, WriteLarge
+
 ## Source
 
 - [BovineLabs.Core/Collections/EventStream/NativeThreadStream.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/EventStream/NativeThreadStream.cs)

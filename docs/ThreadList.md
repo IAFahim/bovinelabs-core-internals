@@ -220,6 +220,19 @@ PERFORMANCE CHARACTERISTICS
   │                    │ + ThreadIndexCount * 512 bytes for data  │
   └────────────────────┴──────────────────────────────────────────┘
 
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/ThreadList.cs) — 19 assertions passing
+>
+> Key findings:
+> - ThreadList type exists and is a struct
+> - Has IsCreated property, GetList() and GetList(int threadIndex) methods returning UnsafeList<byte>
+> - Constructor takes AllocatorHandle
+> - Internal Lists struct has [StructLayout(LayoutKind.Explicit)] with Size = CacheLineSize (64 bytes)
+> - Lists.List field is UnsafeList<byte>
+> - Initial capacity per thread = 512 bytes (confirmed)
+> - Functional test: construction, GetList, and Dispose all working
+
 ## Source
 
 - [BovineLabs.Core/Collections/ThreadList.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/ThreadList.cs)

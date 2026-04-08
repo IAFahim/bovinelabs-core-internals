@@ -149,6 +149,19 @@ USE CASES
   ● Interop with v128 for vectorized bit manipulation
 ```
 
+## Verified Data
+
+> [Run test snippet](../snippets/core-collections/BitArray128.cs) — 43 assertions passing
+>
+> Key findings:
+> - 16 bytes total (2 × ulong fields: data1, data2)
+> - Capacity property returns 128
+> - AllFalse/AllTrue properties verified; default has AllFalse=true, AllTrue=false
+> - Indexer get/set at boundaries: bit 0, 63 (data1 end), 64 (data2 start), 127 (highest)
+> - BitOr/BitAnd/BitNot cross-field operations correct
+> - Operator overloads |, &, ~ work as expected
+> - Equality operators == and != work correctly
+
 ## Source
 
 - [BovineLabs.Core/Collections/BitArray.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/BitArray.cs)
