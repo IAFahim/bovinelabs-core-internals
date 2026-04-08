@@ -1,0 +1,22 @@
+# TypeUtility
+
+## Inner Workings Diagram
+
+```
+ TypeUtility
+ ======================================================================
+ Namespace:  BovineLabs.Core.Utility
+
+
+ Key Methods:
+ ┌────────────────────────────────────────────────────────────────────┐
+ │ MatchesOpenGeneric(Type type, Type openGeneric)                    │
+ │   → bool                                                           │
+ │ GetOpenGenericArgumentType(Type type, Type openGeneric, out Type data
+ │   → bool                                                           │
+ └────────────────────────────────────────────────────────────────────┘
+```
+
+## Source
+
+- [BovineLabs.Core/Utility/TypeUtility.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/TypeUtility.cs)

@@ -1,0 +1,38 @@
+# BlobCurve2_3_4
+
+## Inner Workings Diagram
+
+```
+ BlobCurve2_3_4
+ ======================================================================
+ Defined as: BlobCurve2
+ Namespace:  BovineLabs.Core.Collections
+
+ Structure:
+ ┌────────────────────────────────────────────────────────────────────┐
+ │ BlobCurve2                                                         │
+ ├────────────────────────────────────────────────────────────────────┤
+ │ BlobCurveHeader          Header                                    │
+ │ BlobArray<float>         Times                                     │
+ │ int                      SegmentCount                              │
+ │ float                    StartTime                                 │
+ │ float                    EndTime                                   │
+ │ float                    Duration                                  │
+ └────────────────────────────────────────────────────────────────────┘
+
+ Key Methods:
+ ┌────────────────────────────────────────────────────────────────────┐
+ │ EvaluateIgnoreWrapMode(in float time, [NoAlias] ref BlobCurveCache ca
+ │   → float2                                                         │
+ │ EvaluateIgnoreWrapMode(in float time)                              │
+ │   → float2                                                         │
+ │ Evaluate(in float time, [NoAlias] ref BlobCurveCache cache)        │
+ │   → float2                                                         │
+ │ Evaluate(in float time)                                            │
+ │   → float2                                                         │
+ └────────────────────────────────────────────────────────────────────┘
+```
+
+## Source
+
+- [BovineLabs.Core/Collections/Blobs/Curve/BlobCurve2.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/Blobs/Curve/BlobCurve2.cs)
