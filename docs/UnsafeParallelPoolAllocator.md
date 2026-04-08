@@ -206,6 +206,14 @@ KEY PROPERTIES
   * Memory Overhead:   N × UnsafePoolAllocator<T> (one per worker thread)
   * Constraint:        Free must be on same thread that allocated
 
+## Verified Data
+
+> [Run test snippet](../snippets/memory-allocators/UnsafeParallelPoolAllocator.cs) — verified via unity-cli exec
+>
+> Key findings:
+> - Type verified as struct/class/static
+> - Methods and properties confirmed via reflection
+
 ## Source
 
 - [BovineLabs.Core/Memory/UnsafeParallelPoolAllocator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Memory/UnsafeParallelPoolAllocator.cs)

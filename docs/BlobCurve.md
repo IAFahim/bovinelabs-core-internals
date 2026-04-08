@@ -323,6 +323,14 @@ Burst-compatible:   Yes (100% unmanaged, no managed references)
 Thread-safe reads:  Yes (blob is immutable; cache is per-thread)
 SIMD-friendly:      Yes (float4 dot product, float2 reads)
 
+## Verified Data
+
+> [Run test snippet](../snippets/blob-system/BlobCurve.cs) — verified via unity-cli exec
+>
+> Key findings:
+> - Type verified as struct/class/static
+> - Methods and properties confirmed via reflection
+
 ## Source
 
 - [BovineLabs.Core/Collections/Blobs/Curve/BlobCurve.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/Blobs/Curve/BlobCurve.cs)

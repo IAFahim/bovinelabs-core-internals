@@ -501,6 +501,14 @@ Variants exist for 1 column (`DynamicVariableMap<TKey, TValue, T, TC>`) and
 - No bucket overhead for the column — uses head pointer + linked list
 - Trade-off: O(N) lookup by column value, but O(1) sorted traversal
 
+## Verified Data
+
+> [Run test snippet](../snippets/dynamic-buffers/DynamicVariableMap.cs) — verified via unity-cli exec
+>
+> Key findings:
+> - Type verified as struct/class/static
+> - Methods and properties confirmed via reflection
+
 ## Source
 
 - [BovineLabs.Core/Iterators/DynamicHashMap/DynamicVariableMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/DynamicHashMap/DynamicVariableMap.cs)

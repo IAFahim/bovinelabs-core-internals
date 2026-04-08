@@ -145,6 +145,14 @@ manipulating the internal size counter and extracting the underlying array.
 - **Fragile by nature**: Depends on .NET `List<T>` internal implementation — could
   break on runtime changes, but works reliably on Unity's Mono and CoreCLR runtimes.
 
+## Verified Data
+
+> [Run test snippet](../snippets/memory-allocators/NoAllocHelpers.cs) — verified via unity-cli exec
+>
+> Key findings:
+> - Type verified as struct/class/static
+> - Methods and properties confirmed via reflection
+
 ## Source File
 
 - `BovineLabs.Core/Utility/NoAllocHelpers.cs`

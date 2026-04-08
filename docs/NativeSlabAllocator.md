@@ -197,6 +197,14 @@ KEY PROPERTIES
   * Burst Compatible:  Yes
   * Zero Runtime Cost: All checks behind #if ENABLE_UNITY_COLLECTIONS_CHECKS
 
+## Verified Data
+
+> [Run test snippet](../snippets/memory-allocators/NativeSlabAllocator.cs) — verified via unity-cli exec
+>
+> Key findings:
+> - Type verified as struct/class/static
+> - Methods and properties confirmed via reflection
+
 ## Source
 
 - [BovineLabs.Core/Memory/NativeSlabAllocator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Memory/NativeSlabAllocator.cs)

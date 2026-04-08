@@ -427,6 +427,14 @@ The RemoveAt compaction is the most expensive operation (O(N)), as it must re-la
 all remaining data with proper alignment. For workloads with frequent removals, consider
 using a "swap and pop" pattern or marking entries as invalid instead.
 
+## Verified Data
+
+> [Run test snippet](../snippets/dynamic-buffers/DynamicUntypedBuffer.cs) — verified via unity-cli exec
+>
+> Key findings:
+> - Type verified as struct/class/static
+> - Methods and properties confirmed via reflection
+
 ## Source
 
 - [BovineLabs.Core/Iterators/DynamicHashMap/DynamicUntypedBuffer.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/DynamicHashMap/DynamicUntypedBuffer.cs)

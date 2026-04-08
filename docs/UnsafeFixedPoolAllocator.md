@@ -171,6 +171,14 @@ KEY PROPERTIES
   * Overhead:          UnsafeParallelHashSet<Ptr> with maxItems entries
   * Use Case:          Fixed-capacity pools where max count is known upfront
 
+## Verified Data
+
+> [Run test snippet](../snippets/memory-allocators/UnsafeFixedPoolAllocator.cs) — verified via unity-cli exec
+>
+> Key findings:
+> - Type verified as struct/class/static
+> - Methods and properties confirmed via reflection
+
 ## Source
 
 - [BovineLabs.Core/Memory/UnsafeFixedPoolAllocator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Memory/UnsafeFixedPoolAllocator.cs)

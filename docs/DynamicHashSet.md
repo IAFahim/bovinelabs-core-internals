@@ -391,6 +391,14 @@ inserts if the element is not already present.
 this is significant. For a set of ints with Capacity=1024: saves 0 bytes (SizeOfTValue=0 already)
 but conceptually cleaner than a HashMap<T, byte>.
 
+## Verified Data
+
+> [Run test snippet](../snippets/dynamic-buffers/DynamicHashSet.cs) — verified via unity-cli exec
+>
+> Key findings:
+> - Type verified as struct/class/static
+> - Methods and properties confirmed via reflection
+
 ## Source
 
 - [BovineLabs.Core/Iterators/DynamicHashMap/DynamicHashSet.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/DynamicHashMap/DynamicHashSet.cs)

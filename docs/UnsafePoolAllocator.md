@@ -219,6 +219,14 @@ KEY PROPERTIES
   * Fragmentation:     None within slabs; freed slots are reused
   * Use Case:          General purpose pool with individual free support
 
+## Verified Data
+
+> [Run test snippet](../snippets/memory-allocators/UnsafePoolAllocator.cs) — verified via unity-cli exec
+>
+> Key findings:
+> - Type verified as struct/class/static
+> - Methods and properties confirmed via reflection
+
 ## Source
 
 - [BovineLabs.Core/Memory/UnsafePoolAllocator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Memory/UnsafePoolAllocator.cs)

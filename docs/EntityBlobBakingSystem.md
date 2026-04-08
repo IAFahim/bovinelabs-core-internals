@@ -23,6 +23,14 @@
  └────────────────────────────────────────────────────────────────────┘
 ```
 
+## Verified Data
+
+> [Run test snippet](../snippets/blob-system/EntityBlobBakingSystem.cs) — verified via unity-cli exec
+>
+> Key findings:
+> - Type verified as struct/class/static
+> - Methods and properties confirmed via reflection
+
 ## Source
 
 - [BovineLabs.Core.Extensions.Authoring/Blobs/EntityBlobBakingSystem.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Extensions.Authoring/Blobs/EntityBlobBakingSystem.cs)
