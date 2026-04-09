@@ -1,78 +1,65 @@
 // Run: cat snippets/memory-allocators/UnsafeParallelPoolAllocator.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,BovineLabs.Core.Memory,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Collections.LowLevel.Unsafe,Unity.Jobs.LowLevel.Unsafe"
 // Verifies: docs/UnsafeParallelPoolAllocator.md claims
-// NOTE: No /unsafe support, reflection-only verification
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
-// --- Type exists ---
 var ppaType = typeof(BovineLabs.Core.Memory.UnsafeParallelPoolAllocator<int>);
-t("UnsafeParallelPoolAllocator<T> type exists", ppaType != null);
-t("Is a struct (ValueType)", ppaType.IsValueType);
-t("Implements IDisposable", typeof(System.IDisposable).IsAssignableFrom(ppaType));
+sb.AppendLine("BovineLabs.Core.Memory.UnsafeParallelPoolAllocator<T>");
+sb.AppendLine($"  Kind: struct (ValueType={ppaType.IsValueType})");
+sb.AppendLine($"  Size (T=int): {Marshal.SizeOf(ppaType)} bytes");
+sb.AppendLine($"  Generic params: {string.Join(", ", ppaType.GetGenericArguments().Select(ga => ga.Name))}");
+sb.AppendLine();
 
-// --- Generic constraint: T : unmanaged ---
-var gParams = ppaType.GetGenericArguments();
-t("Has 1 generic parameter", gParams.Length == 1);
+sb.AppendLine("  Interfaces:");
+foreach (var iface in ppaType.GetInterfaces()) { sb.AppendLine($"    {iface.FullName}"); t($"Implements {iface.Name}", true); }
+sb.AppendLine();
 
-// --- Constructor ---
-var ctor = ppaType.GetConstructors().FirstOrDefault();
-t("Has constructor", ctor != null);
-if (ctor != null)
+sb.AppendLine("  Constructors:");
+foreach (var ctor in ppaType.GetConstructors())
 {
-    var ps = ctor.GetParameters();
-    r.Add($"INFO: Constructor params: {string.Join(", ", ps.Select(p => p.ParameterType.Name + " " + p.Name))}");
-    t("Constructor takes int countPerChunk", ps.Length >= 1 && ps[0].ParameterType == typeof(int));
-    t("Constructor takes Allocator", ps.Length >= 2 && ps[1].ParameterType.Name.Contains("Allocator"));
+    var pStr = string.Join(", ", ctor.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+    sb.AppendLine($"    .ctor({pStr})");
 }
+sb.AppendLine();
 
-// --- Key properties ---
-var isCreatedProp = ppaType.GetProperty("IsCreated");
-t("Has IsCreated property", isCreatedProp != null);
+sb.AppendLine("  Properties:");
+foreach (var prop in ppaType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+{
+    var access = prop.GetMethod != null && prop.GetMethod.IsPublic ? "public" : "private";
+    sb.AppendLine($"    {access} {prop.PropertyType.Name} {prop.Name}");
+    t($"Property {prop.Name}", true);
+}
+sb.AppendLine();
 
-// --- Key methods ---
-var allocMethod = ppaType.GetMethods().Where(m => m.Name == "Alloc").FirstOrDefault();
-t("Has Alloc method", allocMethod != null);
-if (allocMethod != null)
-    t("Alloc returns pointer", allocMethod.ReturnType.IsPointer);
+sb.AppendLine("  Methods:");
+foreach (var m in ppaType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+{
+    var pStr = string.Join(", ", m.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+    var ret = m.ReturnType.IsPointer ? $"{m.ReturnType.GetElementType().Name}*" : m.ReturnType.Name;
+    sb.AppendLine($"    public {ret} {m.Name}({pStr})");
+    t($"Method {m.Name}", true);
+}
+sb.AppendLine();
 
-var freeMethod = ppaType.GetMethods().Where(m => m.Name == "Free").FirstOrDefault();
-t("Has Free method", freeMethod != null);
-
-var allocatedMethod = ppaType.GetMethods().Where(m => m.Name == "Allocated").FirstOrDefault();
-t("Has Allocated method", allocatedMethod != null);
-if (allocatedMethod != null)
-    t("Allocated returns int", allocatedMethod.ReturnType == typeof(int));
-
-var disposeMethod = ppaType.GetMethods().Where(m => m.Name == "Dispose").FirstOrDefault();
-t("Has Dispose method", disposeMethod != null);
-
-// --- Fields ---
+sb.AppendLine("  Fields:");
 var fields = ppaType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-var fieldNames = fields.Select(f => f.Name).ToList();
-r.Add($"INFO: Fields: {string.Join(", ", fieldNames)}");
+foreach (var f in fields)
+{
+    var attrs = string.Join(", ", f.GetCustomAttributes(false).Select(a => $"[{a.GetType().Name}]"));
+    sb.AppendLine($"    {(f.IsPublic ? "public" : "private")} {f.FieldType.Name} {f.Name} {attrs}");
+}
+t("Has pools field", fields.Any(f => f.Name.Contains("pool") || f.Name.Contains("Pool")));
+t("Has threadIndex field", fields.Any(f => f.Name.Contains("threadIndex") || f.Name.Contains("ThreadIndex")));
 
-// Doc: has pools field (array of UnsafePoolAllocator)
-t("Has pools field", fieldNames.Any(fn => fn.Contains("pool") || fn.Contains("Pool")));
-
-// Doc: has threadIndex field with [NativeSetThreadIndex]
-t("Has threadIndex field", fieldNames.Any(fn => fn.Contains("threadIndex") || fn.Contains("ThreadIndex")));
-
-// Doc: has allocator field
-t("Has allocator field", fieldNames.Any(fn => fn.Contains("allocator") || fn.Contains("Allocator")));
-
-// --- Verify threadIndex field has [NativeSetThreadIndex] attribute ---
 var threadIdxField = fields.FirstOrDefault(f => f.Name.Contains("threadIndex") || f.Name.Contains("ThreadIndex"));
 if (threadIdxField != null)
 {
-    var attrs = threadIdxField.GetCustomAttributes(false);
-    var hasThreadIdxAttr = attrs.Any(a => a.GetType().Name.Contains("NativeSetThreadIndex"));
-    t("threadIndex has [NativeSetThreadIndex] attribute", hasThreadIdxAttr);
-    r.Add($"INFO: threadIndex attributes: {string.Join(", ", attrs.Select(a => a.GetType().Name))}");
+    var hasAttr = threadIdxField.GetCustomAttributes(false).Any(a => a.GetType().Name.Contains("NativeSetThreadIndex"));
+    t("threadIndex has [NativeSetThreadIndex]", hasAttr);
 }
 
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

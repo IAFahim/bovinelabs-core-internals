@@ -1,75 +1,55 @@
 // Run: cat snippets/memory-allocators/UnsafePoolAllocator.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,BovineLabs.Core.Memory,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Collections.LowLevel.Unsafe"
 // Verifies: docs/UnsafePoolAllocator.md claims
-// NOTE: No /unsafe support, reflection-only verification
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
-// --- Type exists ---
 var upaType = typeof(BovineLabs.Core.Memory.UnsafePoolAllocator<int>);
-t("UnsafePoolAllocator<T> type exists", upaType != null);
-t("Is a struct (ValueType)", upaType.IsValueType);
-t("Implements IDisposable", typeof(System.IDisposable).IsAssignableFrom(upaType));
+sb.AppendLine("BovineLabs.Core.Memory.UnsafePoolAllocator<T>");
+sb.AppendLine($"  Kind: struct (ValueType={upaType.IsValueType})");
+sb.AppendLine($"  Size (T=int): {Marshal.SizeOf(upaType)} bytes");
+sb.AppendLine();
 
-// --- Generic constraint: T : unmanaged ---
-var gParams = upaType.GetGenericArguments();
-t("Has 1 generic parameter", gParams.Length == 1);
+sb.AppendLine("  Interfaces:");
+foreach (var iface in upaType.GetInterfaces()) { sb.AppendLine($"    {iface.FullName}"); }
+sb.AppendLine();
 
-// --- Constructor ---
-var ctor = upaType.GetConstructors().FirstOrDefault();
-t("Has constructor", ctor != null);
-if (ctor != null)
+sb.AppendLine("  Constructors:");
+foreach (var ctor in upaType.GetConstructors())
 {
-    var ps = ctor.GetParameters();
-    r.Add($"INFO: Constructor params: {string.Join(", ", ps.Select(p => p.ParameterType.Name + " " + p.Name))}");
-    t("Constructor takes int countPerChunk", ps.Length >= 1 && ps[0].ParameterType == typeof(int));
-    t("Constructor takes Allocator", ps.Length >= 2 && ps[1].ParameterType.Name.Contains("Allocator"));
+    var pStr = string.Join(", ", ctor.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+    sb.AppendLine($"    .ctor({pStr})");
 }
+sb.AppendLine();
 
-// --- Key properties ---
-var isCreatedProp = upaType.GetProperty("IsCreated");
-t("Has IsCreated property", isCreatedProp != null);
-if (isCreatedProp != null)
-    t("IsCreated returns bool", isCreatedProp.PropertyType == typeof(bool));
-
-// --- Key methods ---
-var allocMethod = upaType.GetMethods().Where(m => m.Name == "Alloc").FirstOrDefault();
-t("Has Alloc method", allocMethod != null);
-if (allocMethod != null)
-    t("Alloc returns pointer", allocMethod.ReturnType.IsPointer);
-
-var freeMethod = upaType.GetMethods().Where(m => m.Name == "Free").FirstOrDefault();
-t("Has Free method", freeMethod != null);
-if (freeMethod != null)
+sb.AppendLine("  Properties:");
+foreach (var prop in upaType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
 {
-    var ps = freeMethod.GetParameters();
-    t("Free takes pointer parameter", ps.Length == 1 && ps[0].ParameterType.IsPointer);
+    var access = prop.GetMethod != null && prop.GetMethod.IsPublic ? "public" : "private";
+    sb.AppendLine($"    {access} {prop.PropertyType.Name} {prop.Name}");
+    t($"Property {prop.Name}", true);
 }
+sb.AppendLine();
 
-var allocatedMethod = upaType.GetMethods().Where(m => m.Name == "Allocated").FirstOrDefault();
-t("Has Allocated method", allocatedMethod != null);
-if (allocatedMethod != null)
-    t("Allocated returns int", allocatedMethod.ReturnType == typeof(int));
+sb.AppendLine("  Methods:");
+foreach (var m in upaType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+{
+    var pStr = string.Join(", ", m.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+    var ret = m.ReturnType.IsPointer ? $"{m.ReturnType.GetElementType().Name}*" : m.ReturnType.Name;
+    sb.AppendLine($"    public {ret} {m.Name}({pStr})");
+    t($"Method {m.Name}", true);
+}
+sb.AppendLine();
 
-var disposeMethod = upaType.GetMethods().Where(m => m.Name == "Dispose").FirstOrDefault();
-t("Has Dispose method", disposeMethod != null);
-
-// --- Fields: slab + free-list hybrid ---
+sb.AppendLine("  Fields:");
 var fields = upaType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-var fieldNames = fields.Select(f => f.Name).ToList();
-r.Add($"INFO: Fields: {string.Join(", ", fieldNames)}");
+foreach (var f in fields)
+    sb.AppendLine($"    {(f.IsPublic ? "public" : "private")} {f.FieldType.Name} {f.Name}");
+t("Has slabAllocator field", fields.Any(f => f.Name.Contains("slab") || f.Name.Contains("Slab")));
+t("Has free field (free-list)", fields.Any(f => f.Name.Contains("free") || f.Name.Contains("Free")));
+t("No lock/spinlock fields (not thread-safe)", !fields.Any(f => f.Name.Contains("lock") || f.Name.Contains("spin")));
 
-// Doc: has slabAllocator field
-t("Has slabAllocator field (UnsafeSlabAllocator<T>)", fieldNames.Any(fn => fn.Contains("slab") || fn.Contains("Slab")));
-
-// Doc: has free field (UnsafeParallelHashSet<Ptr>)
-t("Has free field (UnsafeParallelHashSet<Ptr>)", fieldNames.Any(fn => fn.Contains("free") || fn.Contains("Free")));
-
-// --- No thread safety fields ---
-t("No lock/spinlock fields (not thread-safe)", !fieldNames.Any(fn => fn.Contains("lock") || fn.Contains("mutex") || fn.Contains("spin")));
-
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

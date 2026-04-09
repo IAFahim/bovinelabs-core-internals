@@ -1,211 +1,193 @@
-MemoryAllocator - Tracked Multi-Allocation Manager
-====================================================
-
-Source: BovineLabs.Core/Memory/MemoryAllocator.cs
-
-OVERVIEW
---------
-MemoryAllocator wraps Unity's AllocatorManager to provide simple "allocate many,
-free all" semantics. Every allocation is tracked in a NativeHashSet<Ptr>.
-Individual frees are NOT supported - call FreeAll() to release everything at once.
-This is ideal for scoped subsystems that create many temporary unmanaged buffers.
-
-ARCHITECTURE
-============
-
-     MemoryAllocator Instance
-    ┌─────────────────────────────────────────────────────┐
-    │                                                     │
-    │  Allocator: Allocator (e.g. Allocator.Persistent)   │
-    │                                                     │
-    │  allocated: NativeHashSet<Ptr>                      │──────┐
-    │    (tracks every live pointer)                      │      │
-    │                                                     │      │
-    └─────────────────────────────────────────────────────┘      │
-                                                                 │
-         allocated (NativeHashSet<Ptr>)                          │
-        ┌───────────────────────────────────────┐                │
-        │  Buckets (hash-based)                 │                │
-        │  ┌─────────┬──┐ → Ptr 0xDEADBEEF     │                │
-        │  │ bucket 0│──┤ → Ptr 0x12340000     │                │
-        │  ├─────────┼──┤ → Ptr 0xAAAA0000     │                │
-        │  │ bucket 1│──┤                       │                │
-        │  ├─────────┼──┤ → Ptr 0xBBBB0000     │                │
-        │  │ bucket 2│──┤ → Ptr 0xCCCC0000     │                │
-        │  ├─────────┼──┤                       │                │
-        │  │ ...     │  │                       │                │
-        │  └─────────┴──┘                       │                │
-        └───────────────────────────────────────┘                │
-                                                                 │
-    Actual Allocations (via AllocatorManager)                    │
-    ┌──────────────┐  ┌──────────────┐  ┌──────────────┐        │
-    │ Ptr 0xDEAD... │  │ Ptr 0x1234...│  │ Ptr 0xAAAA...│◄───────┘
-    │ sizeof(X)×N  │  │ sizeof(Y)×M  │  │ sizeof(Z)×K  │  (each tracked)
-    └──────────────┘  └──────────────┘  └──────────────┘
-
-
-ALLOCATION FLOW
-===============
-
-    Allocate(itemSizeInBytes, alignmentInBytes, items=1):
-
-    ┌───────────────────────────────────────────────────┐
-    │ ptr = AllocatorManager.Allocate(                  │
-    │         allocator, itemSizeInBytes,               │
-    │         alignmentInBytes, items)                  │
-    └───────────────────────┬───────────────────────────┘
-                            │
-                            ▼
-                ┌─────────────────────┐
-                │ allocated.Add(ptr)  │
-                └─────────────────────┘
-                            │
-                            ▼
-                    return ptr;
-
-
-    Create<T>(count=1):
-
-    ┌──────────────────────────────────────────────┐
-    │ return (T*)Allocate(                         │
-    │     sizeof(T),                               │
-    │     alignof(T),                              │
-    │     count)                                   │
-    └──────────────────────────────────────────────┘
-
-
-    CreateList<T>(capacity):
-
-    ┌───────────────────────────────────────────────────┐
-    │ capacity = max(capacity, 64/sizeof(T))            │
-    │ capacity = ceilpow2(capacity)                     │
-    │ buffer = Create<T>(capacity)                      │
-    │                                                   │
-    │ return UnsafeList<T> {                            │
-    │     Ptr       = buffer,                           │
-    │     Capacity  = capacity,                         │
-    │     Allocator = Allocator.None  (we own it!)      │
-    │ }                                                 │
-    └───────────────────────────────────────────────────┘
-
-    NOTE: Allocator.None means the list itself won't free the buffer.
-    MemoryAllocator.FreeAll() handles that.
-
-
-FREEALL FLOW
-============
-
-    FreeAll():
-
-    ┌─────────────────────────────────────────────┐
-    │ array = allocated.ToNativeArray(Temp)        │
-    │                                             │
-    │ ┌───────────────────────────────────────┐   │
-    │ │ foreach ptr in array:                 │   │
-    │ │   AllocatorManager.Free(allocator,ptr)│   │
-    │ │                                       │   │
-    │ │   ┌──────────┐  ┌──────────┐         │   │
-    │ │   │ Ptr 0xA  │  │ Ptr 0xB  │  ...    │   │
-    │ │   │  FREE    │  │  FREE    │         │   │
-    │ │   └──────────┘  └──────────┘         │   │
-    │ └───────────────────────────────────────┘   │
-    │                                             │
-    │ allocated.Clear()                           │
-    └─────────────────────────────────────────────┘
-
-
-DISPOSE FLOW
-============
-
-    Dispose():
-
-    ┌──────────────────────────────┐
-    │ FreeAll()                    │
-    │   └─ frees all tracked ptrs │
-    │   └─ clears the hashset     │
-    │                              │
-    │ allocated.Dispose()          │
-    │   └─ frees the hashset itself│
-    └──────────────────────────────┘
-
-
-USAGE PATTERN
-=============
-
-    ┌────────────────────────────────────────────────────┐
-    │  // Setup phase                                    │
-    │  var mem = new MemoryAllocator(Allocator.Persistent)│
-    │                                                    │
-    │  // Allocate many buffers                          │
-    │  int* a = mem.Create<int>(100);                    │
-    │  float* b = mem.Create<float>(256);                │
-    │  var list = mem.CreateList<byte>(1024);            │
-    │  void* c = mem.Allocate(64, 8);                    │
-    │                                                    │
-    │  // Use them...                                    │
-    │  // ...                                            │
-    │                                                    │
-    │  // Tear down everything at once                   │
-    │  mem.Dispose();                                    │
-    └────────────────────────────────────────────────────┘
-
-
-KEY PROPERTIES
-==============
-
-  * Type:              struct MemoryAllocator : IDisposable
-  * Thread Safety:     NONE (not thread-safe)
-  * Individual Free:   NOT supported (use FreeAll or Dispose)
-  * Tracking:          NativeHashSet<Ptr> - O(1) add, O(n) free-all
-  * Alloc Speed:       O(1) + hashset insert
-  * FreeAll Speed:     O(n) where n = number of allocations
-  * Burst Compatible:  Yes
-  * List Capacity:     Minimum 64/sizeof(T), always power-of-2
-  * List Ownership:    Buffer tracked by MemoryAllocator, not by list
+     1|MemoryAllocator - Tracked Multi-Allocation Manager
+     2|====================================================
+     3|
+     4|Source: BovineLabs.Core/Memory/MemoryAllocator.cs
+     5|
+     6|OVERVIEW
+     7|--------
+     8|MemoryAllocator wraps Unity's AllocatorManager to provide simple "allocate many,
+     9|free all" semantics. Every allocation is tracked in a NativeHashSet<Ptr>.
+    10|Individual frees are NOT supported - call FreeAll() to release everything at once.
+    11|This is ideal for scoped subsystems that create many temporary unmanaged buffers.
+    12|
+    13|ARCHITECTURE
+    14|============
+    15|
+    16|     MemoryAllocator Instance
+    17|    ┌─────────────────────────────────────────────────────┐
+    18|    │                                                     │
+    19|    │  Allocator: Allocator (e.g. Allocator.Persistent)   │
+    20|    │                                                     │
+    21|    │  allocated: NativeHashSet<Ptr>                      │──────┐
+    22|    │    (tracks every live pointer)                      │      │
+    23|    │                                                     │      │
+    24|    └─────────────────────────────────────────────────────┘      │
+    25|                                                                 │
+    26|         allocated (NativeHashSet<Ptr>)                          │
+    27|        ┌───────────────────────────────────────┐                │
+    28|        │  Buckets (hash-based)                 │                │
+    29|        │  ┌─────────┬──┐ → Ptr 0xDEADBEEF     │                │
+    30|        │  │ bucket 0│──┤ → Ptr 0x12340000     │                │
+    31|        │  ├─────────┼──┤ → Ptr 0xAAAA0000     │                │
+    32|        │  │ bucket 1│──┤                       │                │
+    33|        │  ├─────────┼──┤ → Ptr 0xBBBB0000     │                │
+    34|        │  │ bucket 2│──┤ → Ptr 0xCCCC0000     │                │
+    35|        │  ├─────────┼──┤                       │                │
+    36|        │  │ ...     │  │                       │                │
+    37|        │  └─────────┴──┘                       │                │
+    38|        └───────────────────────────────────────┘                │
+    39|                                                                 │
+    40|    Actual Allocations (via AllocatorManager)                    │
+    41|    ┌──────────────┐  ┌──────────────┐  ┌──────────────┐        │
+    42|    │ Ptr 0xDEAD... │  │ Ptr 0x1234...│  │ Ptr 0xAAAA...│◄───────┘
+    43|    │ sizeof(X)×N  │  │ sizeof(Y)×M  │  │ sizeof(Z)×K  │  (each tracked)
+    44|    └──────────────┘  └──────────────┘  └──────────────┘
+    45|
+    46|
+    47|ALLOCATION FLOW
+    48|===============
+    49|
+    50|    Allocate(itemSizeInBytes, alignmentInBytes, items=1):
+    51|
+    52|    ┌───────────────────────────────────────────────────┐
+    53|    │ ptr = AllocatorManager.Allocate(                  │
+    54|    │         allocator, itemSizeInBytes,               │
+    55|    │         alignmentInBytes, items)                  │
+    56|    └───────────────────────┬───────────────────────────┘
+    57|                            │
+    58|                            ▼
+    59|                ┌─────────────────────┐
+    60|                │ allocated.Add(ptr)  │
+    61|                └─────────────────────┘
+    62|                            │
+    63|                            ▼
+    64|                    return ptr;
+    65|
+    66|
+    67|    Create<T>(count=1):
+    68|
+    69|    ┌──────────────────────────────────────────────┐
+    70|    │ return (T*)Allocate(                         │
+    71|    │     sizeof(T),                               │
+    72|    │     alignof(T),                              │
+    73|    │     count)                                   │
+    74|    └──────────────────────────────────────────────┘
+    75|
+    76|
+    77|    CreateList<T>(capacity):
+    78|
+    79|    ┌───────────────────────────────────────────────────┐
+    80|    │ capacity = max(capacity, 64/sizeof(T))            │
+    81|    │ capacity = ceilpow2(capacity)                     │
+    82|    │ buffer = Create<T>(capacity)                      │
+    83|    │                                                   │
+    84|    │ return UnsafeList<T> {                            │
+    85|    │     Ptr       = buffer,                           │
+    86|    │     Capacity  = capacity,                         │
+    87|    │     Allocator = Allocator.None  (we own it!)      │
+    88|    │ }                                                 │
+    89|    └───────────────────────────────────────────────────┘
+    90|
+    91|    NOTE: Allocator.None means the list itself won't free the buffer.
+    92|    MemoryAllocator.FreeAll() handles that.
+    93|
+    94|
+    95|FREEALL FLOW
+    96|============
+    97|
+    98|    FreeAll():
+    99|
+   100|    ┌─────────────────────────────────────────────┐
+   101|    │ array = allocated.ToNativeArray(Temp)        │
+   102|    │                                             │
+   103|    │ ┌───────────────────────────────────────┐   │
+   104|    │ │ foreach ptr in array:                 │   │
+   105|    │ │   AllocatorManager.Free(allocator,ptr)│   │
+   106|    │ │                                       │   │
+   107|    │ │   ┌──────────┐  ┌──────────┐         │   │
+   108|    │ │   │ Ptr 0xA  │  │ Ptr 0xB  │  ...    │   │
+   109|    │ │   │  FREE    │  │  FREE    │         │   │
+   110|    │ │   └──────────┘  └──────────┘         │   │
+   111|    │ └───────────────────────────────────────┘   │
+   112|    │                                             │
+   113|    │ allocated.Clear()                           │
+   114|    └─────────────────────────────────────────────┘
+   115|
+   116|
+   117|DISPOSE FLOW
+   118|============
+   119|
+   120|    Dispose():
+   121|
+   122|    ┌──────────────────────────────┐
+   123|    │ FreeAll()                    │
+   124|    │   └─ frees all tracked ptrs │
+   125|    │   └─ clears the hashset     │
+   126|    │                              │
+   127|    │ allocated.Dispose()          │
+   128|    │   └─ frees the hashset itself│
+   129|    └──────────────────────────────┘
+   130|
+   131|
+   132|USAGE PATTERN
+   133|=============
+   134|
+   135|    ┌────────────────────────────────────────────────────┐
+   136|    │  // Setup phase                                    │
+   137|    │  var mem = new MemoryAllocator(Allocator.Persistent)│
+   138|    │                                                    │
+   139|    │  // Allocate many buffers                          │
+   140|    │  int* a = mem.Create<int>(100);                    │
+   141|    │  float* b = mem.Create<float>(256);                │
+   142|    │  var list = mem.CreateList<byte>(1024);            │
+   143|    │  void* c = mem.Allocate(64, 8);                    │
+   144|    │                                                    │
+   145|    │  // Use them...                                    │
+   146|    │  // ...                                            │
+   147|    │                                                    │
+   148|    │  // Tear down everything at once                   │
+   149|    │  mem.Dispose();                                    │
+   150|    └────────────────────────────────────────────────────┘
+   151|
+   152|
+   153|KEY PROPERTIES
+   154|==============
+   155|
+   156|  * Type:              struct MemoryAllocator : IDisposable
+   157|  * Thread Safety:     NONE (not thread-safe)
+   158|  * Individual Free:   NOT supported (use FreeAll or Dispose)
+   159|  * Tracking:          NativeHashSet<Ptr> - O(1) add, O(n) free-all
+   160|  * Alloc Speed:       O(1) + hashset insert
+   161|  * FreeAll Speed:     O(n) where n = number of allocations
+   162|  * Burst Compatible:  Yes
+   163|  * List Capacity:     Minimum 64/sizeof(T), always power-of-2
+   164|  * List Ownership:    Buffer tracked by MemoryAllocator, not by list
+   165|
+   166|## Verified Data
 
 ## Verified Data
 
-> Run the verification snippet:
-> ```bash
-> cat snippets/memory-allocators/MemoryAllocator.cs | unity-cli exec \
->   --project ~/Github/bovinelabs-core-internals/BovineLabs \
->   --usings "BovineLabs.Core.Collections,BovineLabs.Core.Memory,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Collections.LowLevel.Unsafe,Unity.Mathematics"
-> ```
-
 ```
-PASS: MemoryAllocator type exists
-PASS: Is a struct (ValueType)
-PASS: Implements IDisposable
-PASS: Has constructor
-PASS: Constructor takes Allocator parameter
-PASS: Has Allocate method
-INFO: Allocate params: Int32 itemSizeInBytes, Int32 alignmentInBytes, Int32 items
-PASS: Allocate takes itemSizeInBytes, alignmentInBytes, items
-PASS: Allocate returns void pointer
-PASS: Has generic Create<T> method
-PASS: Has generic CreateList<T> method
-PASS: CreateList returns UnsafeList<T>
-PASS: Has FreeAll method
-PASS: FreeAll returns void
-PASS: Has Dispose method
-PASS: Has Allocator property
-INFO: Fields: allocated, <Allocator>k__BackingField
-PASS: Has allocated tracking field
-PASS: MemoryAllocator constructs
-PASS: CreateList<byte>(1024) returns list
-INFO: List capacity = 1024
-PASS: List capacity is power of 2
-PASS: List capacity >= requested
-PASS: List capacity equals 1024
-PASS: CreateList<int>(1) returns list
-PASS: Small list capacity is 16 (max(1, 64/sizeof(int)) rounded to pow2)
-PASS: FreeAll completes without error
-PASS: Dispose completes without error
-
-=== 25 PASSED, 0 FAILED ===
+BovineLabs.Core.Memory.MemoryAllocator
+  Kind: struct (ValueType=True)
+  Size: 32 bytes
+  Interfaces:
+    System.IDisposable
+  Constructors:
+    .ctor(Allocator allocator)
+  Properties:
+    Allocator Allocator
+  Methods:
+    public Void* Allocate(Int32 itemSizeInBytes, Int32 alignmentInBytes, Int32 items)
+    public T* Create<T>(Int32 count)
+    public UnsafeList`1 CreateList<T>(Int32 capacity)
+    public Void FreeAll()
+    public Void Dispose()
+  Functional Tests:
+    CreateList<byte>(1024): Capacity=1024
+    CreateList<int>(1): Capacity=16
+    FreeAll(): completed
+    Dispose(): completed
+Verified: 12 checks, 0 failures
 ```
 
-## Source
-
-- [BovineLabs.Core/Memory/MemoryAllocator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Memory/MemoryAllocator.cs)
-- [BovineLabs.Core/Collections/Reference.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/Reference.cs)

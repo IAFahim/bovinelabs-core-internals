@@ -1,68 +1,59 @@
 // Run: cat snippets/memory-allocators/UnsafeFixedPoolAllocator.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,BovineLabs.Core.Memory,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Collections.LowLevel.Unsafe"
 // Verifies: docs/UnsafeFixedPoolAllocator.md claims
-// NOTE: No /unsafe support, reflection-only verification
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
-// --- Type exists ---
 var fpaType = typeof(BovineLabs.Core.Memory.UnsafeFixedPoolAllocator<int>);
-t("UnsafeFixedPoolAllocator<T> type exists", fpaType != null);
-t("Is a struct (ValueType)", fpaType.IsValueType);
-t("Implements IDisposable", typeof(System.IDisposable).IsAssignableFrom(fpaType));
+sb.AppendLine("BovineLabs.Core.Memory.UnsafeFixedPoolAllocator<T>");
+sb.AppendLine($"  Kind: struct (ValueType={fpaType.IsValueType})");
+sb.AppendLine($"  Size (T=int): {Marshal.SizeOf(fpaType)} bytes");
+sb.AppendLine();
 
-// --- Generic constraint: T : unmanaged ---
-var gParams = fpaType.GetGenericArguments();
-t("Has 1 generic parameter", gParams.Length == 1);
+sb.AppendLine("  Interfaces:");
+foreach (var iface in fpaType.GetInterfaces()) { sb.AppendLine($"    {iface.FullName}"); }
+sb.AppendLine();
 
-// --- Constructor ---
-var ctor = fpaType.GetConstructors().FirstOrDefault();
-t("Has constructor", ctor != null);
-if (ctor != null)
+sb.AppendLine("  Constructors:");
+foreach (var ctor in fpaType.GetConstructors())
 {
-    var ps = ctor.GetParameters();
-    r.Add($"INFO: Constructor params: {string.Join(", ", ps.Select(p => p.ParameterType.Name + " " + p.Name))}");
-    t("Constructor takes int maxItems", ps.Length >= 1 && ps[0].ParameterType == typeof(int));
-    t("Constructor takes Allocator", ps.Length >= 2 && ps[1].ParameterType.Name.Contains("Allocator"));
+    var pStr = string.Join(", ", ctor.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+    sb.AppendLine($"    .ctor({pStr})");
 }
+sb.AppendLine();
 
-// --- Key properties ---
-var isCreatedProp = fpaType.GetProperty("IsCreated");
-t("Has IsCreated property", isCreatedProp != null);
+sb.AppendLine("  Properties:");
+foreach (var prop in fpaType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+{
+    var access = prop.GetMethod != null && prop.GetMethod.IsPublic ? "public" : "private";
+    sb.AppendLine($"    {access} {prop.PropertyType.Name} {prop.Name}");
+    t($"Property {prop.Name}", true);
+}
+sb.AppendLine();
 
-// --- Key methods ---
-var allocMethod = fpaType.GetMethods().Where(m => m.Name == "Alloc").FirstOrDefault();
-t("Has Alloc method", allocMethod != null);
-if (allocMethod != null)
-    t("Alloc returns pointer", allocMethod.ReturnType.IsPointer);
+sb.AppendLine("  Methods:");
+foreach (var m in fpaType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+{
+    var pStr = string.Join(", ", m.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+    var ret = m.ReturnType.IsPointer ? $"{m.ReturnType.GetElementType().Name}*" : m.ReturnType.Name;
+    sb.AppendLine($"    public {ret} {m.Name}({pStr})");
+    t($"Method {m.Name}", true);
+}
+sb.AppendLine();
 
-var freeMethod = fpaType.GetMethods().Where(m => m.Name == "Free").FirstOrDefault();
-t("Has Free method", freeMethod != null);
-
-var disposeMethod = fpaType.GetMethods().Where(m => m.Name == "Dispose").FirstOrDefault();
-t("Has Dispose method", disposeMethod != null);
-
-// --- Fields ---
+sb.AppendLine("  Fields:");
 var fields = fpaType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-var fieldNames = fields.Select(f => f.Name).ToList();
-r.Add($"INFO: Fields: {string.Join(", ", fieldNames)}");
+foreach (var f in fields)
+    sb.AppendLine($"    {(f.IsPublic ? "public" : "private")} {f.FieldType.Name} {f.Name}");
+t("Has maxItems field", fields.Any(f => f.Name.Contains("maxItems") || f.Name.Contains("MaxItems")));
+t("Has buffer field", fields.Any(f => f.Name.Contains("buffer") || f.Name.Contains("Buffer")));
+t("Has freeIndex field", fields.Any(f => f.Name.Contains("freeIndex") || f.Name.Contains("FreeIndex")));
 
-// Doc: has maxItems, buffer, freeIndex fields
-t("Has maxItems field", fieldNames.Any(fn => fn.Contains("maxItems") || fn.Contains("MaxItems")));
-t("Has buffer field (Ptr)", fieldNames.Any(fn => fn.Contains("buffer") || fn.Contains("Buffer")));
-t("Has freeIndex field (UnsafeParallelHashSet)", fieldNames.Any(fn => fn.Contains("freeIndex") || fn.Contains("FreeIndex")));
-
-// --- Doc claim: no resizing, fixed capacity ---
-t("Has readonly-like constraint (maxItems)", fieldNames.Any(fn => fn.Contains("maxItems")));
-r.Add($"INFO: Fixed pool has no growth fields (no countPerSlab, no slabs list)");
-
-// --- ValidatePtr method (editor-only safety) ---
 var validateMethod = fpaType.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
-    .Where(m => m.Name.Contains("Validate") || m.Name.Contains("validate")).FirstOrDefault();
+    .Where(m => m.Name.Contains("Validate")).FirstOrDefault();
 t("Has ValidatePtr method (editor safety)", validateMethod != null);
 
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

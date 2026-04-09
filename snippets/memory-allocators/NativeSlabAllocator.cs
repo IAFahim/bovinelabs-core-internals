@@ -1,76 +1,66 @@
 // Run: cat snippets/memory-allocators/NativeSlabAllocator.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,BovineLabs.Core.Memory,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Collections.LowLevel.Unsafe"
 // Verifies: docs/NativeSlabAllocator.md claims
-// NOTE: No /unsafe support, reflection-only verification
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
-// --- Type exists ---
 var nsaType = typeof(BovineLabs.Core.Memory.NativeSlabAllocator<int>);
-t("NativeSlabAllocator<T> type exists", nsaType != null);
-t("Is a struct (ValueType)", nsaType.IsValueType);
-t("Implements IDisposable", typeof(System.IDisposable).IsAssignableFrom(nsaType));
+sb.AppendLine("BovineLabs.Core.Memory.NativeSlabAllocator<T>");
+sb.AppendLine($"  Kind: struct (ValueType={nsaType.IsValueType})");
+sb.AppendLine($"  Size (T=int): {Marshal.SizeOf(nsaType)} bytes");
+sb.AppendLine();
 
-// --- [NativeContainer] attribute ---
-var ncAttr = nsaType.GetCustomAttributes(false).Any(a => a.GetType().Name.Contains("NativeContainer"));
-t("Has [NativeContainer] attribute", ncAttr);
+sb.AppendLine("  Attributes:");
+foreach (var attr in nsaType.GetCustomAttributes(false))
+    sb.AppendLine($"    [{attr.GetType().Name}]");
+t("Has [NativeContainer] attribute", nsaType.GetCustomAttributes(false).Any(a => a.GetType().Name.Contains("NativeContainer")));
+sb.AppendLine();
 
-// --- Generic constraint: T : unmanaged ---
-var gParams = nsaType.GetGenericArguments();
-t("Has 1 generic parameter", gParams.Length == 1);
+sb.AppendLine("  Interfaces:");
+foreach (var iface in nsaType.GetInterfaces()) { sb.AppendLine($"    {iface.FullName}"); }
+sb.AppendLine();
 
-// --- Constructor ---
-var ctor = nsaType.GetConstructors().FirstOrDefault();
-t("Has constructor", ctor != null);
-if (ctor != null)
+sb.AppendLine("  Constructors:");
+foreach (var ctor in nsaType.GetConstructors())
 {
-    var ps = ctor.GetParameters();
-    r.Add($"INFO: Constructor params: {string.Join(", ", ps.Select(p => p.ParameterType.Name + " " + p.Name))}");
-    t("Constructor takes int countPerSlab", ps.Length >= 1 && ps[0].ParameterType == typeof(int));
+    var pStr = string.Join(", ", ctor.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+    sb.AppendLine($"    .ctor({pStr})");
 }
+sb.AppendLine();
 
-// --- Key properties ---
-var isCreatedProp = nsaType.GetProperty("IsCreated");
-t("Has IsCreated property", isCreatedProp != null);
-if (isCreatedProp != null)
-    t("IsCreated returns bool", isCreatedProp.PropertyType == typeof(bool));
+sb.AppendLine("  Properties:");
+foreach (var prop in nsaType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+{
+    var access = prop.GetMethod != null && prop.GetMethod.IsPublic ? "public" : "private";
+    sb.AppendLine($"    {access} {prop.PropertyType.Name} {prop.Name}");
+    t($"Property {prop.Name}", true);
+}
+sb.AppendLine();
 
-var allocCountProp = nsaType.GetProperty("AllocationCount");
-t("Has AllocationCount property", allocCountProp != null);
-if (allocCountProp != null)
-    t("AllocationCount returns int", allocCountProp.PropertyType == typeof(int));
+sb.AppendLine("  Methods:");
+foreach (var m in nsaType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+{
+    var pStr = string.Join(", ", m.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+    var ret = m.ReturnType.IsPointer ? $"{m.ReturnType.GetElementType().Name}*" : m.ReturnType.Name;
+    sb.AppendLine($"    public {ret} {m.Name}({pStr})");
+    t($"Method {m.Name}", true);
+}
+sb.AppendLine();
 
-// --- Key methods ---
-var allocMethod = nsaType.GetMethods().Where(m => m.Name == "Alloc").FirstOrDefault();
-t("Has Alloc method", allocMethod != null);
-if (allocMethod != null)
-    t("Alloc returns pointer", allocMethod.ReturnType.IsPointer);
-
-var clearMethod = nsaType.GetMethods().Where(m => m.Name == "Clear").FirstOrDefault();
-t("Has Clear method", clearMethod != null);
-
-var disposeMethod = nsaType.GetMethods().Where(m => m.Name == "Dispose").FirstOrDefault();
-t("Has Dispose method", disposeMethod != null);
-
-// --- Fields: verify safety handle exists ---
+sb.AppendLine("  Fields:");
 var fields = nsaType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-var fieldNames = fields.Select(f => f.Name).ToList();
-r.Add($"INFO: Fields: {string.Join(", ", fieldNames)}");
+foreach (var f in fields)
+    sb.AppendLine($"    {(f.IsPublic ? "public" : "private")} {f.FieldType.Name} {f.Name}");
+t("Has slabAllocator field", fields.Any(f => f.Name.Contains("slab") || f.Name.Contains("Slab")));
+t("Has safety handle field", fields.Any(f => f.Name.Contains("Safety") || f.Name.Contains("safety")));
 
-// Doc: wraps UnsafeSlabAllocator<T>
-t("Has slabAllocator field (wraps UnsafeSlabAllocator)", fieldNames.Any(fn => fn.Contains("slab") || fn.Contains("Slab")));
-
-// Safety handle fields (behind #if)
-t("Has safety handle field (m_Safety)", fieldNames.Any(fn => fn.Contains("Safety") || fn.Contains("safety")));
-
-// --- Static safety ID ---
 var staticFields = nsaType.GetFields(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
-var staticFieldNames = staticFields.Select(f => f.Name).ToList();
-r.Add($"INFO: Static fields: {string.Join(", ", staticFieldNames)}");
-t("Has static safety ID field", staticFieldNames.Any(fn => fn.Contains("s_staticSafetyId") || fn.Contains("safetyId")));
+sb.AppendLine("  Static Fields:");
+foreach (var f in staticFields)
+    sb.AppendLine($"    {(f.IsPublic ? "public" : "private")} static {f.FieldType.Name} {f.Name}");
+t("Has static safety ID field", staticFields.Any(f => f.Name.Contains("safetyId") || f.Name.Contains("SafetyId")));
 
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

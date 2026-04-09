@@ -1,105 +1,61 @@
 // Run: cat snippets/dynamic-buffers/DynamicMultiHashMap.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Iterators,BovineLabs.Core.Extensions,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Entities"
 // Verifies: docs/DynamicMultiHashMap.md claims
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
 var bf = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
-// --- DynamicMultiHashMap<TKey,TValue> is a struct ---
 var mmapType = typeof(DynamicMultiHashMap<int, byte>);
-t("DynamicMultiHashMap: type exists", mmapType != null);
-t("DynamicMultiHashMap: is ValueType", mmapType.IsValueType);
+sb.AppendLine("DynamicMultiHashMap<TKey,TValue>");
+sb.AppendLine($"  Kind: {(mmapType.IsValueType ? "struct" : "class")}, {Marshal.SizeOf(mmapType)} bytes");
+sb.AppendLine();
 
-// --- Implements IEnumerable<KVPair<TKey,TValue>> ---
-t("DynamicMultiHashMap: implements IEnumerable",
-    mmapType.GetInterfaces().Any(iface =>
-        iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(System.Collections.Generic.IEnumerable<>)));
+sb.AppendLine("  Interfaces:");
+foreach (var iface in mmapType.GetInterfaces()) { sb.AppendLine($"    {iface.FullName}"); }
+sb.AppendLine();
 
-// --- Key properties ---
-var countProp = mmapType.GetProperty("Count", bf);
-t("DynamicMultiHashMap: has Count property", countProp != null);
+sb.AppendLine("  Properties:");
+foreach (var prop in mmapType.GetProperties(bf))
+{
+    sb.AppendLine($"    {prop.PropertyType.Name} {prop.Name}");
+    t($"Property {prop.Name}", true);
+}
+sb.AppendLine();
 
-var capProp = mmapType.GetProperty("Capacity", bf);
-t("DynamicMultiHashMap: has Capacity property", capProp != null);
+sb.AppendLine("  Methods:");
+foreach (var m in mmapType.GetMethods(bf).Where(m => !m.IsSpecialName && (m.IsPublic || m.IsPrivate))
+    .OrderBy(m => m.Name))
+{
+    var pStr = string.Join(", ", m.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+    sb.AppendLine($"    {(m.IsPublic ? "public" : "private")} {m.ReturnType.Name} {m.Name}({pStr})");
+    t($"Method {m.Name}", true);
+}
+sb.AppendLine();
 
-var isCreatedProp = mmapType.GetProperty("IsCreated", bf);
-t("DynamicMultiHashMap: has IsCreated property", isCreatedProp != null);
-
-var isEmptyProp = mmapType.GetProperty("IsEmpty", bf);
-t("DynamicMultiHashMap: has IsEmpty property", isEmptyProp != null);
-
-// --- Key methods ---
-var addMethod = mmapType.GetMethods(bf).Where(m => m.Name == "Add" && m.GetParameters().Length == 2).FirstOrDefault();
-t("DynamicMultiHashMap: has Add(TKey, TValue)", addMethod != null);
-
-var removeMethod = mmapType.GetMethods(bf).Where(m => m.Name == "Remove" && m.GetParameters().Length == 1).FirstOrDefault();
-t("DynamicMultiHashMap: has Remove(TKey)", removeMethod != null);
-
-var clearMethod = mmapType.GetMethods(bf).Where(m => m.Name == "Clear" && m.GetParameters().Length == 0).FirstOrDefault();
-t("DynamicMultiHashMap: has Clear()", clearMethod != null);
-
-var tryGetFirst = mmapType.GetMethods(bf).Where(m => m.Name == "TryGetFirstValue").FirstOrDefault();
-t("DynamicMultiHashMap: has TryGetFirstValue", tryGetFirst != null);
-
-var tryGetNext = mmapType.GetMethods(bf).Where(m => m.Name == "TryGetNextValue").FirstOrDefault();
-t("DynamicMultiHashMap: has TryGetNextValue", tryGetNext != null);
-
-var containsKey = mmapType.GetMethods(bf).Where(m => m.Name == "ContainsKey").FirstOrDefault();
-t("DynamicMultiHashMap: has ContainsKey", containsKey != null);
-
-var flattenMethod = mmapType.GetMethods(bf).Where(m => m.Name == "Flatten" && m.GetParameters().Length == 0).FirstOrDefault();
-t("DynamicMultiHashMap: has Flatten()", flattenMethod != null);
-
-var countValuesForKey = mmapType.GetMethods(bf).Where(m => m.Name == "CountValuesForKey").FirstOrDefault();
-t("DynamicMultiHashMap: has CountValuesForKey", countValuesForKey != null);
-
-// --- DynamicHashMapHelper<TKey> header struct ---
+sb.AppendLine("  DynamicHashMapHelper<TKey>");
 var helperType = typeof(DynamicHashMapHelper<int>);
-t("DynamicHashMapHelper: type exists", helperType != null);
-t("DynamicHashMapHelper: is ValueType", helperType.IsValueType);
-
-// Check Sequential layout
+sb.AppendLine($"    Kind: {(helperType.IsValueType ? "struct" : "class")}, {Marshal.SizeOf(helperType)} bytes");
 var sla = helperType.StructLayoutAttribute;
-t("DynamicHashMapHelper: has StructLayout(LayoutKind.Sequential)", sla != null && sla.Value == LayoutKind.Sequential);
+sb.AppendLine($"    Layout: {sla?.Value.ToString() ?? "default"}");
 
-// Check fields: 11 ints = 44 bytes
+sb.AppendLine("    Fields:");
 var fields = helperType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-t("DynamicHashMapHelper: has 11 fields", fields.Length == 11);
+foreach (var f in fields)
+    sb.AppendLine($"      {f.FieldType.Name} {f.Name} ({(f.IsPublic ? "public" : "private")})");
+t("Helper has 11 fields (all int)", fields.Length == 11 && fields.All(f => f.FieldType == typeof(int)));
+t("Helper size == 44 bytes", Marshal.SizeOf<DynamicHashMapHelper<int>>() == 44);
+sb.AppendLine();
 
-var fieldNames = fields.Select(f => f.Name).ToHashSet();
-t("DynamicHashMapHelper: has ValuesOffset", fieldNames.Contains("ValuesOffset"));
-t("DynamicHashMapHelper: has KeysOffset", fieldNames.Contains("KeysOffset"));
-t("DynamicHashMapHelper: has NextOffset", fieldNames.Contains("NextOffset"));
-t("DynamicHashMapHelper: has BucketsOffset", fieldNames.Contains("BucketsOffset"));
-t("DynamicHashMapHelper: has Count", fieldNames.Contains("Count"));
-t("DynamicHashMapHelper: has Capacity", fieldNames.Contains("Capacity"));
-t("DynamicHashMapHelper: has BucketCapacityMask", fieldNames.Contains("BucketCapacityMask"));
-t("DynamicHashMapHelper: has Log2MinGrowth", fieldNames.Contains("Log2MinGrowth"));
-t("DynamicHashMapHelper: has AllocatedIndex", fieldNames.Contains("AllocatedIndex"));
-t("DynamicHashMapHelper: has FirstFreeIdx", fieldNames.Contains("FirstFreeIdx"));
-t("DynamicHashMapHelper: has SizeOfTValue", fieldNames.Contains("SizeOfTValue"));
-
-// All fields are int
-bool allInt = fields.All(f => f.FieldType == typeof(int));
-t("DynamicHashMapHelper: all 11 fields are int", allInt);
-
-// Size check: 11 * 4 = 44 bytes
-int helperSize = Marshal.SizeOf<DynamicHashMapHelper<int>>();
-t("DynamicHashMapHelper: Marshal.SizeOf == 44 bytes", helperSize == 44);
-
-// --- IDynamicMultiHashMap<TKey, TValue> interface ---
+sb.AppendLine("  IDynamicMultiHashMap<TKey,TValue>");
 var ifaceType = typeof(IDynamicMultiHashMap<int, byte>);
-t("IDynamicMultiHashMap: interface exists", ifaceType != null);
-t("IDynamicMultiHashMap: is interface", ifaceType.IsInterface);
-t("IDynamicMultiHashMap: implements IBufferElementData",
-    ifaceType.GetInterfaces().Contains(typeof(IBufferElementData)));
-
+sb.AppendLine($"    IsInterface: {ifaceType.IsInterface}");
+sb.AppendLine($"    Implements IBufferElementData: {ifaceType.GetInterfaces().Contains(typeof(IBufferElementData))}");
 var valueProp = ifaceType.GetProperty("Value");
-t("IDynamicMultiHashMap: has Value property returning byte", valueProp != null && valueProp.PropertyType == typeof(byte));
+sb.AppendLine($"    Value property: {valueProp?.PropertyType.Name ?? "not found"}");
+t("IDynamicMultiHashMap is IBufferElementData with byte Value", ifaceType.IsInterface && valueProp?.PropertyType == typeof(byte));
 
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

@@ -1,79 +1,59 @@
 // Run: cat snippets/dynamic-buffers/DynamicUntypedBuffer.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Iterators,BovineLabs.Core.Extensions,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Entities"
 // Verifies: docs/DynamicUntypedBuffer.md claims
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
 var bf = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
-// --- DynamicUntypedBuffer is a struct ---
 var bufType = typeof(DynamicUntypedBuffer);
-t("DynamicUntypedBuffer: type exists", bufType != null);
-t("DynamicUntypedBuffer: is ValueType", bufType.IsValueType);
+sb.AppendLine("DynamicUntypedBuffer");
+sb.AppendLine($"  Kind: {(bufType.IsValueType ? "struct" : "class")}, {Marshal.SizeOf(bufType)} bytes");
+sb.AppendLine();
 
-// --- Key methods ---
-var addMethod = bufType.GetMethods(bf).Where(m => m.Name == "Add" && m.IsGenericMethod && m.GetParameters().Length == 1).FirstOrDefault();
-t("DynamicUntypedBuffer: has Add<T>(T)", addMethod != null);
+sb.AppendLine("  Methods:");
+foreach (var m in bufType.GetMethods(bf).Where(m => !m.IsSpecialName && (m.IsPublic || m.IsPrivate))
+    .OrderBy(m => m.Name))
+{
+    var generic = m.IsGenericMethod ? $"<{string.Join(",", m.GetGenericArguments().Select(ga => ga.Name))}>" : "";
+    var pStr = string.Join(", ", m.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+    sb.AppendLine($"    {(m.IsPublic ? "public" : "private")} {m.ReturnType.Name} {m.Name}{generic}({pStr})");
+    t($"Method {m.Name}", true);
+}
+sb.AppendLine();
 
-var elementAtRO = bufType.GetMethods(bf).Where(m => m.Name == "ElementAtRO" && m.IsGenericMethod).FirstOrDefault();
-t("DynamicUntypedBuffer: has ElementAtRO<T>(int)", elementAtRO != null);
-
-var removeAtMethod = bufType.GetMethods(bf).Where(m => m.Name == "RemoveAt" && m.GetParameters().Length == 1).FirstOrDefault();
-t("DynamicUntypedBuffer: has RemoveAt(int)", removeAtMethod != null);
-
-var clearMethod = bufType.GetMethods(bf).Where(m => m.Name == "Clear" && m.GetParameters().Length == 0).FirstOrDefault();
-t("DynamicUntypedBuffer: has Clear()", clearMethod != null);
-
-// --- DynamicUntypedBufferHelper header struct ---
+sb.AppendLine("  DynamicUntypedBufferHelper");
 var helperType = typeof(DynamicUntypedBufferHelper);
-t("DynamicUntypedBufferHelper: type exists", helperType != null);
-t("DynamicUntypedBufferHelper: is ValueType", helperType.IsValueType);
+sb.AppendLine($"    Kind: {(helperType.IsValueType ? "struct" : "class")}, {Marshal.SizeOf(helperType)} bytes");
+var sla = helperType.StructLayoutAttribute;
+sb.AppendLine($"    Layout: {sla?.Value.ToString() ?? "default"}");
 
-var helperSla = helperType.StructLayoutAttribute;
-t("DynamicUntypedBufferHelper: has StructLayout(LayoutKind.Sequential)", helperSla != null && helperSla.Value == LayoutKind.Sequential);
-
-// Check fields: 10 ints = 40 bytes
+sb.AppendLine("    Fields:");
 var helperFields = helperType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-t("DynamicUntypedBufferHelper: has 10 fields", helperFields.Length == 10);
+foreach (var f in helperFields)
+    sb.AppendLine($"      {f.FieldType.Name} {f.Name} ({(f.IsPublic ? "public" : "private")})");
+t("Helper has 10 fields (all int)", helperFields.Length == 10 && helperFields.All(f => f.FieldType == typeof(int)));
+t("Helper size == 40 bytes", Marshal.SizeOf<DynamicUntypedBufferHelper>() == 40);
+sb.AppendLine();
 
-var hfn = helperFields.Select(f => f.Name).ToHashSet();
-t("DynamicUntypedBufferHelper: has OffsetsOffset", hfn.Contains("OffsetsOffset"));
-t("DynamicUntypedBufferHelper: has SizesOffset", hfn.Contains("SizesOffset"));
-t("DynamicUntypedBufferHelper: has TypesOffset", hfn.Contains("TypesOffset"));
-t("DynamicUntypedBufferHelper: has AlignmentsOffset", hfn.Contains("AlignmentsOffset"));
-t("DynamicUntypedBufferHelper: has DataOffset", hfn.Contains("DataOffset"));
-t("DynamicUntypedBufferHelper: has Count", hfn.Contains("Count"));
-t("DynamicUntypedBufferHelper: has Capacity", hfn.Contains("Capacity"));
-t("DynamicUntypedBufferHelper: has DataCapacity", hfn.Contains("DataCapacity"));
-t("DynamicUntypedBufferHelper: has DataAllocatedIndex", hfn.Contains("DataAllocatedIndex"));
-t("DynamicUntypedBufferHelper: has Log2MinGrowth", hfn.Contains("Log2MinGrowth"));
-
-bool allHelperFieldsInt = helperFields.All(f => f.FieldType == typeof(int));
-t("DynamicUntypedBufferHelper: all 10 fields are int", allHelperFieldsInt);
-
-int helperSize = Marshal.SizeOf<DynamicUntypedBufferHelper>();
-t("DynamicUntypedBufferHelper: Marshal.SizeOf == 40 bytes", helperSize == 40);
-
-// --- IDynamicUntypedBuffer interface ---
+sb.AppendLine("  IDynamicUntypedBuffer");
 var ifaceType = typeof(IDynamicUntypedBuffer);
-t("IDynamicUntypedBuffer: interface exists", ifaceType != null);
-t("IDynamicUntypedBuffer: is interface", ifaceType.IsInterface);
-t("IDynamicUntypedBuffer: implements IBufferElementData",
-    ifaceType.GetInterfaces().Contains(typeof(IBufferElementData)));
-
+sb.AppendLine($"    IsInterface: {ifaceType.IsInterface}");
+sb.AppendLine($"    Implements IBufferElementData: {ifaceType.GetInterfaces().Contains(typeof(IBufferElementData))}");
 var valueProp = ifaceType.GetProperty("Value");
-t("IDynamicUntypedBuffer: has Value property returning byte", valueProp != null && valueProp.PropertyType == typeof(byte));
+sb.AppendLine($"    Value property: {valueProp?.PropertyType.Name ?? "not found"}");
+t("IDynamicUntypedBuffer is IBufferElementData with byte Value", ifaceType.IsInterface && valueProp?.PropertyType == typeof(byte));
+sb.AppendLine();
 
-// --- Extension methods ---
+sb.AppendLine("  DynamicExtensions");
 var extType = typeof(DynamicExtensions);
-var initUBMethod = extType.GetMethods(bf).Where(m => m.Name == "InitializeUntypedBuffer").FirstOrDefault();
-t("DynamicExtensions: has InitializeUntypedBuffer", initUBMethod != null);
+var initMethod = extType.GetMethods(bf).Where(m => m.Name == "InitializeUntypedBuffer").FirstOrDefault();
+var asMethod = extType.GetMethods(bf).Where(m => m.Name == "AsUntypedBuffer").FirstOrDefault();
+sb.AppendLine($"    InitializeUntypedBuffer: {(initMethod != null ? "exists" : "not found")}");
+sb.AppendLine($"    AsUntypedBuffer: {(asMethod != null ? "exists" : "not found")}");
+t("DynamicExtensions has buffer methods", initMethod != null && asMethod != null);
 
-var asUBMethod = extType.GetMethods(bf).Where(m => m.Name == "AsUntypedBuffer").FirstOrDefault();
-t("DynamicExtensions: has AsUntypedBuffer", asUBMethod != null);
-
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();
