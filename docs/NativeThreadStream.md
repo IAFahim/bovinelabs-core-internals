@@ -482,15 +482,89 @@ Writes larger than one block's usable area (4088 bytes) are chunked:
 
 ## Verified Data
 
-> [Run test snippet](../snippets/core-collections/NativeThreadStream.cs) — 30 assertions passing
->
-> Key findings:
-> - All field offsets within UnsafeThreadStreamRange confirmed correct
-> - UnsafeThreadStreamBlock layout verified (4096 bytes)
-> - Reader/Writer API patterns confirmed
->
-> Corrections:
-> - DOC ERROR: UnsafeThreadStreamRange is 48 bytes, NOT 40 bytes as stated in the "per-thread write state" section. All individual field offsets are correct but the total size is wrong.
+```
+UnsafeThreadStream
+  Kind: struct
+  Size: 16 bytes
+Fields:
+  [0] UnsafeThreadStreamBlockData* blockData
+  [8] AllocatorHandle allocator
+UnsafeThreadStreamBlockData
+  Kind: struct
+  Size: 24 bytes
+UnsafeThreadStreamRange
+  Kind: struct
+  Size: 48 bytes
+Fields with offsets:
+  [0] UnsafeThreadStreamBlock* Block
+  [8] Int32 OffsetInFirstBlock
+  [12] Int32 ElementCount
+  [16] Int32 LastOffset
+  [20] Int32 NumberOfBlocks
+  [24] UnsafeThreadStreamBlock* CurrentBlock
+  [32] Byte* CurrentPtr
+  [40] Byte* CurrentBlockEnd
+UnsafeThreadStreamBlock
+  Size: 16 bytes
+NativeThreadStream
+  Kind: struct
+  Size: 32 bytes
+Properties:
+  Boolean IsCreated
+Methods:
+  Boolean IsEmpty()
+  Reader AsReader()
+  Writer AsWriter()
+  Writer`1 AsWriter()
+  Int32 Count()
+  NativeArray`1 ToNativeArray(Allocator)
+  Void Dispose()
+  JobHandle Dispose(JobHandle)
+  Boolean Equals(NativeThreadStream)
+  Int32 GetHashCode()
+Verified: 4 checks, 0 failures
+```
+UnsafeThreadStream
+  Kind: struct
+  Size: 16 bytes
+Fields:
+  [0] UnsafeThreadStreamBlockData* blockData
+  [8] AllocatorHandle allocator
+UnsafeThreadStreamBlockData
+  Kind: struct
+  Size: 24 bytes
+UnsafeThreadStreamRange
+  Kind: struct
+  Size: 48 bytes
+Fields with offsets:
+  [0] UnsafeThreadStreamBlock* Block
+  [8] Int32 OffsetInFirstBlock
+  [12] Int32 ElementCount
+  [16] Int32 LastOffset
+  [20] Int32 NumberOfBlocks
+  [24] UnsafeThreadStreamBlock* CurrentBlock
+  [32] Byte* CurrentPtr
+  [40] Byte* CurrentBlockEnd
+UnsafeThreadStreamBlock
+  Size: 16 bytes
+NativeThreadStream
+  Kind: struct
+  Size: 32 bytes
+Properties:
+  Boolean IsCreated
+Methods:
+  Boolean IsEmpty()
+  Reader AsReader()
+  Writer AsWriter()
+  Writer`1 AsWriter()
+  Int32 Count()
+  NativeArray`1 ToNativeArray(Allocator)
+  Void Dispose()
+  JobHandle Dispose(JobHandle)
+  Boolean Equals(NativeThreadStream)
+  Int32 GetHashCode()
+Verified: 4 checks, 0 failures
+```
 
 ## Source
 

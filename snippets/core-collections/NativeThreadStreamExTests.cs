@@ -44,7 +44,7 @@ stream.Dispose();
 
 check("IsCreated after construct", true);
 check("Count()==2", true);
-check("Has AsReader/AsWriter", ntsType.GetMethod("AsReader") != null && ntsType.GetMethod("AsWriter") != null);
+check("Has AsReader/AsWriter", ntsType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Any(m => m.Name == "AsReader") && ntsType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Any(m => m.Name == "AsWriter"));
 
 sb.AppendLine();
 sb.AppendLine($"Verified: {pass} checks, {fail} failures");

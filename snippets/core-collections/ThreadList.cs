@@ -45,7 +45,7 @@ sb.AppendLine($"  After Dispose: IsCreated={tl.IsCreated}");
 check("Is struct", type.IsValueType);
 check("IsCreated after construct", tl.IsCreated);
 check("Initial Capacity=512", list0.Capacity == 512);
-check("Has GetList", type.GetMethod("GetList") != null);
+check("Has GetList", type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Any(m => m.Name == "GetList"));
 
 sb.AppendLine();
 sb.AppendLine($"Verified: {pass} checks, {fail} failures");

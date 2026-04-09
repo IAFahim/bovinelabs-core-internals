@@ -182,16 +182,45 @@ TYPICAL USAGE
 
 ## Verified Data
 
-> [Run test snippet](../snippets/core-collections/NativeLinearCongruentialGenerator.cs) — 16 assertions passing
->
-> Key findings:
-> - NativeLinearCongruentialGenerator type exists and is a struct
-> - Implements IDisposable
-> - Has Next() method returning int
-> - Functional test: seed, sequence generation, and Dispose confirmed working
->
-> Corrections:
-> - DOC ERROR: Example table output values shown in the doc for seed 42 are incorrect. Actual sequence values differ from those listed.
+```
+NativeLinearCongruentialGenerator
+  Kind: struct
+  Size: 32 bytes
+Fields:
+  [0] Int32* current  (private)
+  [8] AtomicSafetyHandle m_Safety  (private)
+  [24] AllocatorHandle allocatorLabel  (private)
+Properties:
+Methods:
+  Void Dispose()
+  Int32 Next()
+Runtime Behavior:
+  Seed=42: Next()=1365616851 (formula: 1365616851)
+  Next()=1621170208 (formula: 1621170208)
+  Next()=882243745
+  Formula: (134775813 * x + 1) & 0x7FFFFFFF
+  Deterministic: seed=42 again: 1365616851, 1621170208
+Verified: 5 checks, 0 failures
+```
+NativeLinearCongruentialGenerator
+  Kind: struct
+  Size: 32 bytes
+Fields:
+  [0] Int32* current  (private)
+  [8] AtomicSafetyHandle m_Safety  (private)
+  [24] AllocatorHandle allocatorLabel  (private)
+Properties:
+Methods:
+  Void Dispose()
+  Int32 Next()
+Runtime Behavior:
+  Seed=42: Next()=1365616851 (formula: 1365616851)
+  Next()=1621170208 (formula: 1621170208)
+  Next()=882243745
+  Formula: (134775813 * x + 1) & 0x7FFFFFFF
+  Deterministic: seed=42 again: 1365616851, 1621170208
+Verified: 5 checks, 0 failures
+```
 
 ## Source
 

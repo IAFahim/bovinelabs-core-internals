@@ -182,14 +182,203 @@ USE CASES
 
 ## Verified Data
 
-> [Run test snippet](../snippets/core-collections/BitArray8_16_32_64.cs) — 65 assertions passing
->
-> Key findings:
-> - BitArray8: 1 byte, Capacity=8; BitArray16: 2 bytes, Capacity=16
-> - BitArray32: 4 bytes, Capacity=32; BitArray64: 8 bytes, Capacity=64
-> - All sizes support indexer, CountBits, AllFalse/AllTrue, BitOr/BitAnd/BitNot
-> - Static fields All (all bits set) and None (no bits set) verified for all sizes
-> - BitArray64 operator overloads |, &, ~ and equality verified
+```
+BitArray8
+  Kind: struct
+  Size: 1 bytes
+Fields:
+  [0] Byte data  (private)
+Properties:
+  Byte Data { get;set }
+  UInt32 Capacity { get; }
+  Boolean AllFalse { get; }
+  Boolean AllTrue { get; }
+  String HumanizedData { get; }
+  Boolean Item { get;set }
+  Boolean Item { get;set }
+Methods:
+  BitArray8 BitAnd(BitArray8)
+  BitArray8 BitOr(BitArray8)
+  BitArray8 BitNot()
+  Int32 CountBits()
+  Boolean Equals(Object)
+  Int32 GetHashCode()
+  Boolean Equals(BitArray8)
+BitArray16
+  Kind: struct
+  Size: 2 bytes
+Fields:
+  [0] UInt16 data  (private)
+Properties:
+  UInt16 Data { get;set }
+  UInt32 Capacity { get; }
+  Boolean AllFalse { get; }
+  Boolean AllTrue { get; }
+  String HumanizedData { get; }
+  Boolean Item { get;set }
+  Boolean Item { get;set }
+Methods:
+  BitArray16 BitAnd(BitArray16)
+  BitArray16 BitOr(BitArray16)
+  BitArray16 BitNot()
+  Int32 CountBits()
+  Boolean Equals(Object)
+  Int32 GetHashCode()
+  Boolean Equals(BitArray16)
+BitArray32
+  Kind: struct
+  Size: 4 bytes
+Fields:
+  [0] UInt32 data  (private)
+Properties:
+  UInt32 Data { get;set }
+  UInt32 Capacity { get; }
+  Boolean AllFalse { get; }
+  Boolean AllTrue { get; }
+  String HumanizedData { get; }
+  Boolean Item { get;set }
+  Boolean Item { get;set }
+Methods:
+  BitArray32 BitAnd(BitArray32)
+  BitArray32 BitOr(BitArray32)
+  BitArray32 BitNot()
+  Int32 CountBits()
+  Boolean Equals(Object)
+  Int32 GetHashCode()
+  Boolean Equals(BitArray32)
+BitArray64
+  Kind: struct
+  Size: 8 bytes
+Fields:
+  [0] UInt64 data  (private)
+Properties:
+  UInt64 Data { get;set }
+  UInt32 Capacity { get; }
+  Boolean AllFalse { get; }
+  Boolean AllTrue { get; }
+  String HumanizedData { get; }
+  Boolean Item { get;set }
+  Boolean Item { get;set }
+Methods:
+  BitArray64 BitAnd(BitArray64)
+  BitArray64 BitOr(BitArray64)
+  BitArray64 BitNot()
+  Int32 CountBits()
+  Boolean Equals(Object)
+  Int32 GetHashCode()
+  Boolean Equals(BitArray64)
+Runtime Behavior - BitArray8:
+  Capacity=8, CountBits=0, AllFalse=True
+  set[0]=true: bits[0]=True, CountBits=1
+Runtime Behavior - BitArray16:
+  Capacity=16, CountBits=0, AllFalse=True
+  set[0]=true: bits[0]=True, CountBits=1
+Runtime Behavior - BitArray32:
+  Capacity=32, CountBits=0, AllFalse=True
+  set[0]=true: bits[0]=True, CountBits=1
+Runtime Behavior - BitArray64:
+  Capacity=64, CountBits=0, AllFalse=True
+  set[0]=true: bits[0]=True, CountBits=1
+Verified: 8 checks, 0 failures
+```
+BitArray8
+  Kind: struct
+  Size: 1 bytes
+Fields:
+  [0] Byte data  (private)
+Properties:
+  Byte Data { get;set }
+  UInt32 Capacity { get; }
+  Boolean AllFalse { get; }
+  Boolean AllTrue { get; }
+  String HumanizedData { get; }
+  Boolean Item { get;set }
+  Boolean Item { get;set }
+Methods:
+  BitArray8 BitAnd(BitArray8)
+  BitArray8 BitOr(BitArray8)
+  BitArray8 BitNot()
+  Int32 CountBits()
+  Boolean Equals(Object)
+  Int32 GetHashCode()
+  Boolean Equals(BitArray8)
+BitArray16
+  Kind: struct
+  Size: 2 bytes
+Fields:
+  [0] UInt16 data  (private)
+Properties:
+  UInt16 Data { get;set }
+  UInt32 Capacity { get; }
+  Boolean AllFalse { get; }
+  Boolean AllTrue { get; }
+  String HumanizedData { get; }
+  Boolean Item { get;set }
+  Boolean Item { get;set }
+Methods:
+  BitArray16 BitAnd(BitArray16)
+  BitArray16 BitOr(BitArray16)
+  BitArray16 BitNot()
+  Int32 CountBits()
+  Boolean Equals(Object)
+  Int32 GetHashCode()
+  Boolean Equals(BitArray16)
+BitArray32
+  Kind: struct
+  Size: 4 bytes
+Fields:
+  [0] UInt32 data  (private)
+Properties:
+  UInt32 Data { get;set }
+  UInt32 Capacity { get; }
+  Boolean AllFalse { get; }
+  Boolean AllTrue { get; }
+  String HumanizedData { get; }
+  Boolean Item { get;set }
+  Boolean Item { get;set }
+Methods:
+  BitArray32 BitAnd(BitArray32)
+  BitArray32 BitOr(BitArray32)
+  BitArray32 BitNot()
+  Int32 CountBits()
+  Boolean Equals(Object)
+  Int32 GetHashCode()
+  Boolean Equals(BitArray32)
+BitArray64
+  Kind: struct
+  Size: 8 bytes
+Fields:
+  [0] UInt64 data  (private)
+Properties:
+  UInt64 Data { get;set }
+  UInt32 Capacity { get; }
+  Boolean AllFalse { get; }
+  Boolean AllTrue { get; }
+  String HumanizedData { get; }
+  Boolean Item { get;set }
+  Boolean Item { get;set }
+Methods:
+  BitArray64 BitAnd(BitArray64)
+  BitArray64 BitOr(BitArray64)
+  BitArray64 BitNot()
+  Int32 CountBits()
+  Boolean Equals(Object)
+  Int32 GetHashCode()
+  Boolean Equals(BitArray64)
+Runtime Behavior - BitArray8:
+  Capacity=8, CountBits=0, AllFalse=True
+  set[0]=true: bits[0]=True, CountBits=1
+Runtime Behavior - BitArray16:
+  Capacity=16, CountBits=0, AllFalse=True
+  set[0]=true: bits[0]=True, CountBits=1
+Runtime Behavior - BitArray32:
+  Capacity=32, CountBits=0, AllFalse=True
+  set[0]=true: bits[0]=True, CountBits=1
+Runtime Behavior - BitArray64:
+  Capacity=64, CountBits=0, AllFalse=True
+  set[0]=true: bits[0]=True, CountBits=1
+Verified: 8 checks, 0 failures
+```
 
 ## Source
 

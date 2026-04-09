@@ -15,13 +15,55 @@
 
 ## Verified Data
 
-> [Run test snippet](../snippets/core-collections/NativeListExtensions_ClearAddRange.cs) — 16 assertions passing
->
-> Key findings:
-> - ClearAddRange(IEnumerable) clears list then adds all elements
-> - ClearAddRange(NativeArray) overload verified
-> - ClearAddRange(NativeHashSet) overload verified (order not guaranteed)
-> - Each call fully replaces previous content; length matches input size
+```
+NativeListExtensions
+  Kind: static class
+Methods:
+  Void ReserveNoResize(NativeList`1, Int32, out T*&, out Int32&)
+  Void ReserveNoResize(ParallelWriter, Int32, out T*&, out Int32&)
+  IntPtr GetUnsafeIntPtr(NativeList`1)
+  IntPtr GetUnsafeReadOnlyIntPtr(NativeList`1)
+  Void Insert(NativeList`1, Int32, T)
+  Void ResizeInitialized(NativeList`1, Int32, Byte)
+  Void ResizeInitialized(NativeList`1, Int32)
+  Void AddRange(NativeList`1, T[])
+  Void AddRange(NativeList`1, IEnumerable`1)
+  Void ClearAddRange(NativeList`1, IEnumerable`1)
+  Void ClearAddRange(NativeList`1, NativeArray`1)
+  Void ClearAddRange(NativeList`1, NativeHashSet`1)
+  Boolean Compare(NativeList`1, NativeHashSet`1)
+Runtime Behavior:
+  Initial: Length=3
+  ClearAddRange(int[]): Length=4, [10,20,30,40]
+  ClearAddRange(NativeArray): Length=2, [100,200]
+  ClearAddRange(NativeHashSet): Length=3, values=[5,15,25]
+  ClearAddRange clears first: Length=1, [0]=99
+Verified: 3 checks, 0 failures
+```
+NativeListExtensions
+  Kind: static class
+Methods:
+  Void ReserveNoResize(NativeList`1, Int32, out T*&, out Int32&)
+  Void ReserveNoResize(ParallelWriter, Int32, out T*&, out Int32&)
+  IntPtr GetUnsafeIntPtr(NativeList`1)
+  IntPtr GetUnsafeReadOnlyIntPtr(NativeList`1)
+  Void Insert(NativeList`1, Int32, T)
+  Void ResizeInitialized(NativeList`1, Int32, Byte)
+  Void ResizeInitialized(NativeList`1, Int32)
+  Void AddRange(NativeList`1, T[])
+  Void AddRange(NativeList`1, IEnumerable`1)
+  Void ClearAddRange(NativeList`1, IEnumerable`1)
+  Void ClearAddRange(NativeList`1, NativeArray`1)
+  Void ClearAddRange(NativeList`1, NativeHashSet`1)
+  Boolean Compare(NativeList`1, NativeHashSet`1)
+Runtime Behavior:
+  Initial: Length=3
+  ClearAddRange(int[]): Length=4, [10,20,30,40]
+  ClearAddRange(NativeArray): Length=2, [100,200]
+  ClearAddRange(NativeHashSet): Length=3, values=[5,15,25]
+  ClearAddRange clears first: Length=1, [0]=99
+Verified: 3 checks, 0 failures
+```
 
 ## Source
 

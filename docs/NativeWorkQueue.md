@@ -242,14 +242,65 @@ PERFORMANCE CHARACTERISTICS
 
 ## Verified Data
 
-> [Run test snippet](../snippets/core-collections/NativeWorkQueue.cs) — 35 assertions passing
->
-> Key findings:
-> - Generic struct NativeWorkQueue<T>; ctor(int capacity, AllocatorHandle)
-> - Update(), Add(int)→int*, TryAdd(int)→int, Dispose()
-> - Properties: Length, Capacity, HasCapacity
-> - ParallelWriter and ParallelReader nested types with TryAdd/TryGetNext
-> - Functional: Capacity==10, Length==0 initially, HasCapacity==true when empty
+```
+NativeWorkQueue<int>
+  Kind: struct
+  Size: 64 bytes
+Properties:
+  Int32 Length { get; }
+  Int32 Capacity { get; }
+  Boolean HasCapacity { get; }
+Methods:
+  Void Dispose()
+  Void Update()
+  JobHandle Update(JobHandle)
+  Int32 TryAdd(out Int32*&)
+  Int32* Add(out Int32&)
+  ParallelReader AsParallelReader()
+  ParallelWriter AsParallelWriter()
+Nested: ParallelWriter
+  Kind: struct
+  Int32 TryAdd(T*&)
+  Int32 Capacity
+Nested: ParallelReader
+  Kind: struct
+  Boolean TryGetNext(T*&)
+  Int32 Capacity
+  Int32 Length
+Runtime Behavior:
+  Capacity=10, Length=0, HasCapacity=True
+  After empty Update: Length=0
+Verified: 5 checks, 0 failures
+```
+NativeWorkQueue<int>
+  Kind: struct
+  Size: 64 bytes
+Properties:
+  Int32 Length { get; }
+  Int32 Capacity { get; }
+  Boolean HasCapacity { get; }
+Methods:
+  Void Dispose()
+  Void Update()
+  JobHandle Update(JobHandle)
+  Int32 TryAdd(out Int32*&)
+  Int32* Add(out Int32&)
+  ParallelReader AsParallelReader()
+  ParallelWriter AsParallelWriter()
+Nested: ParallelWriter
+  Kind: struct
+  Int32 TryAdd(T*&)
+  Int32 Capacity
+Nested: ParallelReader
+  Kind: struct
+  Boolean TryGetNext(T*&)
+  Int32 Capacity
+  Int32 Length
+Runtime Behavior:
+  Capacity=10, Length=0, HasCapacity=True
+  After empty Update: Length=0
+Verified: 5 checks, 0 failures
+```
 
 ## Source
 

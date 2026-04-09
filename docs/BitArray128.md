@@ -151,16 +151,73 @@ USE CASES
 
 ## Verified Data
 
-> [Run test snippet](../snippets/core-collections/BitArray128.cs) — 43 assertions passing
->
-> Key findings:
-> - 16 bytes total (2 × ulong fields: data1, data2)
-> - Capacity property returns 128
-> - AllFalse/AllTrue properties verified; default has AllFalse=true, AllTrue=false
-> - Indexer get/set at boundaries: bit 0, 63 (data1 end), 64 (data2 start), 127 (highest)
-> - BitOr/BitAnd/BitNot cross-field operations correct
-> - Operator overloads |, &, ~ work as expected
-> - Equality operators == and != work correctly
+```
+BitArray128
+  Kind: struct
+  Size: 16 bytes
+Fields:
+  [0] UInt64 data1  (private)
+  [8] UInt64 data2  (private)
+Properties:
+  UInt64 Data1 { get; }
+  UInt64 Data2 { get; }
+  UInt32 Capacity { get; }
+  Boolean AllFalse { get; }
+  Boolean AllTrue { get; }
+  String HumanizedData { get; }
+  Boolean Item { get;set }
+  Boolean Item { get;set }
+Methods:
+  BitArray128 BitAnd(BitArray128)
+  BitArray128 BitOr(BitArray128)
+  BitArray128 BitNot()
+  Int32 CountBits()
+  Boolean Equals(Object)
+  Int32 GetHashCode()
+  Boolean Equals(BitArray128)
+Runtime Behavior:
+  default: CountBits=0, AllFalse=True, AllTrue=False
+  Capacity=128
+  set[0]=true: bits[0]=True, CountBits=1
+  set[63,64,127]=true: CountBits=4
+  BitOr({0},{1}): bits[0]=True, bits[1]=True, CountBits=2
+  BitAnd({0,1},{0}): bits[0]=True, bits[1]=False, CountBits=1
+  BitNot({0}): bits[0]=False, CountBits=127
+Verified: 6 checks, 0 failures
+```
+BitArray128
+  Kind: struct
+  Size: 16 bytes
+Fields:
+  [0] UInt64 data1  (private)
+  [8] UInt64 data2  (private)
+Properties:
+  UInt64 Data1 { get; }
+  UInt64 Data2 { get; }
+  UInt32 Capacity { get; }
+  Boolean AllFalse { get; }
+  Boolean AllTrue { get; }
+  String HumanizedData { get; }
+  Boolean Item { get;set }
+  Boolean Item { get;set }
+Methods:
+  BitArray128 BitAnd(BitArray128)
+  BitArray128 BitOr(BitArray128)
+  BitArray128 BitNot()
+  Int32 CountBits()
+  Boolean Equals(Object)
+  Int32 GetHashCode()
+  Boolean Equals(BitArray128)
+Runtime Behavior:
+  default: CountBits=0, AllFalse=True, AllTrue=False
+  Capacity=128
+  set[0]=true: bits[0]=True, CountBits=1
+  set[63,64,127]=true: CountBits=4
+  BitOr({0},{1}): bits[0]=True, bits[1]=True, CountBits=2
+  BitAnd({0,1},{0}): bits[0]=True, bits[1]=False, CountBits=1
+  BitNot({0}): bits[0]=False, CountBits=127
+Verified: 6 checks, 0 failures
+```
 
 ## Source
 

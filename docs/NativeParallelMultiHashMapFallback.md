@@ -216,15 +216,73 @@ PERFORMANCE CHARACTERISTICS
 
 ## Verified Data
 
-> [Run test snippet](../snippets/core-collections/NativeParallelMultiHashMapFallback.cs) — 36 assertions passing
->
-> Key findings:
-> - NativeParallelMultiHashMapFallback<TKey,TValue> type exists and is a struct implementing IDisposable
-> - Has public HashMap (NativeParallelMultiHashMap) and Fallback (NativeQueue) fields
-> - Constructor takes (int capacity, Allocator)
-> - Has AsWriter(), Dispose(), Dispose(JobHandle), Clear(), and Apply() methods
-> - ParallelWriter nested type exists with Add/AddFallback methods
-> - Functional test: HashMap direct writes and Fallback queue writes both confirmed working
+```
+NativeParallelMultiHashMapFallback<int,int>
+  Kind: struct
+  Size: 56 bytes
+Fields:
+  [0] NativeParallelMultiHashMap`2 HashMap  (public)
+  [32] NativeQueue`1 Fallback  (public)
+Methods:
+  ParallelWriter AsWriter()
+  Void Dispose()
+  Void Clear()
+  JobHandle Apply(JobHandle, out ReadOnly&, ApplyJob)
+  JobHandle Dispose(JobHandle)
+  JobHandle Clear(JobHandle, ClearNativeParallelMultiHashMapJob`2)
+Nested: ParallelWriter
+  Kind: struct
+  Void Add(TKey, TValue)
+  Void AddBatch(NativeArray`1, NativeArray`1)
+  Void AddBatch(TKey*, TValue*, Int32)
+  Void Add(TKey, TValue, Int32)
+  Void AddBatch(NativeArray`1, NativeArray`1, NativeArray`1)
+  Void AddBatch(TKey*, TValue*, Int32*, Int32)
+Nested: FallbackData
+  Kind: struct
+  TKey Key
+  TValue Value
+  Int32 Hash
+Runtime Behavior:
+  Added 3 entries via ParallelWriter: (1,100),(2,200),(1,300)
+  After Apply: TryGetFirstValue(1)=True, value=300
+  TryGetNextValue(1)=True, value=100
+  TryGetFirstValue(2)=True, value=200
+Verified: 5 checks, 0 failures
+```
+NativeParallelMultiHashMapFallback<int,int>
+  Kind: struct
+  Size: 56 bytes
+Fields:
+  [0] NativeParallelMultiHashMap`2 HashMap  (public)
+  [32] NativeQueue`1 Fallback  (public)
+Methods:
+  ParallelWriter AsWriter()
+  Void Dispose()
+  Void Clear()
+  JobHandle Apply(JobHandle, out ReadOnly&, ApplyJob)
+  JobHandle Dispose(JobHandle)
+  JobHandle Clear(JobHandle, ClearNativeParallelMultiHashMapJob`2)
+Nested: ParallelWriter
+  Kind: struct
+  Void Add(TKey, TValue)
+  Void AddBatch(NativeArray`1, NativeArray`1)
+  Void AddBatch(TKey*, TValue*, Int32)
+  Void Add(TKey, TValue, Int32)
+  Void AddBatch(NativeArray`1, NativeArray`1, NativeArray`1)
+  Void AddBatch(TKey*, TValue*, Int32*, Int32)
+Nested: FallbackData
+  Kind: struct
+  TKey Key
+  TValue Value
+  Int32 Hash
+Runtime Behavior:
+  Added 3 entries via ParallelWriter: (1,100),(2,200),(1,300)
+  After Apply: TryGetFirstValue(1)=True, value=300
+  TryGetNextValue(1)=True, value=100
+  TryGetFirstValue(2)=True, value=200
+Verified: 5 checks, 0 failures
+```
 
 ## Source
 

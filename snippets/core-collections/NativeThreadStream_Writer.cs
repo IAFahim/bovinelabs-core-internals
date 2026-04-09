@@ -23,8 +23,8 @@ sb.AppendLine();
 
 check("Writer exists", writerType != null);
 check("Writer is struct", writerType.IsValueType);
-check("Has Write", writerType.GetMethod("Write") != null);
-check("Has Allocate", writerType.GetMethod("Allocate") != null);
+check("Has Write", writerType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Any(m => m.Name == "Write"));
+check("Has Allocate", writerType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Any(m => m.Name == "Allocate"));
 
 sb.AppendLine();
 sb.AppendLine($"Verified: {pass} checks, {fail} failures");

@@ -238,13 +238,51 @@ PERFORMANCE CHARACTERISTICS
 
 ## Verified Data
 
-> [Run test snippet](../snippets/core-collections/NativePerfectHashMap.cs) — 31 assertions passing
->
-> Key findings:
-> - Generic struct NativePerfectHashMap<TKey,TValue>; 4-param ctor (NativeArray keys, NativeArray values, int nullValue, Allocator)
-> - TryGetValue returns true for known keys, false for unknown
-> - Indexer get/set works; set updates value in-place
-> - 3-key and 4-key maps verified with correct lookups
+```
+NativePerfectHashMap<int,int>
+  Kind: struct
+  Size: 24 bytes
+Fields:
+  [0] UnsafePerfectHashMap`2* data  (private)
+  [8] AtomicSafetyHandle m_Safety  (private)
+Properties:
+  Boolean IsCreated { get; }
+  Int32 Item { get;set }
+Methods:
+  Void Dispose()
+  Boolean TryGetValue(Int32, out Int32&)
+Runtime Behavior:
+  IsCreated=True
+  TryGetValue(10)=True, value=100
+  TryGetValue(20)=True, value=200
+  TryGetValue(30)=True, value=300
+  TryGetValue(999)=False, value=-1
+  map[10]=100, map[20]=200
+  map[20]=250 -> map[20]=250
+Verified: 4 checks, 0 failures
+```
+NativePerfectHashMap<int,int>
+  Kind: struct
+  Size: 24 bytes
+Fields:
+  [0] UnsafePerfectHashMap`2* data  (private)
+  [8] AtomicSafetyHandle m_Safety  (private)
+Properties:
+  Boolean IsCreated { get; }
+  Int32 Item { get;set }
+Methods:
+  Void Dispose()
+  Boolean TryGetValue(Int32, out Int32&)
+Runtime Behavior:
+  IsCreated=True
+  TryGetValue(10)=True, value=100
+  TryGetValue(20)=True, value=200
+  TryGetValue(30)=True, value=300
+  TryGetValue(999)=False, value=-1
+  map[10]=100, map[20]=200
+  map[20]=250 -> map[20]=250
+Verified: 4 checks, 0 failures
+```
 
 ## Source
 

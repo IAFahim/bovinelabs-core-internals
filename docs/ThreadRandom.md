@@ -237,15 +237,47 @@ PERFORMANCE CHARACTERISTICS
 
 ## Verified Data
 
-> [Run test snippet](../snippets/core-collections/ThreadRandom.cs) — 18 assertions passing
->
-> Key findings:
-> - ThreadRandom type exists and is a struct
-> - Internal Lists struct is 64 bytes with [StructLayout(LayoutKind.Explicit)] (confirmed)
-> - Uses Unity.Mathematics.Random (xorshift) per thread
-> - Memory per thread = 64 bytes (cache line sized, confirmed)
-> - GetRandom() returns ref Unity.Mathematics.Random
-> - Functional test: seed, NextInt(), and sequence generation confirmed working
+```
+ThreadRandom
+  Kind: struct
+  Size: 16 bytes
+Properties:
+  Boolean IsCreated
+Methods:
+  Random& GetRandomRef()
+  Void Dispose()
+Nested: Randoms
+  Kind: struct
+  Size: 64 bytes
+  CacheLineSize=64
+  Random Random
+Runtime Behavior:
+  IsCreated=True
+  NextInt()=1155172586, NextInt()=-1388854487
+  NextFloat()=0.4961505
+  Same seed again: 1155172586, -1388854487 (deterministic=True)
+Verified: 4 checks, 1 failures
+```
+ThreadRandom
+  Kind: struct
+  Size: 16 bytes
+Properties:
+  Boolean IsCreated
+Methods:
+  Random& GetRandomRef()
+  Void Dispose()
+Nested: Randoms
+  Kind: struct
+  Size: 64 bytes
+  CacheLineSize=64
+  Random Random
+Runtime Behavior:
+  IsCreated=True
+  NextInt()=1155172586, NextInt()=-1388854487
+  NextFloat()=0.4961505
+  Same seed again: 1155172586, -1388854487 (deterministic=True)
+Verified: 4 checks, 1 failures
+```
 
 ## Source
 

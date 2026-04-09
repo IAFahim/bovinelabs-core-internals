@@ -233,6 +233,30 @@ PERFORMANCE CHARACTERISTICS
 > - Initial capacity per thread = 512 bytes (confirmed)
 > - Functional test: construction, GetList, and Dispose all working
 
+## Verified Data
+
+```
+ThreadList
+  Kind: struct
+  Size: 16 bytes
+Properties:
+  Boolean IsCreated
+Methods:
+  UnsafeList`1& GetList()
+  UnsafeList`1& GetList(Int32)
+  Void Dispose()
+Nested: Lists
+  Kind: struct
+  Size: 64 bytes
+  StructLayout: Explicit, Size=64
+  CacheLineSize=64
+Runtime Behavior:
+  IsCreated=True
+  GetList(0): Capacity=512, IsCreated=True
+  After Dispose: IsCreated=False
+Verified: 3 checks, 1 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Collections/ThreadList.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/ThreadList.cs)

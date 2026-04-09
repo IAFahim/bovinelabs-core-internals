@@ -46,6 +46,25 @@
 > - Methods: Allocate(int size) → pointer, Write<T> (generic), WriteLarge
 > - Write<T> confirmed as generic method
 
+## Verified Data
+
+```
+NativeThreadStream.Writer
+  Kind: struct
+  Size: 24 bytes
+Fields:
+  [0] Writer writer  (private)
+  [8] AtomicSafetyHandle m_Safety  (private)
+Methods:
+  Void Write(T)
+  T& Allocate()
+  Byte* Allocate(Int32)
+  Void WriteLarge(NativeArray`1)
+  Void WriteLarge(NativeSlice`1)
+  Void WriteLarge(Byte*, Int32)
+Verified: 4 checks, 0 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Collections/EventStream/NativeThreadStream.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/EventStream/NativeThreadStream.cs)

@@ -135,14 +135,81 @@ USE CASES IN ECS
 
 ## Verified Data
 
-> [Run test snippet](../snippets/core-collections/BitArray256.cs) — 39 assertions passing
->
-> Key findings:
-> - 32 bytes total (4 × ulong fields: data1, data2, data3, data4)
-> - Capacity property returns 256
-> - Indexer get/set verified at boundaries: bit 0, 64 (data2), 128 (data3), 192 (data4), 255
-> - CountBits() accurate across all 4 ulong fields
-> - BitOr, BitAnd, BitNot produce correct results (BitNot on single bit → 255 bits set)
+```
+BitArray256
+  Kind: struct
+  Size: 32 bytes
+Fields:
+  [0] UInt64 data1  (private)
+  [8] UInt64 data2  (private)
+  [16] UInt64 data3  (private)
+  [24] UInt64 data4  (private)
+Properties:
+  UInt64 Data1 { get; }
+  UInt64 Data2 { get; }
+  UInt64 Data3 { get; }
+  UInt64 Data4 { get; }
+  UInt32 Capacity { get; }
+  Boolean AllFalse { get; }
+  Boolean AllTrue { get; }
+  String HumanizedData { get; }
+  Boolean Item { get;set }
+  Boolean Item { get;set }
+Methods:
+  Boolean IsPowerOf2()
+  BitArray256 BitAnd(BitArray256)
+  BitArray256 BitOr(BitArray256)
+  BitArray256 BitNot()
+  Int32 CountBits()
+  Boolean Equals(Object)
+  Int32 GetHashCode()
+  Boolean Equals(BitArray256)
+Runtime Behavior:
+  default: CountBits=0, AllFalse=True, AllTrue=False
+  Capacity=256
+  set[0,63,64,127,200]: CountBits=5
+  BitOr: bits[0]=True, bits[1]=True, CountBits=2
+  BitAnd: bits[0]=True, bits[1]=False, CountBits=1
+  BitNot({0}): CountBits=255
+Verified: 6 checks, 0 failures
+```
+BitArray256
+  Kind: struct
+  Size: 32 bytes
+Fields:
+  [0] UInt64 data1  (private)
+  [8] UInt64 data2  (private)
+  [16] UInt64 data3  (private)
+  [24] UInt64 data4  (private)
+Properties:
+  UInt64 Data1 { get; }
+  UInt64 Data2 { get; }
+  UInt64 Data3 { get; }
+  UInt64 Data4 { get; }
+  UInt32 Capacity { get; }
+  Boolean AllFalse { get; }
+  Boolean AllTrue { get; }
+  String HumanizedData { get; }
+  Boolean Item { get;set }
+  Boolean Item { get;set }
+Methods:
+  Boolean IsPowerOf2()
+  BitArray256 BitAnd(BitArray256)
+  BitArray256 BitOr(BitArray256)
+  BitArray256 BitNot()
+  Int32 CountBits()
+  Boolean Equals(Object)
+  Int32 GetHashCode()
+  Boolean Equals(BitArray256)
+Runtime Behavior:
+  default: CountBits=0, AllFalse=True, AllTrue=False
+  Capacity=256
+  set[0,63,64,127,200]: CountBits=5
+  BitOr: bits[0]=True, bits[1]=True, CountBits=2
+  BitAnd: bits[0]=True, bits[1]=False, CountBits=1
+  BitNot({0}): CountBits=255
+Verified: 6 checks, 0 failures
+```
 
 ## Source
 

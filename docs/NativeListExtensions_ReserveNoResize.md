@@ -15,13 +15,49 @@ Structure:
 
 ## Verified Data
 
-> [Run test snippet](../snippets/core-collections/NativeListExtensions_ReserveNoResize.cs) — 11 assertions passing
->
-> Key findings:
-> - Static class with ReserveNoResize as extension method
-> - Has NativeList<T> overload (4 params: list, length, T*, ref int)
-> - Has ParallelWriter overload (4 params)
-> - Returns void; grows list without zeroing new elements
+```
+NativeListExtensions
+  Kind: static class
+Methods:
+  Void ReserveNoResize(NativeList`1 nativeList, Int32 length, out T*& ptr, out Int32& idx)
+  Void ReserveNoResize(ParallelWriter nativeList, Int32 length, out T*& ptr, out Int32& idx)
+  IntPtr GetUnsafeIntPtr(NativeList`1 list)
+  IntPtr GetUnsafeReadOnlyIntPtr(NativeList`1 list)
+  Void Insert(NativeList`1 list, Int32 index, T item)
+  Void ResizeInitialized(NativeList`1 list, Int32 length, Byte value)
+  Void ResizeInitialized(NativeList`1 list, Int32 length)
+  Void AddRange(NativeList`1 list, T[] array)
+  Void AddRange(NativeList`1 list, IEnumerable`1 enumerable)
+  Void ClearAddRange(NativeList`1 list, IEnumerable`1 enumerable)
+  Void ClearAddRange(NativeList`1 list, NativeArray`1 array)
+  Void ClearAddRange(NativeList`1 list, NativeHashSet`1 hashSet)
+  Boolean Compare(NativeList`1 list, NativeHashSet`1 hashSet)
+ReserveNoResize overloads: 2
+  (NativeList`1 nativeList, Int32 length, T*& ptr, Int32& idx) -> Void
+  (ParallelWriter nativeList, Int32 length, T*& ptr, Int32& idx) -> Void
+Verified: 2 checks, 0 failures
+```
+NativeListExtensions
+  Kind: static class
+Methods:
+  Void ReserveNoResize(NativeList`1 nativeList, Int32 length, out T*& ptr, out Int32& idx)
+  Void ReserveNoResize(ParallelWriter nativeList, Int32 length, out T*& ptr, out Int32& idx)
+  IntPtr GetUnsafeIntPtr(NativeList`1 list)
+  IntPtr GetUnsafeReadOnlyIntPtr(NativeList`1 list)
+  Void Insert(NativeList`1 list, Int32 index, T item)
+  Void ResizeInitialized(NativeList`1 list, Int32 length, Byte value)
+  Void ResizeInitialized(NativeList`1 list, Int32 length)
+  Void AddRange(NativeList`1 list, T[] array)
+  Void AddRange(NativeList`1 list, IEnumerable`1 enumerable)
+  Void ClearAddRange(NativeList`1 list, IEnumerable`1 enumerable)
+  Void ClearAddRange(NativeList`1 list, NativeArray`1 array)
+  Void ClearAddRange(NativeList`1 list, NativeHashSet`1 hashSet)
+  Boolean Compare(NativeList`1 list, NativeHashSet`1 hashSet)
+ReserveNoResize overloads: 2
+  (NativeList`1 nativeList, Int32 length, T*& ptr, Int32& idx) -> Void
+  (ParallelWriter nativeList, Int32 length, T*& ptr, Int32& idx) -> Void
+Verified: 2 checks, 0 failures
+```
 
 ## Source
 

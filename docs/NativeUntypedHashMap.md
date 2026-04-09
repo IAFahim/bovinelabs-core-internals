@@ -308,6 +308,40 @@ PERFORMANCE CHARACTERISTICS
 > - ContainsKey, Clear, IsCreated, Count, Capacity, IsEmpty properties all verified
 > - GetOrAddRef returns ref allowing in-place mutation; updates preserve Count
 
+## Verified Data
+
+```
+NativeUntypedHashMap<int>
+  Kind: struct, 24 bytes
+  Fields:
+    [0] NativeUntypedHashMapHelper`1* data  (private)
+    [8] AtomicSafetyHandle m_Safety  (private)
+  Properties:
+    Boolean IsCreated
+    Boolean IsEmpty
+    Int32 Count
+    Int32 Capacity
+  Methods:
+    Void Dispose()
+    JobHandle Dispose(JobHandle)
+    Void Clear()
+    Void AddOrSet(Int32, TValue)
+    TValue& GetOrAddRef(Int32, TValue)
+    Boolean TryGetValue(Int32, out TValue&)
+    Boolean ContainsKey(Int32)
+  Runtime Behavior:
+    IsCreated=True, IsEmpty=True, Count=0
+    After 3 adds: Count=3
+    TryGetValue<int>(1)=42
+    TryGetValue<float>(2)=3.14
+    TryGetValue<float3>(3)=float3(1f, 2f, 3f)
+    ContainsKey(1)=True, ContainsKey(999)=False
+    GetOrAddRef<int>(10,999)=999
+    After mutation via ref: TryGetValue(10)=1234
+    After Clear: Count=0, IsEmpty=True
+Verified: 6 checks, 0 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Collections/NativeUntypedHashMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/NativeUntypedHashMap.cs)

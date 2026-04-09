@@ -178,13 +178,55 @@ USAGE PATTERNS
 
 ## Verified Data
 
-> [Run test snippet](../snippets/core-collections/FixedArray.cs) — 20 assertions passing
->
-> Key findings:
-> - Length = sizeof(TS) / sizeof(T) — verified with float/float4→4, int/ulong→2, byte/float4→16, byte/float4x4→64
-> - Generic open type FixedArray<,> is a struct (ValueType)
-> - Indexer (Item property) has both getter and setter
-> - ElementAt method exists on the specialized type
+```
+FixedArray<float, float4>
+  Kind: struct
+  Size: 16 bytes
+Fields:
+  [0] float4 data  (private)
+Properties:
+  Int32 Length { get; }
+  Single Item { get;set }
+Methods:
+  Single& ElementAt(Int32)
+Runtime Behavior:
+  Length = 4 (sizeof(float4)/sizeof(float) = 16/4)
+  [0]=1.5, [3]=42
+FixedArray<int, ulong>
+  Size: 8 bytes
+  Length = 2 (sizeof(ulong)/sizeof(int) = 8/4)
+FixedArray<byte, float4>
+  Size: 16 bytes
+  Length = 16 (sizeof(float4)/sizeof(byte) = 16/1)
+FixedArray<byte, float4x4>
+  Size: 64 bytes
+  Length = 64 (sizeof(float4x4)/sizeof(byte) = 64/1)
+Verified: 6 checks, 0 failures
+```
+FixedArray<float, float4>
+  Kind: struct
+  Size: 16 bytes
+Fields:
+  [0] float4 data  (private)
+Properties:
+  Int32 Length { get; }
+  Single Item { get;set }
+Methods:
+  Single& ElementAt(Int32)
+Runtime Behavior:
+  Length = 4 (sizeof(float4)/sizeof(float) = 16/4)
+  [0]=1.5, [3]=42
+FixedArray<int, ulong>
+  Size: 8 bytes
+  Length = 2 (sizeof(ulong)/sizeof(int) = 8/4)
+FixedArray<byte, float4>
+  Size: 16 bytes
+  Length = 16 (sizeof(float4)/sizeof(byte) = 16/1)
+FixedArray<byte, float4x4>
+  Size: 64 bytes
+  Length = 64 (sizeof(float4x4)/sizeof(byte) = 64/1)
+Verified: 6 checks, 0 failures
+```
 
 ## Source
 

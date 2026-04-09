@@ -269,6 +269,53 @@ PERFORMANCE CHARACTERISTICS
 > Corrections:
 > - DOC ERROR: No 2-param constructor (int, Allocator) exists. Only the 3-param constructor (int length, int capacity, AllocatorHandle) is available.
 
+## Verified Data
+
+```
+UnsafeArray<int>
+  Kind: struct, 16 bytes
+  Fields:
+    [0] Void* buffer  (private)
+    [8] Allocator allocatorLabel  (private)
+    [12] Int32 <Length>k__BackingField  (private)
+  Properties:
+    Int32 Length
+    Boolean IsCreated
+    Int32 Item
+  Methods:
+    Void Dispose()
+    JobHandle Dispose(JobHandle)
+    Void* GetUnsafePtr()
+    Void CopyFrom(Int32[])
+    Void CopyFrom(UnsafeArray`1)
+    Void CopyTo(Int32[])
+    Void CopyTo(UnsafeArray`1)
+    Int32[] ToArray()
+    Enumerator GetEnumerator()
+    Boolean Equals(UnsafeArray`1)
+    Boolean Equals(Object)
+    Int32 GetHashCode()
+  Static Methods:
+    Void Copy(UnsafeArray`1, UnsafeArray`1)
+    Void Copy(Int32[], UnsafeArray`1)
+    Void Copy(UnsafeArray`1, Int32[])
+    Void Copy(UnsafeArray`1, UnsafeArray`1, Int32)
+    Void Copy(Int32[], UnsafeArray`1, Int32)
+    Void Copy(UnsafeArray`1, Int32[], Int32)
+    Void Copy(UnsafeArray`1, Int32, UnsafeArray`1, Int32, Int32)
+    Void Copy(Int32[], Int32, UnsafeArray`1, Int32, Int32)
+    Void Copy(UnsafeArray`1, Int32, Int32[], Int32, Int32)
+  Runtime Behavior:
+    IsCreated=True, Length=5
+    Default cleared: [0]=0, [4]=0
+    After writes: [0]=42, [2]=99, [4]=-1
+    CopyTo: [42,0,99,0,-1]
+    ToArray: Length=5
+    Static Copy: arr2[0]=42, arr2[2]=99
+    Dispose: completed
+Verified: 4 checks, 0 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Collections/UnsafeArray.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/UnsafeArray.cs)

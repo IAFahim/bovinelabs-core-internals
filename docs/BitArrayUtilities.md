@@ -175,13 +175,51 @@ PERFORMANCE CHARACTERISTICS
 
 ## Verified Data
 
-> [Run test snippet](../snippets/core-collections/BitArrayUtilities.cs) — 30 assertions passing
->
-> Key findings:
-> - Static class (abstract + sealed) with Get8/16/32/64/128/256 and Set8/16/32/64/128/256 methods
-> - Get32(index, data) correctly returns bit state; Get64, Get8, Get16 verified
-> - Get128 has (int, ulong, ulong) overload for dual-field dispatch
-> - Set32 signature: (uint index, ref uint data, bool value)
+```
+BitArrayUtilities
+  Kind: static class
+Fields:
+Properties:
+Methods:
+  Boolean Get8(UInt32 index, Byte data)
+  Boolean Get16(UInt32 index, UInt16 data)
+  Boolean Get32(UInt32 index, UInt32 data)
+  Boolean Get64(UInt32 index, UInt64 data)
+  Boolean Get128(UInt32 index, UInt64 data1, UInt64 data2)
+  Boolean Get128(Int32 index, UInt64 data1, UInt64 data2)
+  Boolean Get256(UInt32 index, UInt64 data1, UInt64 data2, UInt64 data3, UInt64 data4)
+  Void Set8(UInt32 index, Byte& data, Boolean value)
+  Void Set16(UInt32 index, UInt16& data, Boolean value)
+  Void Set32(UInt32 index, UInt32& data, Boolean value)
+  Void Set64(UInt32 index, UInt64& data, Boolean value)
+  Void Set128(UInt32 index, UInt64& data1, UInt64& data2, Boolean value)
+  Void Set128(Int32 index, UInt64& data1, UInt64& data2, Boolean value)
+  Void Set256(UInt32 index, UInt64& data1, UInt64& data2, UInt64& data3, UInt64& data4, Boolean value)
+  Method count: 14
+Verified: 2 checks, 0 failures
+```
+BitArrayUtilities
+  Kind: static class
+Fields:
+Properties:
+Methods:
+  Boolean Get8(UInt32 index, Byte data)
+  Boolean Get16(UInt32 index, UInt16 data)
+  Boolean Get32(UInt32 index, UInt32 data)
+  Boolean Get64(UInt32 index, UInt64 data)
+  Boolean Get128(UInt32 index, UInt64 data1, UInt64 data2)
+  Boolean Get128(Int32 index, UInt64 data1, UInt64 data2)
+  Boolean Get256(UInt32 index, UInt64 data1, UInt64 data2, UInt64 data3, UInt64 data4)
+  Void Set8(UInt32 index, Byte& data, Boolean value)
+  Void Set16(UInt32 index, UInt16& data, Boolean value)
+  Void Set32(UInt32 index, UInt32& data, Boolean value)
+  Void Set64(UInt32 index, UInt64& data, Boolean value)
+  Void Set128(UInt32 index, UInt64& data1, UInt64& data2, Boolean value)
+  Void Set128(Int32 index, UInt64& data1, UInt64& data2, Boolean value)
+  Void Set256(UInt32 index, UInt64& data1, UInt64& data2, UInt64& data3, UInt64& data4, Boolean value)
+  Method count: 14
+Verified: 2 checks, 0 failures
+```
 
 ## Source
 

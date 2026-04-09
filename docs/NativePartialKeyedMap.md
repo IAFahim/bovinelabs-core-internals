@@ -244,6 +244,30 @@ PERFORMANCE CHARACTERISTICS
 > - UnsafePartialKeyedMap<T> inner type also verified
 > - Zero-copy external key/value storage confirmed via pointer-based construction
 
+## Verified Data
+
+```
+NativePartialKeyedMap<int>
+  Kind: struct, 8 bytes
+  Fields:
+    UnsafePartialKeyedMap`1* map
+  Methods:
+    Void Dispose()
+    JobHandle Dispose(JobHandle)
+    Void Update(Int32*, Int32*, Int32)
+    Boolean TryGetFirstValue(Int32, out Int32&, out UnsafeKeyedMapIterator&)
+    Boolean TryGetNextValue(out Int32&, UnsafeKeyedMapIterator&)
+  UnsafePartialKeyedMap<int>
+  Kind: struct, 56 bytes
+  Methods:
+    Void Dispose()
+    JobHandle Dispose(JobHandle)
+    Void Update(Int32*, Int32*, Int32)
+    Boolean TryGetFirstValue(Int32, out Int32&, out UnsafeKeyedMapIterator&)
+    Boolean TryGetNextValue(out Int32&, UnsafeKeyedMapIterator&)
+Verified: 4 checks, 0 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Collections/NativePartialKeyedMap.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/NativePartialKeyedMap.cs)

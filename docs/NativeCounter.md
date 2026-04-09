@@ -199,16 +199,63 @@ TYPICAL USAGE IN JOBS
 
 ## Verified Data
 
-> [Run test snippet](../snippets/core-collections/NativeCounter.cs) — 24 assertions passing
->
-> Key findings:
-> - NativeCounter is a struct implementing IDisposable
-> - Has Increment(), Decrement(), and Count property
-> - Functional read/write confirmed
->
-> Corrections:
-> - DOC ERROR: struct is 32 bytes, not ~10 bytes as implied. The allocator handle field adds significant padding.
-> - DOC ERROR: Constructor takes AllocatorHandle (AllocatorManager.AllocatorHandle), not Allocator enum directly.
+```
+NativeCounter
+  Kind: struct
+  Size: 32 bytes
+Fields:
+  [0] Int32* count  (private)
+  [8] AtomicSafetyHandle m_Safety  (private)
+  [24] AllocatorHandle allocator  (private)
+Properties:
+  Int32 Count { get;set }
+  Boolean IsCreated { get; }
+Methods:
+  Int32 Increment()
+  Void Dispose()
+  ParallelWriter AsParallelWriter()
+Nested: ParallelWriter
+  Kind: struct
+  Fields:
+    Int32* count  (private)
+    AtomicSafetyHandle m_Safety  (private)
+  Methods:
+    Int32 Increment()
+Runtime Behavior:
+  IsCreated=True
+  Increment() x2: returns 1, 2; Count=2
+  Count setter(10): Count=10
+  ParallelWriter.Increment(): returns 11; Count=11
+Verified: 4 checks, 0 failures
+```
+NativeCounter
+  Kind: struct
+  Size: 32 bytes
+Fields:
+  [0] Int32* count  (private)
+  [8] AtomicSafetyHandle m_Safety  (private)
+  [24] AllocatorHandle allocator  (private)
+Properties:
+  Int32 Count { get;set }
+  Boolean IsCreated { get; }
+Methods:
+  Int32 Increment()
+  Void Dispose()
+  ParallelWriter AsParallelWriter()
+Nested: ParallelWriter
+  Kind: struct
+  Fields:
+    Int32* count  (private)
+    AtomicSafetyHandle m_Safety  (private)
+  Methods:
+    Int32 Increment()
+Runtime Behavior:
+  IsCreated=True
+  Increment() x2: returns 1, 2; Count=2
+  Count setter(10): Count=10
+  ParallelWriter.Increment(): returns 11; Count=11
+Verified: 4 checks, 0 failures
+```
 
 ## Source
 

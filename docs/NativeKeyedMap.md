@@ -211,15 +211,69 @@ PERFORMANCE CHARACTERISTICS
 
 ## Verified Data
 
-> [Run test snippet](../snippets/core-collections/NativeKeyedMap.cs) — 21 assertions passing
->
-> Key findings:
-> - NativeKeyedMap<T> type exists and is a struct (ValueType)
-> - Has TryGetFirstValue, TryGetNextValue, Add, Clear, RecalculateBuckets, Dispose methods
-> - Has IsCreated and Capacity properties
-> - Constructor takes (int capacity, int bucketCapacity, Allocator)
-> - Functional test: Add + TryGetFirstValue confirmed working for existing and non-existing keys
-> - Multi-value per key supported (like NativeMultiHashMap behavior)
+```
+NativeKeyedMap<int>
+  Kind: struct
+  Size: 32 bytes
+Fields:
+  [0] UnsafeKeyedMap`1 keyedMapData  (private)
+  [16] AtomicSafetyHandle m_Safety  (private)
+Properties:
+  Boolean IsCreated { get; }
+  Int32 Capacity { get;set }
+Methods:
+  Void Dispose()
+  JobHandle Dispose(JobHandle)
+  Void Clear()
+  Void Add(Int32, Int32)
+  Boolean TryGetFirstValue(Int32, out Int32&, out UnsafeKeyedMapIterator&)
+  Boolean TryGetNextValue(out Int32&, UnsafeKeyedMapIterator&)
+  Void SetLength(Int32)
+  Void RecalculateBuckets()
+  Int32* GetUnsafeKeysPtr()
+  Int32* GetUnsafeValuesPtr()
+  Int32* GetUnsafeReadOnlyKeysPtr()
+  Int32* GetUnsafeReadOnlyValuesPtr()
+Runtime Behavior:
+  IsCreated=True
+  Add(3,100); TryGetFirstValue(3)=True, value=100
+  Add(5,200); Add(5,300); TryGetFirstValue(5)=True, first value=300
+  All values for key=5: [300, 200]
+  TryGetFirstValue(7)=False (not found)
+  After Clear: TryGetFirstValue(3)=False
+Verified: 3 checks, 0 failures
+```
+NativeKeyedMap<int>
+  Kind: struct
+  Size: 32 bytes
+Fields:
+  [0] UnsafeKeyedMap`1 keyedMapData  (private)
+  [16] AtomicSafetyHandle m_Safety  (private)
+Properties:
+  Boolean IsCreated { get; }
+  Int32 Capacity { get;set }
+Methods:
+  Void Dispose()
+  JobHandle Dispose(JobHandle)
+  Void Clear()
+  Void Add(Int32, Int32)
+  Boolean TryGetFirstValue(Int32, out Int32&, out UnsafeKeyedMapIterator&)
+  Boolean TryGetNextValue(out Int32&, UnsafeKeyedMapIterator&)
+  Void SetLength(Int32)
+  Void RecalculateBuckets()
+  Int32* GetUnsafeKeysPtr()
+  Int32* GetUnsafeValuesPtr()
+  Int32* GetUnsafeReadOnlyKeysPtr()
+  Int32* GetUnsafeReadOnlyValuesPtr()
+Runtime Behavior:
+  IsCreated=True
+  Add(3,100); TryGetFirstValue(3)=True, value=100
+  Add(5,200); Add(5,300); TryGetFirstValue(5)=True, first value=300
+  All values for key=5: [300, 200]
+  TryGetFirstValue(7)=False (not found)
+  After Clear: TryGetFirstValue(3)=False
+Verified: 3 checks, 0 failures
+```
 
 ## Source
 

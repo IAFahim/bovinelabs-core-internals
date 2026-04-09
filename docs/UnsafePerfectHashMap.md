@@ -29,13 +29,57 @@
 
 ## Verified Data
 
-> [Run test snippet](../snippets/core-collections/UnsafePerfectHashMap.cs) — 28 assertions passing
->
-> Key findings:
-> - Generic struct UnsafePerfectHashMap<TKey,TValue>; 4-param ctor (NativeArray keys, NativeArray values, nullValue, Allocator)
-> - TryGetValue returns false for empty hash slots (key hashing to unused slot)
-> - Indexer get/set works; in-place value update confirmed
-> - 3-key and 5-key maps verified; size scales as power-of-2
+```
+UnsafePerfectHashMap<int,int>
+  Kind: struct
+  Size: 32 bytes
+Fields:
+  [0] Int32* Keys  (private)
+  [8] Int32* Values  (private)
+  [16] Int32 Size  (private)
+  [20] Int32 NullValue  (private)
+  [24] AllocatorHandle allocator  (private)
+Properties:
+  Boolean IsCreated { get; }
+  Int32 Item { get;set }
+Methods:
+  Void Dispose()
+  Boolean TryGetValue(Int32, out Int32&)
+Runtime Behavior:
+  IsCreated=True
+  TryGetValue(1)=True, value=100
+  TryGetValue(2)=True, value=200
+  TryGetValue(3)=True, value=300
+  TryGetValue(0)=False (empty slot)
+  map[1]=100
+  map[1]=111 -> TryGetValue(1)=True, value=111
+Verified: 3 checks, 1 failures
+```
+UnsafePerfectHashMap<int,int>
+  Kind: struct
+  Size: 32 bytes
+Fields:
+  [0] Int32* Keys  (private)
+  [8] Int32* Values  (private)
+  [16] Int32 Size  (private)
+  [20] Int32 NullValue  (private)
+  [24] AllocatorHandle allocator  (private)
+Properties:
+  Boolean IsCreated { get; }
+  Int32 Item { get;set }
+Methods:
+  Void Dispose()
+  Boolean TryGetValue(Int32, out Int32&)
+Runtime Behavior:
+  IsCreated=True
+  TryGetValue(1)=True, value=100
+  TryGetValue(2)=True, value=200
+  TryGetValue(3)=True, value=300
+  TryGetValue(0)=False (empty slot)
+  map[1]=100
+  map[1]=111 -> TryGetValue(1)=True, value=111
+Verified: 3 checks, 1 failures
+```
 
 ## Source
 

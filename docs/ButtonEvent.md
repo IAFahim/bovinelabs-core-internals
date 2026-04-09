@@ -249,15 +249,45 @@ Methods: TryConsume() → bool, TryProduce(bool) → bool
 
 ## Verified Data
 
-> [Run test snippet](../snippets/utility/ButtonEvent.cs) — 25 assertions passing
->
-> Key findings:
-> - Value property (bool) tracks pending state; default is false
-> - TryProduce(true) on idle returns true and sets Value=true; on pending returns false (dedup)
-> - TryProduce(false) always returns false; does not change state
-> - TryConsume on pending returns true and resets Value=false; on idle returns false
-> - Full produce-consume-produce-consume cycle verified
-> - Single-consumer guarantee: second TryConsume after first returns false
+```
+ButtonEvent
+  Kind: struct
+  Size: 4 bytes
+Fields:
+  [0] Boolean Value  (public)
+Properties:
+Methods:
+  Boolean TryConsume()
+  Boolean TryProduce(Boolean)
+Runtime Behavior:
+  default: Value=False
+  TryProduce(true) on idle: returns True, Value=True
+  TryProduce(true) on pending: returns False, Value=True
+  TryConsume() on pending: returns True, Value=False
+  TryConsume() on consumed: returns False, Value=False
+  TryProduce(false) on idle: returns False, Value=False
+  TryProduce() default: returns True, Value=True
+Verified: 6 checks, 1 failures
+```
+ButtonEvent
+  Kind: struct
+  Size: 4 bytes
+Fields:
+  [0] Boolean Value  (public)
+Properties:
+Methods:
+  Boolean TryConsume()
+  Boolean TryProduce(Boolean)
+Runtime Behavior:
+  default: Value=False
+  TryProduce(true) on idle: returns True, Value=True
+  TryProduce(true) on pending: returns False, Value=True
+  TryConsume() on pending: returns True, Value=False
+  TryConsume() on consumed: returns False, Value=False
+  TryProduce(false) on idle: returns False, Value=False
+  TryProduce() default: returns True, Value=True
+Verified: 6 checks, 1 failures
+```
 
 ## Source
 
