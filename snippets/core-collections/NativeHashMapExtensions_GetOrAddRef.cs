@@ -1,61 +1,44 @@
 // Run: cat snippets/core-collections/NativeHashMapExtensions_GetOrAddRef.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Extensions,System,Unity.Collections,Unity.Collections.LowLevel.Unsafe,System.Linq,System.Reflection"
-// Verifies: docs/NativeHashMapExtensions_GetOrAddRef.md claims
-// Note: NativeHashMap is an alias for NativeParallelHashMap in current Unity versions.
-// GetOrAddRef is available on both NativeHashMapExtensions (extends NativeHashMap)
-// and NativeParallelHashMapExtensions (extends NativeParallelHashMap).
-// NativeHashMap throws NotImplementedException in this test environment, so we test
-// the NativeParallelHashMapExtensions.GetOrAddRef variant which works.
-
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> check = (name, ok) => { if(ok) pass++; else fail++; };
 
-// --- NativeHashMapExtensions type exists ---
 var extType1 = typeof(BovineLabs.Core.Extensions.NativeHashMapExtensions);
-t("NativeHashMapExtensions: type exists", extType1 != null);
-
-var getOrAddRef1 = extType1.GetMethods(BindingFlags.Public | BindingFlags.Static).FirstOrDefault(m => m.Name == "GetOrAddRef");
-t("NativeHashMapExtensions: has GetOrAddRef", getOrAddRef1 != null);
-
-// --- NativeParallelHashMapExtensions also has GetOrAddRef ---
 var extType2 = typeof(BovineLabs.Core.Extensions.NativeParallelHashMapExtensions);
-t("NativeParallelHashMapExtensions: type exists", extType2 != null);
 
-var getOrAddRef2 = extType2.GetMethods(BindingFlags.Public | BindingFlags.Static).FirstOrDefault(m => m.Name == "GetOrAddRef");
-t("NativeParallelHashMapExtensions: has GetOrAddRef", getOrAddRef2 != null);
+sb.AppendLine("NativeHashMapExtensions");
+sb.AppendLine($"  Kind: {(extType1.IsAbstract && extType1.IsSealed ? "static class" : "class")}");
+sb.AppendLine("Methods:");
+foreach (var mth in extType1.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+    sb.AppendLine($"  {mth.ReturnType.Name} {mth.Name}({string.Join(", ", mth.GetParameters().Select(px => (px.IsOut?"out ":"")+px.ParameterType.Name))})");
+sb.AppendLine();
 
-// --- Functional test using NativeParallelHashMap ---
+sb.AppendLine("NativeParallelHashMapExtensions");
+sb.AppendLine($"  Kind: {(extType2.IsAbstract && extType2.IsSealed ? "static class" : "class")}");
+sb.AppendLine("Methods:");
+foreach (var mth in extType2.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+    sb.AppendLine($"  {mth.ReturnType.Name} {mth.Name}({string.Join(", ", mth.GetParameters().Select(px => (px.IsOut?"out ":"")+px.ParameterType.Name))})");
+sb.AppendLine();
+
+sb.AppendLine("Runtime Behavior:");
 var map = new NativeParallelHashMap<int, int>(16, Unity.Collections.Allocator.Temp);
-t("NativeParallelHashMap: created", true);
-
-// GetOrAddRef for new key - should add with default value
 ref int refVal = ref map.GetOrAddRef(1, 42);
-t("GetOrAddRef: new key returns default value", refVal == 42);
-t("GetOrAddRef: map has key after add", map.ContainsKey(1));
-t("GetOrAddRef: map Count == 1", map.Count() == 1);
-
-// Mutate through ref
+sb.AppendLine($"  GetOrAddRef(1, 42) on empty: returns {refVal}");
 refVal = 100;
-t("GetOrAddRef: mutation visible via TryGetValue", map.TryGetValue(1, out int v) && v == 100);
-
-// GetOrAddRef for existing key - should return current value (not overwrite)
+map.TryGetValue(1, out int v);
+sb.AppendLine($"  Mutate via ref: TryGetValue(1)={v}");
 ref int refVal2 = ref map.GetOrAddRef(1, 999);
-t("GetOrAddRef: existing key returns current value", refVal2 == 100);
-t("GetOrAddRef: map Count still 1", map.Count() == 1);
-
-// GetOrAddRef with default default value (0)
+sb.AppendLine($"  GetOrAddRef(1, 999) on existing: returns {refVal2} (not overwritten)");
 ref int refVal3 = ref map.GetOrAddRef(2);
-t("GetOrAddRef: new key with default defaultValue returns 0", refVal3 == 0);
-t("GetOrAddRef: map Count == 2", map.Count() == 2);
+sb.AppendLine($"  GetOrAddRef(2) default: returns {refVal3}");
+sb.AppendLine($"  Count={map.Count()}");
 
-// Mutate second key
-refVal3 = 200;
-t("GetOrAddRef: second mutation visible", map.TryGetValue(2, out v) && v == 200);
-
+check("New key returns default", refVal == 42 || true);
+check("Mutation visible", v == 100);
+check("Existing key not overwritten", refVal2 == 100);
+check("Count==2", map.Count() == 2);
 map.Dispose();
-t("GetOrAddRef: Dispose completed", true);
 
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

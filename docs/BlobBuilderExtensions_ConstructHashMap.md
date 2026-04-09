@@ -47,11 +47,39 @@
 
 ## Verified Data
 
-> [Run test snippet](../snippets/blob-system/BlobBuilderExtensions_ConstructHashMap.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/blob-system/BlobBuilderExtensions_ConstructHashMap.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
+> ```
+
+```
+BlobBuilderExtensions — HashMap Construction Methods
+
+  ConstructHashMap: 2 overload(s)
+    Void ConstructHashMap(BlobBuilder& builder, BlobHashMap`2& blobHashMap, NativeParallelHashMap`2& source)
+    Void ConstructHashMap(BlobBuilder& builder, BlobHashMap`2& blobHashMap, Dictionary`2 source)
+  AllocateHashMap: 2 overload(s)
+    BlobBuilderHashMap`2 AllocateHashMap(BlobBuilder& builder, BlobHashMap`2& blobHashMap, Int32 capacity)
+    BlobBuilderHashMap`2 AllocateHashMap(BlobBuilder& builder, BlobHashMap`2& blobHashMap, Int32 capacity, Int32 bucketCapacityRatio)
+  ConstructMultiHashMap: 1 overload(s)
+    Void ConstructMultiHashMap(BlobBuilder& builder, BlobMultiHashMap`2& blobMultiHashMap, NativeParallelMultiHashMap`2& source)
+  AllocateMultiHashMap: 2 overload(s)
+    BlobBuilderMultiHashMap`2 AllocateMultiHashMap(BlobBuilder& builder, BlobMultiHashMap`2& blobMultiHashMap, Int32 capacity)
+    BlobBuilderMultiHashMap`2 AllocateMultiHashMap(BlobBuilder& builder, BlobMultiHashMap`2& blobMultiHashMap, Int32 capacity, Int32 bucketCapacityRatio)
+  ConstructPerfectHashMap: 1 overload(s)
+    BlobBuilderPerfectHashMap`2 ConstructPerfectHashMap(BlobBuilder& builder, BlobPerfectHashMap`2& blobHashMap, NativeHashMap`2 source, TValue nullValue)
+  AllocatePerfectHashMap: 0 overload(s)
+
+  AllocateHashMap returns: BlobBuilderHashMap`2
+  AllocateMultiHashMap returns: BlobBuilderMultiHashMap`2
+
+Verified: 7 checks, 1 failures
+```
+
+> **Note**: 1 failure = AllocatePerfectHashMap has 0 overloads (method does not
+> exist as a separate API; perfect hash maps use ConstructPerfectHashMap only).
 
 ## Source
 

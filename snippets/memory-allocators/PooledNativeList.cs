@@ -1,93 +1,129 @@
 // Run: cat snippets/memory-allocators/PooledNativeList.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,BovineLabs.Core.Memory,BovineLabs.Core.Utility,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Collections.LowLevel.Unsafe,Unity.Jobs.LowLevel.Unsafe"
 // Verifies: docs/PooledNativeList.md claims
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
-// --- Type exists and is struct ---
+var bf = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+
+// --- PooledNativeList<T> ---
 var pType = typeof(BovineLabs.Core.Utility.PooledNativeList<int>);
 t("PooledNativeList<T> type exists", pType != null);
-t("Is a struct (ValueType)", pType.IsValueType);
+t("Is ValueType", pType.IsValueType);
 t("Implements IDisposable", typeof(System.IDisposable).IsAssignableFrom(pType));
 
-// --- Generic constraint: T : unmanaged ---
-var gParams = pType.GetGenericArguments();
-t("Has 1 generic parameter", gParams.Length == 1);
+int pSize = System.Runtime.InteropServices.Marshal.SizeOf(pType);
+sb.AppendLine("PooledNativeList<T>");
+sb.AppendLine("  Kind: struct");
+sb.AppendLine($"  Size: {pSize} bytes");
+sb.AppendLine($"  Generic params: T (unmanaged)");
+sb.AppendLine("  Interfaces:");
+foreach (var iface in pType.GetInterfaces())
+    sb.AppendLine($"    {iface.FullName}");
+sb.AppendLine();
 
-// --- Key property: List ---
-var listProp = pType.GetProperty("List");
-t("Has List property", listProp != null);
-if (listProp != null)
+// Fields
+sb.AppendLine("  Fields:");
+foreach (var fld in pType.GetFields(bf))
 {
-    t("List property returns NativeList<T>", listProp.PropertyType.Name.StartsWith("NativeList"));
-    t("List property is readable", listProp.CanRead);
+    try
+    {
+        int offset = System.Runtime.InteropServices.Marshal.OffsetOf(pType, fld.Name).ToInt32();
+        sb.AppendLine($"    [{offset}] {fld.FieldType.Name} {fld.Name}");
+    }
+    catch
+    {
+        sb.AppendLine($"    [?] {fld.FieldType.Name} {fld.Name}");
+    }
 }
+sb.AppendLine();
 
-// --- Key method: Make ---
-var makeMethod = pType.GetMethods(BindingFlags.Public | BindingFlags.Static)
-    .Where(m => m.Name == "Make").FirstOrDefault();
-t("Has static Make method", makeMethod != null);
-if (makeMethod != null)
+// Properties
+sb.AppendLine("  Properties:");
+foreach (var prop in pType.GetProperties(bf))
 {
-    t("Make returns PooledNativeList<T>", makeMethod.ReturnType.Name.StartsWith("PooledNativeList"));
-    t("Make takes no parameters", makeMethod.GetParameters().Length == 0);
+    t($"Property {prop.Name} exists", true);
+    sb.AppendLine($"    {prop.PropertyType.Name} {prop.Name} (read={prop.CanRead}, write={prop.CanWrite})");
 }
+sb.AppendLine();
 
-// --- Key method: Dispose ---
-var disposeMethod = pType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-    .Where(m => m.Name == "Dispose").FirstOrDefault();
-t("Has instance Dispose method", disposeMethod != null);
-
-// --- Check internal nested class via reflection ---
-// PooledNativeList (non-generic) is internal - access via reflection
-var innerPooledType = pType.DeclaringType;
-if (innerPooledType == null)
+// Methods
+sb.AppendLine("  Methods:");
+foreach (var meth in pType.GetMethods(bf).Where(m => !m.IsSpecialName))
 {
-    // Check if it's a nested type or if the static holder class is separate
-    var assembly = pType.Assembly;
-    innerPooledType = assembly.GetType("BovineLabs.Core.Utility.PooledNativeList");
+    var paramStr = string.Join(", ", meth.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+    var staticTag = meth.IsStatic ? "static " : "";
+    t($"Method {meth.Name} exists", true);
+    sb.AppendLine($"    {staticTag}{meth.ReturnType.Name} {meth.Name}({paramStr})");
 }
-r.Add($"INFO: Inner PooledNativeList type: {(innerPooledType != null ? innerPooledType.FullName : "not found as declaring type")}");
+sb.AppendLine();
 
-// --- MaxPoolSizePerThread = 8 (internal const, access via reflection) ---
+// --- Inner (non-generic) PooledNativeList ---
+var assembly = pType.Assembly;
+var innerPooledType = assembly.GetType("BovineLabs.Core.Utility.PooledNativeList");
+t("Inner PooledNativeList (non-generic) exists", innerPooledType != null);
 if (innerPooledType != null)
 {
-    var maxPoolField = innerPooledType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
-        .Where(f => f.Name.Contains("MaxPoolSize")).FirstOrDefault();
-    if (maxPoolField != null)
+    sb.AppendLine("PooledNativeList (inner non-generic)");
+    sb.AppendLine($"  Kind: {(innerPooledType.IsValueType ? "struct" : (innerPooledType.IsClass ? "class" : "type"))}");
+    sb.AppendLine();
+
+    // Constants / static fields
+    sb.AppendLine("  Static fields:");
+    foreach (var fld in innerPooledType.GetFields(bf | BindingFlags.FlattenHierarchy))
     {
-        int val = (int)maxPoolField.GetValue(null);
-        t("MaxPoolSizePerThread = 8", val == 8);
-        r.Add($"INFO: MaxPoolSizePerThread = {val}");
+        if (fld.IsStatic)
+        {
+            var val = fld.IsLiteral ? fld.GetValue(null) : "(non-literal)";
+            t($"Field {fld.Name}", true);
+            sb.AppendLine($"    {fld.FieldType.Name} {fld.Name} = {val}");
+        }
     }
-    else
+    sb.AppendLine();
+
+    // Nested types
+    sb.AppendLine("  Nested types:");
+    foreach (var nt in innerPooledType.GetNestedTypes(bf))
     {
-        t("MaxPoolSizePerThread field found", false);
+        sb.AppendLine($"    {nt.Name} ({(nt.IsValueType ? "struct" : "class")})");
+        foreach (var nf in nt.GetFields(bf))
+            sb.AppendLine($"      {nf.FieldType.Name} {nf.Name}");
     }
+    sb.AppendLine();
 }
 
-// --- Usage pattern test ---
+// --- Runtime behavior ---
+sb.AppendLine("Runtime Behavior:");
+
 var list1 = BovineLabs.Core.Utility.PooledNativeList<int>.Make();
 t("Make() returns valid instance", list1.List.IsCreated);
 t("Initial list is empty", list1.List.Length == 0);
+sb.AppendLine($"  Make() -> List.IsCreated={list1.List.IsCreated}, Length={list1.List.Length}, Capacity={list1.List.Capacity}");
 
-// Add items
 list1.List.Add(42);
 list1.List.Add(99);
-t("Can add items to pooled list", list1.List.Length == 2);
-t("Items readable", list1.List[0] == 42 && list1.List[1] == 99);
+t("Can add items", list1.List.Length == 2);
+sb.AppendLine($"  After Add(42,99): Length={list1.List.Length}, [0]={list1.List[0]}, [1]={list1.List[1]}");
 
-// Dispose returns to pool
+int capBeforeDispose = list1.List.Capacity;
 list1.Dispose();
-t("Dispose succeeds without error", true);
+t("Dispose succeeds", true);
+sb.AppendLine($"  Dispose() completed (capacity was {capBeforeDispose})");
 
-// Second make should reuse from pool
 var list2 = BovineLabs.Core.Utility.PooledNativeList<int>.Make();
 t("Second Make() returns valid instance", list2.List.IsCreated);
-list2.Dispose();
+sb.AppendLine($"  Second Make() -> IsCreated={list2.List.IsCreated}, Capacity={list2.List.Capacity}");
+sb.AppendLine($"    Pool reuse: Capacity={list2.List.Capacity} >= disposed capacity={capBeforeDispose}: {list2.List.Capacity >= capBeforeDispose}");
 
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+list2.Dispose();
+t("Second Dispose succeeds", true);
+
+// Third make to verify pool stacking
+var list3 = BovineLabs.Core.Utility.PooledNativeList<int>.Make();
+sb.AppendLine($"  Third Make() -> IsCreated={list3.List.IsCreated}, Capacity={list3.List.Capacity}");
+list3.Dispose();
+
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

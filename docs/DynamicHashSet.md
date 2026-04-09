@@ -393,11 +393,70 @@ but conceptually cleaner than a HashMap<T, byte>.
 
 ## Verified Data
 
-> [Run test snippet](../snippets/dynamic-buffers/DynamicHashSet.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/dynamic-buffers/DynamicHashSet.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Iterators,BovineLabs.Core.Extensions,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Entities"
+> ```
+
+```
+DynamicHashSet<T>
+  Kind: struct
+  Size: 72 bytes
+  Generic params: Int32
+  Interfaces:
+    System.Collections.IEnumerable
+    System.Collections.Generic.IEnumerable<Int32>
+
+  Fields:
+    [0] DynamicBuffer`1 buffer
+    [64] DynamicHashMapHelper`1* helper
+
+  Properties:
+    Boolean IsCreated (read=True, write=False)
+    Boolean IsEmpty (read=True, write=False)
+    Int32 Count (read=True, write=False)
+    Int32 Capacity (read=True, write=True)
+    DynamicHashMapHelper`1* Helper (read=True, write=False)
+
+  Methods:
+    Boolean Add(Int32 item)
+    Boolean Remove(Int32 item)
+    Boolean Contains(Int32 item)
+    Void Clear()
+    Void Flatten()
+
+IDynamicHashSet<TKey>
+  Kind: interface
+  Interfaces:
+    Unity.Entities.IBufferElementData
+  byte Value { get; }
+
+DynamicHashMapHelper<TKey> (shared with DynamicHashMap)
+  Kind: struct
+  Size: 44 bytes
+  Fields:
+    [0]  Int32 ValuesOffset
+    [4]  Int32 KeysOffset
+    [8]  Int32 NextOffset
+    [12] Int32 BucketsOffset
+    [16] Int32 Count
+    [20] Int32 Capacity
+    [24] Int32 BucketCapacityMask
+    [28] Int32 Log2MinGrowth
+    [32] Int32 AllocatedIndex
+    [36] Int32 FirstFreeIdx
+    [40] Int32 SizeOfTValue
+
+DynamicExtensions (relevant methods)
+  InitializeHashSet overloads: 1
+    DynamicBuffer`1 InitializeHashSet(DynamicBuffer`1, Int32, Int32)
+  AsHashSet overloads: 1
+    DynamicHashSet`1 AsHashSet(DynamicBuffer`1)
+
+Verified: 18 checks, 0 failures
+```
 
 ## Source
 

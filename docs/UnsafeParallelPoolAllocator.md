@@ -208,11 +208,38 @@ KEY PROPERTIES
 
 ## Verified Data
 
-> [Run test snippet](../snippets/memory-allocators/UnsafeParallelPoolAllocator.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/memory-allocators/UnsafeParallelPoolAllocator.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,BovineLabs.Core.Memory,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Collections.LowLevel.Unsafe,Unity.Jobs.LowLevel.Unsafe"
+> ```
+
+```
+PASS: UnsafeParallelPoolAllocator<T> type exists
+PASS: Is a struct (ValueType)
+PASS: Implements IDisposable
+PASS: Has 1 generic parameter
+PASS: Has constructor
+INFO: Constructor params: Int32 countPerChunk, Allocator allocator
+PASS: Constructor takes int countPerChunk
+PASS: Constructor takes Allocator
+PASS: Has IsCreated property
+PASS: Has Alloc method
+PASS: Alloc returns pointer
+PASS: Has Free method
+PASS: Has Allocated method
+PASS: Allocated returns int
+PASS: Has Dispose method
+INFO: Fields: allocator, pools, threadIndex
+PASS: Has pools field
+PASS: Has threadIndex field
+PASS: Has allocator field
+PASS: threadIndex has [NativeSetThreadIndex] attribute
+INFO: threadIndex attributes: NativeSetThreadIndexAttribute
+
+=== 18 PASSED, 0 FAILED ===
+```
 
 ## Source
 

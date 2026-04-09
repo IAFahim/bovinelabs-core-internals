@@ -19,11 +19,26 @@
 
 ## Verified Data
 
-> [Run test snippet](../snippets/blob-system/BlobMultiHashMapIterator.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/blob-system/BlobMultiHashMapIterator.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
+> ```
+
+```
+BlobMultiHashMapIterator<TKey>
+  Kind: struct, 8 bytes
+
+  Fields:
+    Int32 Key (private)
+    Int32 NextIndex (private)
+
+  Note: Used to iterate multi-value entries in BlobMultiHashMap.
+  Pattern: TryGetFirstValue gives initial iterator, TryGetNextValue advances it.
+
+Verified: 2 checks, 0 failures
+```
 
 ## Source
 

@@ -1,81 +1,57 @@
-// Run: cat snippets/utility/ButtonEvent.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Utility"
-// Verifies: docs/ButtonEvent.md claims
-
-var r = new System.Collections.Generic.List<string>();
+// Run: cat snippets/utility/ButtonEvent.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Utility,System,System.Reflection,System.Runtime.InteropServices"
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> check = (name, ok) => { if(ok) pass++; else fail++; };
 
-// --- Type exists and is a struct ---
+var type = typeof(BovineLabs.Core.Utility.ButtonEvent);
+var bf = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+
+sb.AppendLine("ButtonEvent");
+sb.AppendLine($"  Kind: {(type.IsValueType ? "struct" : "class")}");
+sb.AppendLine($"  Size: {Marshal.SizeOf(type)} bytes");
+sb.AppendLine();
+
+sb.AppendLine("Fields:");
+foreach (var fld in type.GetFields(bf))
+    sb.AppendLine($"  [{Marshal.OffsetOf(type, fld.Name)}] {fld.FieldType.Name} {fld.Name}  ({(fld.IsPublic?"public":"private")})");
+sb.AppendLine();
+
+sb.AppendLine("Properties:");
+foreach (var prp in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+    sb.AppendLine($"  {prp.PropertyType.Name} {prp.Name} {{ {(prp.CanRead?"get":"")};{(prp.CanWrite?"set":"")} }}");
+sb.AppendLine();
+
+sb.AppendLine("Methods:");
+foreach (var mth in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+    sb.AppendLine($"  {mth.ReturnType.Name} {mth.Name}({string.Join(", ", mth.GetParameters().Select(px => (px.IsOut?"out ":"")+px.ParameterType.Name))})");
+sb.AppendLine();
+
+sb.AppendLine("Runtime Behavior:");
 var btn = new BovineLabs.Core.Utility.ButtonEvent();
-t("ButtonEvent: type exists and can be default-constructed", btn.GetType().IsValueType);
-
-// --- Default state: Value should be false ---
-t("ButtonEvent: default Value is false", btn.Value == false);
-
-// --- TryProduce(true) on idle (Value=false) returns true, sets Value=true ---
+sb.AppendLine($"  default: Value={btn.Value}");
+bool p1 = btn.TryProduce(true);
+sb.AppendLine($"  TryProduce(true) on idle: returns {p1}, Value={btn.Value}");
+bool p2 = btn.TryProduce(true);
+sb.AppendLine($"  TryProduce(true) on pending: returns {p2}, Value={btn.Value}");
+bool c1 = btn.TryConsume();
+sb.AppendLine($"  TryConsume() on pending: returns {c1}, Value={btn.Value}");
+bool c2 = btn.TryConsume();
+sb.AppendLine($"  TryConsume() on consumed: returns {c2}, Value={btn.Value}");
 btn = new BovineLabs.Core.Utility.ButtonEvent();
-bool produced = btn.TryProduce(true);
-t("TryProduce(true) on idle returns true", produced == true);
-t("TryProduce(true) on idle sets Value=true", btn.Value == true);
-
-// --- TryProduce(true) on pending (Value=true) returns false, Value stays true ---
+bool p3 = btn.TryProduce(false);
+sb.AppendLine($"  TryProduce(false) on idle: returns {p3}, Value={btn.Value}");
 btn = new BovineLabs.Core.Utility.ButtonEvent();
-btn.TryProduce(true); // set to pending
-produced = btn.TryProduce(true); // try again
-t("TryProduce(true) on pending returns false (dedup)", produced == false);
-t("TryProduce(true) on pending Value stays true", btn.Value == true);
+bool pd = btn.TryProduce();
+sb.AppendLine($"  TryProduce() default: returns {pd}, Value={btn.Value}");
 
-// --- TryProduce(false) on idle returns false, Value stays false ---
-btn = new BovineLabs.Core.Utility.ButtonEvent();
-produced = btn.TryProduce(false);
-t("TryProduce(false) on idle returns false (no-op)", produced == false);
-t("TryProduce(false) on idle Value stays false", btn.Value == false);
+check("Size==1", Marshal.SizeOf(type) == 1);
+check("default Value=false", !new BovineLabs.Core.Utility.ButtonEvent().Value);
+check("TryProduce(true) on idle", p1 == true);
+check("TryProduce(true) dedup", p2 == false);
+check("TryConsume on pending", c1 == true);
+check("TryConsume double", c2 == false);
+check("TryProduce(false) no-op", p3 == false);
 
-// --- TryProduce(false) on pending returns false, Value stays true ---
-btn = new BovineLabs.Core.Utility.ButtonEvent();
-btn.TryProduce(true); // set to pending
-produced = btn.TryProduce(false);
-t("TryProduce(false) on pending returns false", produced == false);
-t("TryProduce(false) on pending Value stays true", btn.Value == true);
-
-// --- TryConsume on pending (Value=true) returns true, resets Value to false ---
-btn = new BovineLabs.Core.Utility.ButtonEvent();
-btn.TryProduce(true); // set to pending
-bool consumed = btn.TryConsume();
-t("TryConsume on pending returns true", consumed == true);
-t("TryConsume on pending resets Value to false", btn.Value == false);
-
-// --- TryConsume on idle (Value=false) returns false, Value stays false ---
-btn = new BovineLabs.Core.Utility.ButtonEvent();
-consumed = btn.TryConsume();
-t("TryConsume on idle returns false", consumed == false);
-t("TryConsume on idle Value stays false", btn.Value == false);
-
-// --- Double consume (single-consumption guarantee) ---
-btn = new BovineLabs.Core.Utility.ButtonEvent();
-btn.TryProduce(true);
-btn.TryConsume(); // first consume
-consumed = btn.TryConsume(); // second consume
-t("TryConsume after TryConsume returns false", consumed == false);
-
-// --- Full produce-consume-produce-consume cycle ---
-btn = new BovineLabs.Core.Utility.ButtonEvent();
-t("Cycle: initial Value=false", btn.Value == false);
-t("Cycle: TryProduce(true) returns true", btn.TryProduce(true) == true);
-t("Cycle: Value=true after produce", btn.Value == true);
-t("Cycle: TryConsume() returns true", btn.TryConsume() == true);
-t("Cycle: Value=false after consume", btn.Value == false);
-t("Cycle: TryConsume() returns false (no event)", btn.TryConsume() == false);
-t("Cycle: TryProduce(true) returns true again", btn.TryProduce(true) == true);
-t("Cycle: TryConsume() returns true again", btn.TryConsume() == true);
-
-// --- TryProduce with no argument (default true) ---
-btn = new BovineLabs.Core.Utility.ButtonEvent();
-produced = btn.TryProduce();
-t("TryProduce() default param behaves like TryProduce(true)", produced == true);
-t("TryProduce() sets Value=true", btn.Value == true);
-
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

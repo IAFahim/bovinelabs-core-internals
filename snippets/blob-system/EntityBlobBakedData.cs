@@ -1,16 +1,12 @@
 // Run: cat snippets/blob-system/EntityBlobBakedData.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
-// Verifies: docs/EntityBlobBakedData.md claims
+// Verifies: docs/EntityBlobBakedData.md
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
-// EntityBlobBakedData is in BovineLabs.Core.Authoring.Blobs
-var dataAssemblies = System.AppDomain.CurrentDomain.GetAssemblies();
 var ebbType = (Type)null;
-foreach (var asm in dataAssemblies)
+foreach (var asm in System.AppDomain.CurrentDomain.GetAssemblies())
 {
     try {
         ebbType = asm.GetType("BovineLabs.Core.Authoring.Blobs.EntityBlobBakedData");
@@ -18,34 +14,36 @@ foreach (var asm in dataAssemblies)
     } catch {}
 }
 
-t("EntityBlobBakedData: type exists", ebbType != null);
+sb.AppendLine("EntityBlobBakedData");
+sb.AppendLine($"  Namespace: BovineLabs.Core.Authoring.Blobs");
 
 if (ebbType != null)
 {
-    t("EntityBlobBakedData: is struct", ebbType.IsValueType);
+    int sz = Marshal.SizeOf(ebbType);
+    sb.AppendLine($"  Kind: {(ebbType.IsValueType ? "struct" : "class")}, {sz} bytes");
 
-    // Claims: implements IComponentData
-    var implementsICD = ebbType.GetInterfaces().Any(i => i.Name.StartsWith("IComponentData"));
-    t("EntityBlobBakedData: implements IComponentData", implementsICD);
+    var ifaces = ebbType.GetInterfaces();
+    sb.AppendLine($"  Implements: {string.Join(", ", ifaces.Select(i => i.Name))}");
+    t("Implements IComponentData", ifaces.Any(i => i.Name.StartsWith("IComponentData")));
 
-    // Claims: has BakingType attribute
-    var hasBakingType = ebbType.GetCustomAttributes(false).Any(a => a.GetType().Name.Contains("BakingType"));
-    t("EntityBlobBakedData: has BakingType attribute", hasBakingType);
+    var attrs = ebbType.GetCustomAttributes(false);
+    sb.AppendLine($"  Attributes: {string.Join(", ", attrs.Select(a => a.GetType().Name))}");
+    t("Has BakingType attribute", attrs.Any(a => a.GetType().Name.Contains("BakingType")));
+    sb.AppendLine();
 
-    // Claims: Target field (Entity)
-    var targetField = ebbType.GetField("Target");
-    t("EntityBlobBakedData: has Target field", targetField != null);
-    t("EntityBlobBakedData: Target is Entity", targetField?.FieldType.Name == "Entity");
-
-    // Claims: Key field (int)
-    var keyField = ebbType.GetField("Key");
-    t("EntityBlobBakedData: has Key field", keyField != null);
-    t("EntityBlobBakedData: Key is int", keyField?.FieldType == typeof(int));
-
-    // Claims: Blob field (BlobAssetReference<byte>)
-    var blobField = ebbType.GetField("Blob");
-    t("EntityBlobBakedData: has Blob field", blobField != null);
+    sb.AppendLine("  Fields:");
+    foreach (var f in ebbType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+    {
+        sb.AppendLine($"    {f.FieldType.Name} {f.Name} ({(f.IsPublic ? "public" : "private")})");
+        t($"Field {f.Name}", true);
+    }
+}
+else
+{
+    sb.AppendLine("  Status: Type not found in loaded assemblies");
+    t("EntityBlobBakedData found", false);
 }
 
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

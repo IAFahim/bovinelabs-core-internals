@@ -429,11 +429,45 @@ using a "swap and pop" pattern or marking entries as invalid instead.
 
 ## Verified Data
 
-> [Run test snippet](../snippets/dynamic-buffers/DynamicUntypedBuffer.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/dynamic-buffers/DynamicUntypedBuffer.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Iterators,BovineLabs.Core.Extensions,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Entities"
+> ```
+
+```
+PASS: DynamicUntypedBuffer: type exists
+PASS: DynamicUntypedBuffer: is ValueType
+PASS: DynamicUntypedBuffer: has Add<T>(T)
+PASS: DynamicUntypedBuffer: has ElementAtRO<T>(int)
+PASS: DynamicUntypedBuffer: has RemoveAt(int)
+PASS: DynamicUntypedBuffer: has Clear()
+PASS: DynamicUntypedBufferHelper: type exists
+PASS: DynamicUntypedBufferHelper: is ValueType
+PASS: DynamicUntypedBufferHelper: has StructLayout(LayoutKind.Sequential)
+PASS: DynamicUntypedBufferHelper: has 10 fields
+PASS: DynamicUntypedBufferHelper: has OffsetsOffset
+PASS: DynamicUntypedBufferHelper: has SizesOffset
+PASS: DynamicUntypedBufferHelper: has TypesOffset
+PASS: DynamicUntypedBufferHelper: has AlignmentsOffset
+PASS: DynamicUntypedBufferHelper: has DataOffset
+PASS: DynamicUntypedBufferHelper: has Count
+PASS: DynamicUntypedBufferHelper: has Capacity
+PASS: DynamicUntypedBufferHelper: has DataCapacity
+PASS: DynamicUntypedBufferHelper: has DataAllocatedIndex
+PASS: DynamicUntypedBufferHelper: has Log2MinGrowth
+PASS: DynamicUntypedBufferHelper: all 10 fields are int
+PASS: DynamicUntypedBufferHelper: Marshal.SizeOf == 40 bytes
+PASS: IDynamicUntypedBuffer: interface exists
+PASS: IDynamicUntypedBuffer: is interface
+PASS: IDynamicUntypedBuffer: implements IBufferElementData
+PASS: IDynamicUntypedBuffer: has Value property returning byte
+PASS: DynamicExtensions: has InitializeUntypedBuffer
+PASS: DynamicExtensions: has AsUntypedBuffer
+
+=== 28 PASSED, 0 FAILED ===
+```
 
 ## Source
 

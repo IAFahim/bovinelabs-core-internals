@@ -503,11 +503,96 @@ Variants exist for 1 column (`DynamicVariableMap<TKey, TValue, T, TC>`) and
 
 ## Verified Data
 
-> [Run test snippet](../snippets/dynamic-buffers/DynamicVariableMap.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/dynamic-buffers/DynamicVariableMap.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Iterators,BovineLabs.Core.Extensions,BovineLabs.Core.Iterators.Columns,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Entities"
+> ```
+
+```
+DynamicVariableMap<TKey,TValue,T,TC>
+  Kind: struct
+  Size: 72 bytes
+  Generic params: TKey=Int32, TValue=Single, T=Int16, TC=MultiHashColumn`1
+
+  Fields:
+    [0] DynamicBuffer`1 buffer
+    [64] DynamicVariableMapHelper`4* helper
+
+  Properties:
+    Boolean IsCreated (read=True, write=False)
+    Boolean IsEmpty (read=True, write=False)
+    Int32 Count (read=True, write=False)
+    Int32 Capacity (read=True, write=True)
+    MultiHashColumn`1& Column (read=True, write=False)
+    DynamicVariableMapHelper`4* Helper (read=True, write=False)
+
+  Methods:
+    Boolean TryAdd(Int32 key, Single item, Int16 column)
+    Boolean Remove(Int32 key)
+    Void RemoveAt(Int32 idx)
+    Boolean TryGetValue(Int32 key, Single& item, Int16& column)
+    Void ReplaceColumn(Int32 idx, Int16 column)
+    Void Clear()
+
+MultiHashColumn<T>
+  Kind: struct
+  Size: 16 bytes
+  Fields:
+    [0] Int32 keysOffset
+    [4] Int32 nextOffset
+    [8] Int32 bucketsOffset
+    [12] Int32 capacity
+
+OrderedListColumn<T>
+  Kind: struct
+  Size: 20 bytes
+  Fields:
+    [0] Int32 keysOffset
+    [4] Int32 nextOffset
+    [8] Int32 prevOffset
+    [12] Int32 head
+    [16] Int32 capacity
+
+IColumn<T>
+  Kind: interface
+  Methods:
+    Void Initialize(Int32, Int32)
+    Int32 CalculateDataSize(Int32)
+    Int32 GetValue(Int32)
+    Void Add(Int32, Int32)
+    Void Replace(Int32, Int32)
+    Void Remove(Int32)
+    Void Clear()
+    Void* StartResize()
+    Void ApplyResize(Void*)
+    Int32 GetValueOld(Void*, Int32)
+
+IDynamicVariableMap<TKey,TValue,T,TC>
+  Kind: interface
+  Interfaces:
+    Unity.Entities.IBufferElementData
+
+DynamicVariableMapHelper<TKey,TValue,T,TC> (internal)
+  Kind: struct
+  Fields:
+    HashHelper`1 KeyHash
+    TC Column
+    Int32 ValuesOffset
+    Int32 Count
+    Int32 Capacity
+    Int32 BucketCapacityMask
+    Int32 Log2MinGrowth
+    Int32 AllocatedIndex
+    Int32 FirstFreeIdx
+
+DynamicExtensions (relevant methods)
+  InitializeVariableMap overloads: 2
+  AsVariableMap overloads: 2
+
+Verified: 27 checks, 1 failures
+```
 
 ## Source
 

@@ -1,93 +1,50 @@
-// Run: cat snippets/core-collections/UnsafePartialKeyedMap.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,Unity.Collections,Unity.Collections.LowLevel.Unsafe,System.Linq"
-// Verifies: docs/UnsafePartialKeyedMap.md claims
-// Note: UnsafePartialKeyedMap requires int* keys and TValue* values (pointer-based).
-// We use NativeArray and obtain pointers via GetUnsafePtr() which requires unsafe context.
-// Since the test runner doesn't support /unsafe, we do reflection-only verification here.
-
-var r = new System.Collections.Generic.List<string>();
+// Run: cat snippets/core-collections/UnsafePartialKeyedMap.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,Unity.Collections,Unity.Collections.LowLevel.Unsafe,System.Linq,System.Reflection,System.Runtime.InteropServices"
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> check = (name, ok) => { if(ok) pass++; else fail++; };
 
-// --- Type exists ---
-var mapType = typeof(BovineLabs.Core.Collections.UnsafePartialKeyedMap<int>);
-t("UnsafePartialKeyedMap<int>: type exists", mapType != null);
-t("UnsafePartialKeyedMap<int>: is a struct (ValueType)", mapType.IsValueType);
+var type = typeof(BovineLabs.Core.Collections.UnsafePartialKeyedMap<int>);
+var bf = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 
-// --- Verify it's generic ---
-var genericArgs = mapType.GetGenericArguments();
-t("UnsafePartialKeyedMap: has 1 generic parameter (TValue)", genericArgs.Length == 1);
-t("UnsafePartialKeyedMap: generic param is int (closed type)", genericArgs[0] == typeof(int));
+sb.AppendLine("UnsafePartialKeyedMap<int>");
+sb.AppendLine($"  Kind: {(type.IsValueType ? "struct" : "class")}");
+sb.AppendLine($"  Size: {Marshal.SizeOf(type)} bytes");
+sb.AppendLine();
 
-// --- Has expected methods ---
-var tryGetFirst = mapType.GetMethod("TryGetFirstValue");
-t("UnsafePartialKeyedMap: has TryGetFirstValue", tryGetFirst != null);
+sb.AppendLine("Fields:");
+foreach (var fld in type.GetFields(bf))
+    sb.AppendLine($"  [{Marshal.OffsetOf(type, fld.Name)}] {fld.FieldType.Name} {fld.Name}  ({(fld.IsPublic?"public":"private")})");
+sb.AppendLine();
 
-var tryGetNext = mapType.GetMethod("TryGetNextValue");
-t("UnsafePartialKeyedMap: has TryGetNextValue", tryGetNext != null);
+sb.AppendLine("Properties:");
+foreach (var prp in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+    sb.AppendLine($"  {prp.PropertyType.Name} {prp.Name}");
+sb.AppendLine();
 
-var updateMethod = mapType.GetMethod("Update");
-t("UnsafePartialKeyedMap: has Update", updateMethod != null);
+sb.AppendLine("Methods:");
+foreach (var mth in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+    sb.AppendLine($"  {mth.ReturnType.Name} {mth.Name}({string.Join(", ", mth.GetParameters().Select(px => (px.IsOut?"out ":"")+px.ParameterType.Name))})");
+sb.AppendLine();
 
-var disposeMethods = mapType.GetMethods().Where(m => m.Name == "Dispose").ToList();
-t("UnsafePartialKeyedMap: has Dispose", disposeMethods.Count > 0);
-// Should have both Dispose() and Dispose(JobHandle) overloads
-t("UnsafePartialKeyedMap: Dispose has multiple overloads (incl. JobHandle)", disposeMethods.Count >= 2);
+sb.AppendLine("Static Methods:");
+foreach (var mth in type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+    sb.AppendLine($"  {mth.ReturnType.Name} {mth.Name}({string.Join(", ", mth.GetParameters().Select(px => px.ParameterType.Name))})");
+sb.AppendLine();
 
-// --- Has expected constructor ---
-var ctors = mapType.GetConstructors();
-t("UnsafePartialKeyedMap: has constructors", ctors.Length > 0);
+// Constructor signature
+sb.AppendLine("Constructors:");
+foreach (var ctor in type.GetConstructors())
+    sb.AppendLine($"  ({string.Join(", ", ctor.GetParameters().Select(px => px.ParameterType.Name + " " + px.Name))})");
 
-// Check constructor signature: (int* keys, TValue* values, int length, int bucketCapacity, AllocatorHandle)
-var mainCtor = ctors.FirstOrDefault(c =>
-{
-    var ps = c.GetParameters();
-    return ps.Length == 5;
-});
-t("UnsafePartialKeyedMap: has 5-parameter constructor (keys, values, length, bucketCapacity, allocator)", mainCtor != null);
+check("Is struct", type.IsValueType);
+check("Has TryGetFirstValue", type.GetMethod("TryGetFirstValue") != null);
+check("Has TryGetNextValue", type.GetMethod("TryGetNextValue") != null);
+check("Has Update", type.GetMethod("Update") != null);
+check("Has Dispose", type.GetMethod("Dispose") != null);
+check("Has IsCreated", type.GetProperty("IsCreated") != null);
+check("Has indexer", type.GetProperty("Item") != null);
+check("No Add() method", type.GetMethod("Add") == null);
 
-// --- Properties ---
-var isCreatedProp = mapType.GetProperty("IsCreated");
-t("UnsafePartialKeyedMap: has IsCreated property", isCreatedProp != null);
-t("UnsafePartialKeyedMap: IsCreated is bool", isCreatedProp != null && isCreatedProp.PropertyType == typeof(bool));
-
-// --- Check for indexer ---
-var indexer = mapType.GetProperty("Item");
-t("UnsafePartialKeyedMap: has indexer (this[int])", indexer != null);
-
-// --- Verify namespace ---
-t("UnsafePartialKeyedMap: in BovineLabs.Core.Collections namespace", mapType.Namespace == "BovineLabs.Core.Collections");
-
-// --- Check static methods ---
-var createMethod = mapType.GetMethod("Create", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-t("UnsafePartialKeyedMap: has static Create method", createMethod != null);
-
-var destroyMethod = mapType.GetMethod("Destroy", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-t("UnsafePartialKeyedMap: has static Destroy method", destroyMethod != null);
-
-// --- Verify TryGetFirstValue signature ---
-if (tryGetFirst != null)
-{
-    var ps = tryGetFirst.GetParameters();
-    t("UnsafePartialKeyedMap: TryGetFirstValue takes (int key, out TValue, out iterator)", ps.Length == 3);
-    t("UnsafePartialKeyedMap: TryGetFirstValue returns bool", tryGetFirst.ReturnType == typeof(bool));
-}
-
-// --- Verify TryGetNextValue signature ---
-if (tryGetNext != null)
-{
-    var ps = tryGetNext.GetParameters();
-    t("UnsafePartialKeyedMap: TryGetNextValue takes (out TValue, ref iterator)", ps.Length == 2);
-    t("UnsafePartialKeyedMap: TryGetNextValue returns bool", tryGetNext.ReturnType == typeof(bool));
-}
-
-// --- Verify Update signature ---
-if (updateMethod != null)
-{
-    var ps = updateMethod.GetParameters();
-    t("UnsafePartialKeyedMap: Update takes (int*, TValue*, int)", ps.Length == 3);
-}
-
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

@@ -21,11 +21,29 @@
 
 ## Verified Data
 
-> [Run test snippet](../snippets/blob-system/BlobCurveSegment.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/blob-system/BlobCurveSegment.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
+> ```
+
+```
+BlobCurveSegment
+  Kind: readonly struct, 16 bytes
+
+  Fields:
+    float4 factors (initonly) (private)
+
+  Constructors:
+    BlobCurveSegment(float4 factors)
+    BlobCurveSegment(Keyframe k0, Keyframe k1)
+
+  Methods:
+    Single Sample(float4& timeSerial)
+
+Verified: 4 checks, 0 failures
+```
 
 ## Source
 

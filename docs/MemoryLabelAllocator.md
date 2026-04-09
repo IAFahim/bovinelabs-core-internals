@@ -203,11 +203,47 @@ KEY PROPERTIES
 
 ## Verified Data
 
-> [Run test snippet](../snippets/memory-allocators/MemoryLabelAllocator.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/memory-allocators/MemoryLabelAllocator.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,BovineLabs.Core.Memory,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Collections.LowLevel.Unsafe,Unity.Burst"
+> ```
+
+```
+BovineLabs.Core.Memory.MemoryLabelAllocator
+  Kind: struct (ValueType=True)
+  Size: 32 bytes
+
+  Interfaces:
+    System.IDisposable
+    Unity.Collections.AllocatorManager+IAllocator
+
+  Properties:
+    public TryFunction Function { get }
+    public AllocatorHandle Handle { get set }
+    public Allocator ToAllocator { get }
+    public Boolean IsCustomAllocator { get }
+    public Boolean IsAutoDispose { get }
+
+  Methods:
+    public Void Initialize(String areaName, String objectName)
+    public Void Dispose()
+    public Int32 Try(Block& block)
+    private Int32 Allocate(Block& block)
+    private Int32 Free(Block& block)
+    private Int32 Reallocate(Block& block)
+
+  Attributes:
+    [BurstCompileAttribute]
+
+  Runtime Behavior:
+    Can construct default instance: true
+    IsAutoDispose: False
+    IsCustomAllocator: False
+
+Verified: 16 checks, 0 failures
+```
 
 ## Source
 

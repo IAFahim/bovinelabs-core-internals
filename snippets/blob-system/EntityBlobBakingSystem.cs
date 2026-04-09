@@ -1,13 +1,10 @@
 // Run: cat snippets/blob-system/EntityBlobBakingSystem.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
-// Verifies: docs/EntityBlobBakingSystem.md claims
+// Verifies: docs/EntityBlobBakingSystem.md
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
-// EntityBlobBakingSystem is in BovineLabs.Core.Authoring.Blobs
 var sysType = (Type)null;
 foreach (var asm in System.AppDomain.CurrentDomain.GetAssemblies())
 {
@@ -17,37 +14,43 @@ foreach (var asm in System.AppDomain.CurrentDomain.GetAssemblies())
     } catch {}
 }
 
-t("EntityBlobBakingSystem: type exists", sysType != null);
+sb.AppendLine("EntityBlobBakingSystem");
+sb.AppendLine($"  Namespace: BovineLabs.Core.Authoring.Blobs");
 
 if (sysType != null)
 {
-    t("EntityBlobBakingSystem: is struct", sysType.IsValueType);
+    sb.AppendLine($"  Kind: {(sysType.IsValueType ? "partial struct" : "class")}");
 
-    // Claims: implements ISystem
-    var implementsISys = sysType.GetInterfaces().Any(i => i.Name == "ISystem");
-    t("EntityBlobBakingSystem: implements ISystem", implementsISys);
+    var ifaces = sysType.GetInterfaces();
+    sb.AppendLine($"  Implements: {string.Join(", ", ifaces.Select(i => i.Name))}");
+    t("Implements ISystem", ifaces.Any(i => i.Name == "ISystem"));
 
-    // Claims: has OnCreate, OnDestroy, OnUpdate
-    var onCreate = sysType.GetMethod("OnCreate");
-    t("EntityBlobBakingSystem: has OnCreate", onCreate != null);
+    var attrs = sysType.GetCustomAttributes(false);
+    sb.AppendLine($"  Attributes: {string.Join(", ", attrs.Select(a => a.GetType().Name))}");
+    sb.AppendLine();
 
-    var onDestroy = sysType.GetMethod("OnDestroy");
-    t("EntityBlobBakingSystem: has OnDestroy", onDestroy != null);
+    sb.AppendLine("  Lifecycle Methods:");
+    foreach (var name in new[] { "OnCreate", "OnDestroy", "OnUpdate" })
+    {
+        var m = sysType.GetMethod(name);
+        sb.AppendLine($"    {(m != null ? "+" : "-")} {name}");
+        t($"Has {name}", m != null);
+    }
+    sb.AppendLine();
 
-    var onUpdate = sysType.GetMethod("OnUpdate");
-    t("EntityBlobBakingSystem: has OnUpdate", onUpdate != null);
-
-    // Claims: has WorldSystemFilter(BakingSystem)
-    var wsfa = sysType.GetCustomAttributes(false).FirstOrDefault(a => a.GetType().Name.Contains("WorldSystemFilter"));
-    t("EntityBlobBakingSystem: has WorldSystemFilter attribute", wsfa != null);
-
-    // Claims: has EntityBlobBakedDataHandle field (ComponentTypeHandle)
-    var handleField = sysType.GetField("EntityBlobBakedDataHandle", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-    t("EntityBlobBakingSystem: has EntityBlobBakedDataHandle field", handleField != null);
-
-    // Claims: partial struct
-    t("EntityBlobBakingSystem: is partial", sysType.Name == "EntityBlobBakingSystem");
+    sb.AppendLine("  Fields:");
+    foreach (var f in sysType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+    {
+        sb.AppendLine($"    {f.FieldType.Name} {f.Name}");
+        t($"Field {f.Name}", true);
+    }
+}
+else
+{
+    sb.AppendLine("  Status: Type not found in loaded assemblies");
+    t("EntityBlobBakingSystem found", false);
 }
 
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

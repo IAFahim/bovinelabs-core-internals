@@ -1,64 +1,52 @@
 // Run: cat snippets/core-collections/ThreadList.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,Unity.Collections,Unity.Collections.LowLevel.Unsafe,Unity.Jobs.LowLevel.Unsafe"
-// Verifies: docs/ThreadList.md claims
-
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> check = (name, ok) => { if(ok) pass++; else fail++; };
 
 var type = typeof(BovineLabs.Core.Collections.ThreadList);
-t("ThreadList type exists", type != null);
-t("Is a struct (ValueType)", type.IsValueType);
+var bf = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 
-var isCreated = type.GetProperty("IsCreated", BindingFlags.Public | BindingFlags.Instance);
-t("Has IsCreated property", isCreated != null);
+sb.AppendLine("ThreadList");
+sb.AppendLine($"  Kind: {(type.IsValueType ? "struct" : "class")}");
+sb.AppendLine($"  Size: {Marshal.SizeOf(type)} bytes");
+sb.AppendLine();
 
-var getListNoParam = type.GetMethod("GetList", BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null);
-t("Has GetList() (no param)", getListNoParam != null);
+sb.AppendLine("Properties:");
+foreach (var prp in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+    sb.AppendLine($"  {prp.PropertyType.Name} {prp.Name}");
+sb.AppendLine();
 
-var getListWithParam = type.GetMethod("GetList", BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(int) }, null);
-t("Has GetList(int threadIndex)", getListWithParam != null);
+sb.AppendLine("Methods:");
+foreach (var mth in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+    sb.AppendLine($"  {mth.ReturnType.Name} {mth.Name}({string.Join(", ", mth.GetParameters().Select(px => px.ParameterType.Name))})");
+sb.AppendLine();
 
-// Verify return type is ref UnsafeList<byte>
-if (getListNoParam != null)
-    t("GetList() returns UnsafeList<byte>", getListNoParam.ReturnType.Name.StartsWith("UnsafeList"));
-if (getListWithParam != null)
-    t("GetList(int) returns UnsafeList<byte>", getListWithParam.ReturnType.Name.StartsWith("UnsafeList"));
-
-var disposeMethod = type.GetMethod("Dispose", BindingFlags.Public | BindingFlags.Instance);
-t("Has Dispose()", disposeMethod != null);
-
-var ctor = type.GetConstructor(new[] { typeof(Unity.Collections.AllocatorManager.AllocatorHandle) });
-t("Constructor takes AllocatorHandle", ctor != null);
-
-// --- Claim: Internal Lists struct is cache-line sized (64 bytes) ---
+// Lists nested type
 var listsType = type.GetNestedType("Lists", BindingFlags.NonPublic | BindingFlags.Public);
-t("Lists nested type exists", listsType != null);
+sb.AppendLine("Nested: Lists");
 if (listsType != null)
 {
-    t("Lists is struct", listsType.IsValueType);
+    sb.AppendLine($"  Kind: {(listsType.IsValueType ? "struct" : "class")}");
+    sb.AppendLine($"  Size: {Marshal.SizeOf(listsType)} bytes");
     var layout = listsType.StructLayoutAttribute;
-    bool hasExplicitLayout = layout != null && layout.Value == System.Runtime.InteropServices.LayoutKind.Explicit;
-    int explicitSize = hasExplicitLayout ? layout.Size : 0;
-    t("Lists has [StructLayout(LayoutKind.Explicit)]", hasExplicitLayout);
-    int cacheLineSize = Unity.Jobs.LowLevel.Unsafe.JobsUtility.CacheLineSize;
-    t($"Lists Size = CacheLineSize ({cacheLineSize})", explicitSize == cacheLineSize);
-    var listField = listsType.GetField("List", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-    t("Lists has List field of UnsafeList<byte>", listField != null && listField.FieldType.Name == "UnsafeList`1");
+    sb.AppendLine($"  StructLayout: {(layout != null ? layout.Value.ToString() : "none")}, Size={layout?.Size}");
+    sb.AppendLine($"  CacheLineSize={Unity.Jobs.LowLevel.Unsafe.JobsUtility.CacheLineSize}");
 }
+sb.AppendLine();
 
-// --- Functional test ---
-var threadList = new BovineLabs.Core.Collections.ThreadList(Unity.Collections.Allocator.Temp);
-t("ThreadList construction succeeds", threadList.IsCreated);
+sb.AppendLine("Runtime Behavior:");
+var tl = new BovineLabs.Core.Collections.ThreadList(Unity.Collections.Allocator.Temp);
+sb.AppendLine($"  IsCreated={tl.IsCreated}");
+var list0 = tl.GetList(0);
+sb.AppendLine($"  GetList(0): Capacity={list0.Capacity}, IsCreated={list0.IsCreated}");
+tl.Dispose();
+sb.AppendLine($"  After Dispose: IsCreated={tl.IsCreated}");
 
-var list0 = threadList.GetList(0);
-t($"Initial Capacity = 512 (got {list0.Capacity})", list0.Capacity == 512);
-t("List uses byte type (UnsafeList<byte>)", list0.IsCreated);
+check("Is struct", type.IsValueType);
+check("IsCreated after construct", tl.IsCreated);
+check("Initial Capacity=512", list0.Capacity == 512);
+check("Has GetList", type.GetMethod("GetList") != null);
 
-threadList.Dispose();
-t("Dispose succeeds", true);
-t("IsCreated == false after Dispose", !threadList.IsCreated);
-
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

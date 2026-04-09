@@ -270,11 +270,38 @@ Best suited for:    Small-to-medium static lookup tables accessed at high
 
 ## Verified Data
 
-> [Run test snippet](../snippets/blob-system/BlobPerfectHashMap.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/blob-system/BlobPerfectHashMap.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
+> ```
+
+```
+BlobPerfectHashMap<TKey,TValue>
+  Kind: struct, 16 bytes
+
+  Fields:
+    [0] BlobArray`1 Values (private)
+    [8] Int32 Capacity (private)
+    [12] Int32 NullValue (private)
+
+  Properties:
+    Int32& Item { get }
+
+  Methods:
+    Boolean TryGetValue(Int32, Ptr`1&)
+    Boolean ContainsKey(Int32)
+
+  Private Methods:
+    Boolean TryGetIndex(Int32, Int32&)
+    Int32 IndexFor(Int32)
+    Void ThrowKeyNotPresent(Int32)
+
+  Indexer: this[Int32] -> Int32&
+
+Verified: 11 checks, 0 failures
+```
 
 ## Source
 

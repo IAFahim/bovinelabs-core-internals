@@ -250,11 +250,35 @@ Cache-friendly:     Moderate (bucket chains may scatter, but all data
 
 ## Verified Data
 
-> [Run test snippet](../snippets/blob-system/BlobHashMap.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/blob-system/BlobHashMap.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections"
+> ```
+
+```
+BlobHashMap<TKey,TValue>
+  Kind: struct, 44 bytes
+  Generic params: 2 (TKey, TValue)
+
+  Fields:
+    [0] BlobHashMapData`2 Data (private)
+
+  Properties:
+    Int32 Count { get }
+    Int32& Item { get }
+
+  Methods:
+    Boolean TryGetValue(Int32 key, Ptr`1& out item)
+    Boolean ContainsKey(Int32 key)
+    BlobHashMapEnumerator`2 GetEnumerator()
+
+  Indexer: this[Int32] -> Int32& { get }
+
+
+Verified: 7 checks, 0 failures
+```
 
 ## Source
 

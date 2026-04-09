@@ -390,11 +390,38 @@ Cache behavior:
 
 ## Verified Data
 
-> [Run test snippet](../snippets/blob-system/BlobHashMapData.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/blob-system/BlobHashMapData.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
+> ```
+
+```
+BlobHashMapData<TKey,TValue>
+  Kind: struct, internal
+
+  Size: 44 bytes
+
+  Fields:
+    BlobArray`1 Values (private)
+    BlobArray`1 Keys (private)
+    BlobArray`1 Next (private)
+    BlobArray`1 Buckets (private)
+    BlobArray`1 Count (private)
+    Int32 BucketCapacityMask (private)
+
+  Methods:
+    Boolean TryGetFirstValue(Int32 key, Ptr`1& item, BlobMultiHashMapIterator`1& it)
+    Boolean TryGetNextValue(Ptr`1& item, BlobMultiHashMapIterator`1& it)
+
+  Related: KVPair<TKey,TValue>
+    Kind: struct, 16 bytes
+    Int32& Key
+    Int32& Value
+
+Verified: 10 checks, 0 failures
+```
 
 ## Source
 

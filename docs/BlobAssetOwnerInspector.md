@@ -24,11 +24,26 @@
 
 ## Verified Data
 
-> [Run test snippet](../snippets/blob-system/BlobAssetOwnerInspector.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/blob-system/BlobAssetOwnerInspector.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
+> ```
+
+```
+BlobAssetOwnerInspector
+  Namespace: BovineLabs.Core.Editor.Inspectors
+  Kind: class
+  Base: PropertyInspector`1
+
+  Fields:
+
+  Methods:
+    VisualElement Build()
+
+Verified: 1 checks, 0 failures
+```
 
 ## Source
 

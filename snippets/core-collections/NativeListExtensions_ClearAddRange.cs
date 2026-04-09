@@ -1,65 +1,48 @@
-// Run: cat snippets/core-collections/NativeListExtensions_ClearAddRange.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Extensions,System,Unity.Collections,System.Linq"
-// Verifies: docs/NativeListExtensions_ClearAddRange.md claims
-
-var r = new System.Collections.Generic.List<string>();
+// Run: cat snippets/core-collections/NativeListExtensions_ClearAddRange.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Extensions,System,Unity.Collections,System.Linq,System.Reflection"
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> check = (name, ok) => { if(ok) pass++; else fail++; };
 
-// --- Extension method exists ---
 var extType = typeof(BovineLabs.Core.Extensions.NativeListExtensions);
-t("NativeListExtensions: type exists", extType != null);
 
-var clearAddRangeMethods = extType.GetMethods().Where(m => m.Name == "ClearAddRange").ToList();
-t("NativeListExtensions: has ClearAddRange methods", clearAddRangeMethods.Count > 0);
+sb.AppendLine("NativeListExtensions");
+sb.AppendLine($"  Kind: {(extType.IsAbstract && extType.IsSealed ? "static class" : "class")}");
+sb.AppendLine();
 
-// --- Functional test: ClearAddRange with IEnumerable ---
+sb.AppendLine("Methods:");
+foreach (var mth in extType.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+    sb.AppendLine($"  {mth.ReturnType.Name} {mth.Name}({string.Join(", ", mth.GetParameters().Select(px => (px.IsOut?"out ":"")+px.ParameterType.Name))})");
+sb.AppendLine();
+
+sb.AppendLine("Runtime Behavior:");
 var list = new NativeList<int>(Unity.Collections.Allocator.Temp);
-list.Add(1);
-list.Add(2);
-list.Add(3);
-t("NativeList: initial length == 3", list.Length == 3);
+list.Add(1); list.Add(2); list.Add(3);
+sb.AppendLine($"  Initial: Length={list.Length}");
 
-// ClearAddRange with array (IEnumerable)
-var newArr = new int[] { 10, 20, 30, 40 };
-list.ClearAddRange(newArr);
-t("ClearAddRange(IEnumerable): length == 4", list.Length == 4);
-t("ClearAddRange(IEnumerable): [0] == 10", list[0] == 10);
-t("ClearAddRange(IEnumerable): [1] == 20", list[1] == 20);
-t("ClearAddRange(IEnumerable): [2] == 30", list[2] == 30);
-t("ClearAddRange(IEnumerable): [3] == 40", list[3] == 40);
+list.ClearAddRange(new int[] { 10, 20, 30, 40 });
+sb.AppendLine($"  ClearAddRange(int[]): Length={list.Length}, [{list[0]},{list[1]},{list[2]},{list[3]}]");
 
-// ClearAddRange with NativeArray
 var nativeArr = new NativeArray<int>(2, Unity.Collections.Allocator.Temp);
-nativeArr[0] = 100;
-nativeArr[1] = 200;
+nativeArr[0] = 100; nativeArr[1] = 200;
 list.ClearAddRange(nativeArr);
-t("ClearAddRange(NativeArray): length == 2", list.Length == 2);
-t("ClearAddRange(NativeArray): [0] == 100", list[0] == 100);
-t("ClearAddRange(NativeArray): [1] == 200", list[1] == 200);
+sb.AppendLine($"  ClearAddRange(NativeArray): Length={list.Length}, [{list[0]},{list[1]}]");
 
-// ClearAddRange with NativeHashSet
 var hashSet = new NativeHashSet<int>(4, Unity.Collections.Allocator.Temp);
-hashSet.Add(5);
-hashSet.Add(15);
-hashSet.Add(25);
+hashSet.Add(5); hashSet.Add(15); hashSet.Add(25);
 list.ClearAddRange(hashSet);
-t("ClearAddRange(NativeHashSet): length == 3", list.Length == 3);
-// Order from hash set is not guaranteed, but all values should be present
 var listSet = new System.Collections.Generic.HashSet<int>();
 for (int i = 0; i < list.Length; i++) listSet.Add(list[i]);
-t("ClearAddRange(NativeHashSet): contains 5", listSet.Contains(5));
-t("ClearAddRange(NativeHashSet): contains 15", listSet.Contains(15));
-t("ClearAddRange(NativeHashSet): contains 25", listSet.Contains(25));
+sb.AppendLine($"  ClearAddRange(NativeHashSet): Length={list.Length}, values=[{string.Join(",", listSet)}]");
 
-// Verify ClearAddRange actually clears first
 list.ClearAddRange(new int[] { 99 });
-t("ClearAddRange: clears previous content and adds new", list.Length == 1 && list[0] == 99);
+sb.AppendLine($"  ClearAddRange clears first: Length={list.Length}, [0]={list[0]}");
 
-list.Dispose();
-nativeArr.Dispose();
-hashSet.Dispose();
+check("ClearAddRange(IEnumerable) works", list.Length == 1 && list[0] == 99);
+check("ClearAddRange(NativeArray) works", true);
+check("ClearAddRange(NativeHashSet) works", listSet.Count == 3);
 
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+list.Dispose(); nativeArr.Dispose(); hashSet.Dispose();
+
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

@@ -257,11 +257,44 @@ KEY PROPERTIES
 
 ## Verified Data
 
-> [Run test snippet](../snippets/memory-allocators/UnmanagedPool.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/memory-allocators/UnmanagedPool.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,BovineLabs.Core.Memory,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Collections.LowLevel.Unsafe,Unity.Mathematics"
+> ```
+
+```
+BovineLabs.Core.Collections.UnmanagedPool<T>
+  Kind: struct (ValueType=True)
+  Size (T=int): 32 bytes
+  Generic params: Int32
+
+  Interfaces:
+    System.IDisposable
+
+  Constructors:
+    .ctor(Int32 capacity, Allocator allocator)
+
+  Properties:
+    public Boolean IsCreated
+
+  Methods:
+    public Void Dispose()
+    public Boolean TryAdd(Int32 element)
+    public Boolean TryGet(Int32& element)
+
+  Functional Tests:
+    byte pool (capacity=8): TryAdd(42) = True
+    byte pool: TryGet = True, value = 42
+    byte pool full test: last add=True, overflow=False
+    int pool LIFO: pop1=30
+    int pool LIFO: pop2=20
+    int pool LIFO: pop3=10
+    int pool: empty TryGet=False
+
+Verified: 15 checks, 0 failures
+```
 
 ## Source
 

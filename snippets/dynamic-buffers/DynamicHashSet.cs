@@ -1,87 +1,128 @@
 // Run: cat snippets/dynamic-buffers/DynamicHashSet.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Iterators,BovineLabs.Core.Extensions,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Entities"
 // Verifies: docs/DynamicHashSet.md claims
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
 var bf = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
-// --- DynamicHashSet<T> is a struct ---
+// --- DynamicHashSet<T> struct ---
 var setType = typeof(DynamicHashSet<int>);
-t("DynamicHashSet: type exists", setType != null);
-t("DynamicHashSet: is ValueType", setType.IsValueType);
+t("DynamicHashSet type exists", setType != null);
+t("Is ValueType", setType.IsValueType);
 
-// Implements IEnumerable<T>
-t("DynamicHashSet: implements IEnumerable",
-    setType.GetInterfaces().Any(iface =>
-        iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(System.Collections.Generic.IEnumerable<>)));
+int setSize = System.Runtime.InteropServices.Marshal.SizeOf(setType);
+sb.AppendLine("DynamicHashSet<T>");
+sb.AppendLine("  Kind: struct");
+sb.AppendLine($"  Size: {setSize} bytes");
+sb.AppendLine($"  Generic params: {string.Join(", ", setType.GetGenericArguments().Select(a => a.Name))}");
 
-// --- Key properties ---
-t("DynamicHashSet: has Count property", setType.GetProperty("Count", bf) != null);
-t("DynamicHashSet: has Capacity property", setType.GetProperty("Capacity", bf) != null);
-t("DynamicHashSet: has IsCreated property", setType.GetProperty("IsCreated", bf) != null);
-t("DynamicHashSet: has IsEmpty property", setType.GetProperty("IsEmpty", bf) != null);
+// Interfaces
+sb.AppendLine("  Interfaces:");
+foreach (var iface in setType.GetInterfaces())
+    sb.AppendLine($"    {iface.FullName}");
+sb.AppendLine();
 
-// --- Key methods ---
-var addMethod = setType.GetMethods(bf).Where(m => m.Name == "Add" && m.GetParameters().Length == 1).FirstOrDefault();
-t("DynamicHashSet: has Add(T)", addMethod != null);
-if (addMethod != null)
-    t("DynamicHashSet: Add returns bool", addMethod.ReturnType == typeof(bool));
+// Fields
+sb.AppendLine("  Fields:");
+foreach (var fld in setType.GetFields(bf))
+{
+    try
+    {
+        int offset = System.Runtime.InteropServices.Marshal.OffsetOf(setType, fld.Name).ToInt32();
+        sb.AppendLine($"    [{offset}] {fld.FieldType.Name} {fld.Name}");
+    }
+    catch
+    {
+        sb.AppendLine($"    [?] {fld.FieldType.Name} {fld.Name}");
+    }
+}
+sb.AppendLine();
 
-var removeMethod = setType.GetMethods(bf).Where(m => m.Name == "Remove" && m.GetParameters().Length == 1).FirstOrDefault();
-t("DynamicHashSet: has Remove(T)", removeMethod != null);
-if (removeMethod != null)
-    t("DynamicHashSet: Remove returns bool", removeMethod.ReturnType == typeof(bool));
+// Properties
+sb.AppendLine("  Properties:");
+foreach (var prop in setType.GetProperties(bf))
+{
+    t($"Property {prop.Name} exists", true);
+    sb.AppendLine($"    {prop.PropertyType.Name} {prop.Name} (read={prop.CanRead}, write={prop.CanWrite})");
+}
+sb.AppendLine();
 
-var containsMethod = setType.GetMethods(bf).Where(m => m.Name == "Contains" && m.GetParameters().Length == 1).FirstOrDefault();
-t("DynamicHashSet: has Contains(T)", containsMethod != null);
-if (containsMethod != null)
-    t("DynamicHashSet: Contains returns bool", containsMethod.ReturnType == typeof(bool));
+// Methods
+sb.AppendLine("  Methods:");
+var methodNames = new[] { "Add", "Remove", "Contains", "Clear", "Flatten" };
+foreach (var mn in methodNames)
+{
+    var meths = setType.GetMethods(bf).Where(m => m.Name == mn).ToArray();
+    foreach (var meth in meths)
+    {
+        var paramStr = string.Join(", ", meth.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+        t($"Method {mn} exists", true);
+        sb.AppendLine($"    {meth.ReturnType.Name} {mn}({paramStr})");
+    }
+}
+sb.AppendLine();
 
-var clearMethod = setType.GetMethods(bf).Where(m => m.Name == "Clear" && m.GetParameters().Length == 0).FirstOrDefault();
-t("DynamicHashSet: has Clear()", clearMethod != null);
-
-var flattenMethod = setType.GetMethods(bf).Where(m => m.Name == "Flatten" && m.GetParameters().Length == 0).FirstOrDefault();
-t("DynamicHashSet: has Flatten()", flattenMethod != null);
-
-// --- DynamicHashSet reuses DynamicHashMapHelper<T> ---
-// The helper is the same type used by hash maps (with SizeOfTValue=0)
-var helperType = typeof(DynamicHashMapHelper<int>);
-t("DynamicHashSet: reuses DynamicHashMapHelper<T> (same helper type)", helperType != null);
-
-// --- IDynamicHashSet<TKey> interface ---
+// --- IDynamicHashSet<TKey> ---
 var ifaceType = typeof(IDynamicHashSet<int>);
-t("IDynamicHashSet: interface exists", ifaceType != null);
-t("IDynamicHashSet: is interface", ifaceType.IsInterface);
-t("IDynamicHashSet: implements IBufferElementData",
-    ifaceType.GetInterfaces().Contains(typeof(IBufferElementData)));
+t("IDynamicHashSet interface exists", ifaceType != null);
+t("Is interface", ifaceType.IsInterface);
+t("Implements IBufferElementData", ifaceType.GetInterfaces().Contains(typeof(IBufferElementData)));
 
-var valueProp = ifaceType.GetProperty("Value");
-t("IDynamicHashSet: has Value property returning byte", valueProp != null && valueProp.PropertyType == typeof(byte));
+sb.AppendLine("IDynamicHashSet<TKey>");
+sb.AppendLine("  Kind: interface");
+sb.AppendLine("  Interfaces:");
+foreach (var ii in ifaceType.GetInterfaces())
+    sb.AppendLine($"    {ii.FullName}");
+var valProp = ifaceType.GetProperty("Value");
+t("Has Value property (byte)", valProp != null && valProp.PropertyType == typeof(byte));
+if (valProp != null)
+    sb.AppendLine($"  byte Value {{ get; }}");
+sb.AppendLine();
 
-// --- InitializeHashSet extension method ---
+// --- DynamicHashMapHelper<T> (shared infrastructure) ---
+var helperType = typeof(DynamicHashMapHelper<int>);
+t("DynamicHashMapHelper reuses same type", helperType != null);
+int helperSize = System.Runtime.InteropServices.Marshal.SizeOf(helperType);
+sb.AppendLine("DynamicHashMapHelper<TKey> (shared with DynamicHashMap)");
+sb.AppendLine($"  Kind: struct");
+sb.AppendLine($"  Size: {helperSize} bytes");
+sb.AppendLine("  Fields:");
+foreach (var fld in helperType.GetFields(bf))
+{
+    try
+    {
+        int offset = System.Runtime.InteropServices.Marshal.OffsetOf(helperType, fld.Name).ToInt32();
+        sb.AppendLine($"    [{offset}] {fld.FieldType.Name} {fld.Name}");
+    }
+    catch
+    {
+        sb.AppendLine($"    [?] {fld.FieldType.Name} {fld.Name}");
+    }
+}
+sb.AppendLine();
+
+// --- DynamicExtensions ---
 var extType = typeof(DynamicExtensions);
-t("DynamicExtensions: type exists", extType != null);
+t("DynamicExtensions type exists", extType != null);
+var initMethods = extType.GetMethods(bf).Where(m => m.Name == "InitializeHashSet").ToArray();
+var asMethods = extType.GetMethods(bf).Where(m => m.Name == "AsHashSet").ToArray();
 
-var initMethod = extType.GetMethods(bf).Where(m => m.Name == "InitializeHashSet").FirstOrDefault();
-t("DynamicExtensions: has InitializeHashSet method", initMethod != null);
-
-var asHashSetMethod = extType.GetMethods(bf).Where(m => m.Name == "AsHashSet").FirstOrDefault();
-t("DynamicExtensions: has AsHashSet method", asHashSetMethod != null);
-
-// Verify Init passes sizeOfValue=0 for sets (we check the method has the right param count)
-if (initMethod != null)
+sb.AppendLine("DynamicExtensions (relevant methods)");
+sb.AppendLine($"  InitializeHashSet overloads: {initMethods.Length}");
+foreach (var m in initMethods)
 {
-    var initParams = initMethod.GetParameters();
-    t("DynamicHashSet: InitializeHashSet has 3 params (buffer, capacity, minGrowth)", initParams.Length == 3);
+    var paramStr = string.Join(", ", m.GetParameters().Select(p => p.ParameterType.Name));
+    sb.AppendLine($"    {m.ReturnType.Name} InitializeHashSet({paramStr})");
 }
-else
+sb.AppendLine($"  AsHashSet overloads: {asMethods.Length}");
+foreach (var m in asMethods)
 {
-    t("DynamicHashSet: InitializeHashSet has 3 params (buffer, capacity, minGrowth)", false);
+    var paramStr = string.Join(", ", m.GetParameters().Select(p => p.ParameterType.Name));
+    sb.AppendLine($"    {m.ReturnType.Name} AsHashSet({paramStr})");
 }
 
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

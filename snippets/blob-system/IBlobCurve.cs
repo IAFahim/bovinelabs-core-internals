@@ -1,43 +1,39 @@
 // Run: cat snippets/blob-system/IBlobCurve.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
-// Verifies: docs/IBlobCurve.md claims
+// Verifies: docs/IBlobCurve.md
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
 var ifaceType = typeof(IBlobCurve<float>);
-t("IBlobCurve<float>: type exists", ifaceType != null);
-t("IBlobCurve: is interface", ifaceType.IsInterface);
-t("IBlobCurve: is generic", ifaceType.IsGenericType);
 
-// Claims: interface has 4 methods
+sb.AppendLine("IBlobCurve<T>");
+sb.AppendLine($"  Kind: interface, covariant T");
+sb.AppendLine();
+
+sb.AppendLine("  Methods:");
 var methods = ifaceType.GetMethods();
-t("IBlobCurve: has 4 methods", methods.Length == 4);
+t($"Has {methods.Length} methods", methods.Length == 4);
+foreach (var m in methods)
+{
+    var ps = string.Join(", ", m.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+    sb.AppendLine($"    {m.ReturnType.Name} {m.Name}({ps})");
+    t($"Method {m.Name}", true);
+}
+sb.AppendLine();
 
-// Claims: EvaluateIgnoreWrapMode(in float, ref BlobCurveCache) -> T
-var evalIgnoreCache = methods.FirstOrDefault(m => m.Name == "EvaluateIgnoreWrapMode" && m.GetParameters().Length == 2);
-t("IBlobCurve: has EvaluateIgnoreWrapMode with cache", evalIgnoreCache != null);
-
-// Claims: EvaluateIgnoreWrapMode(in float) -> T
-var evalIgnore = methods.FirstOrDefault(m => m.Name == "EvaluateIgnoreWrapMode" && m.GetParameters().Length == 1);
-t("IBlobCurve: has EvaluateIgnoreWrapMode without cache", evalIgnore != null);
-
-// Claims: Evaluate(in float, ref BlobCurveCache) -> T
-var evalCache = methods.FirstOrDefault(m => m.Name == "Evaluate" && m.GetParameters().Length == 2);
-t("IBlobCurve: has Evaluate with cache", evalCache != null);
-
-// Claims: Evaluate(in float) -> T
-var evalNoCache = methods.FirstOrDefault(m => m.Name == "Evaluate" && m.GetParameters().Length == 1);
-t("IBlobCurve: has Evaluate without cache", evalNoCache != null);
-
-// Claims: covariant out T (IBlobCurve<out T>)
-t("IBlobCurve: T is covariant (out)", ifaceType.GetGenericArguments()[0].GenericParameterPosition == 0);
-
-// Claims: BlobCurve implements IBlobCurve<float>
+// Implementors
+sb.AppendLine("  Known Implementors:");
 var bcType = typeof(BlobCurve);
-t("IBlobCurve: BlobCurve implements IBlobCurve<float>", bcType.GetInterfaces().Contains(ifaceType));
+var implements = bcType.GetInterfaces().Contains(ifaceType);
+sb.AppendLine($"    BlobCurve implements IBlobCurve<float>: {implements}");
+t("BlobCurve implements IBlobCurve<float>", implements);
 
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+var bc2 = typeof(BlobCurve2);
+var implements2 = bc2.GetInterfaces().Any(i => i.Name.StartsWith("IBlobCurve"));
+sb.AppendLine($"    BlobCurve2 implements IBlobCurve: {implements2}");
+t("BlobCurve2 implements IBlobCurve variant", implements2);
+
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

@@ -165,11 +165,45 @@ KEY PROPERTIES
 
 ## Verified Data
 
-> [Run test snippet](../snippets/memory-allocators/MemoryAllocator.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/memory-allocators/MemoryAllocator.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,BovineLabs.Core.Memory,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Collections.LowLevel.Unsafe,Unity.Mathematics"
+> ```
+
+```
+PASS: MemoryAllocator type exists
+PASS: Is a struct (ValueType)
+PASS: Implements IDisposable
+PASS: Has constructor
+PASS: Constructor takes Allocator parameter
+PASS: Has Allocate method
+INFO: Allocate params: Int32 itemSizeInBytes, Int32 alignmentInBytes, Int32 items
+PASS: Allocate takes itemSizeInBytes, alignmentInBytes, items
+PASS: Allocate returns void pointer
+PASS: Has generic Create<T> method
+PASS: Has generic CreateList<T> method
+PASS: CreateList returns UnsafeList<T>
+PASS: Has FreeAll method
+PASS: FreeAll returns void
+PASS: Has Dispose method
+PASS: Has Allocator property
+INFO: Fields: allocated, <Allocator>k__BackingField
+PASS: Has allocated tracking field
+PASS: MemoryAllocator constructs
+PASS: CreateList<byte>(1024) returns list
+INFO: List capacity = 1024
+PASS: List capacity is power of 2
+PASS: List capacity >= requested
+PASS: List capacity equals 1024
+PASS: CreateList<int>(1) returns list
+PASS: Small list capacity is 16 (max(1, 64/sizeof(int)) rounded to pow2)
+PASS: FreeAll completes without error
+PASS: Dispose completes without error
+
+=== 25 PASSED, 0 FAILED ===
+```
 
 ## Source
 

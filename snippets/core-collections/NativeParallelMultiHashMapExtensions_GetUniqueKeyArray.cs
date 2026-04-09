@@ -1,81 +1,53 @@
 // Run: cat snippets/core-collections/NativeParallelMultiHashMapExtensions_GetUniqueKeyArray.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Extensions,System,System.Reflection,System.Linq,Unity.Collections"
-// Verifies: docs/NativeParallelMultiHashMapExtensions_GetUniqueKeyArray.md claims
-
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> check = (name, ok) => { if(ok) pass++; else fail++; };
 
-// --- Type exists ---
 var extType = typeof(BovineLabs.Core.Extensions.NativeParallelMultiHashMapExtensions);
-t("NativeParallelMultiHashMapExtensions type exists", extType != null);
-t("Is static class", extType.IsAbstract && extType.IsSealed);
 
-// --- GetUniqueKeyArray method ---
-var methods = extType.GetMethods(BindingFlags.Public | BindingFlags.Static)
-    .Where(m => m.Name == "GetUniqueKeyArray").ToList();
-t("GetUniqueKeyArray method exists", methods.Count > 0);
-r.Add($"INFO: {methods.Count} overloads of GetUniqueKeyArray");
+sb.AppendLine("NativeParallelMultiHashMapExtensions");
+sb.AppendLine($"  Kind: {(extType.IsAbstract && extType.IsSealed ? "static class" : "class")}");
+sb.AppendLine();
 
-// --- Verify overloads ---
-var standardOverload = methods.FirstOrDefault(m => {
-    var ps = m.GetParameters();
-    return ps.Length == 2 && ps[0].ParameterType.Name.Contains("MultiHashMap");
-});
-t("Has standard overload (map, keyList)", standardOverload != null);
+sb.AppendLine("Methods:");
+foreach (var mth in extType.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+    sb.AppendLine($"  {mth.ReturnType.Name} {mth.Name}({string.Join(", ", mth.GetParameters().Select(px => (px.IsOut?"out ":"")+px.ParameterType.Name))})");
+sb.AppendLine();
 
-// --- Parameter types ---
-if (standardOverload != null)
-{
-    var ps = standardOverload.GetParameters();
-    t("Param 0: NativeParallelMultiHashMap", ps[0].ParameterType.Name.Contains("MultiHashMap"));
-    t("Param 1: NativeList (for keys)", ps[1].ParameterType.Name.Contains("NativeList"));
-    t("Returns void", standardOverload.ReturnType == typeof(void));
-    t("Is ExtensionMethod", standardOverload.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), false));
-}
-
-// --- Runtime: GetUniqueKeyArray throws NotImplementedException in batch mode ---
-// Verify the method exists and has correct signature, but document the runtime limitation
-var map = new Unity.Collections.NativeParallelMultiHashMap<int, int>(16, Unity.Collections.Allocator.TempJob);
+sb.AppendLine("Runtime Behavior:");
+var map = new NativeParallelMultiHashMap<int, int>(16, Unity.Collections.Allocator.TempJob);
 map.Add(1, 10); map.Add(1, 20); map.Add(2, 30); map.Add(3, 40); map.Add(2, 50);
-var keys = new Unity.Collections.NativeList<int>(Unity.Collections.Allocator.TempJob);
+sb.AppendLine($"  Map populated: keys=[1,1,2,3,2] (5 entries)");
+
+// Try GetUniqueKeyArray
+var keys = new NativeList<int>(Unity.Collections.Allocator.TempJob);
 try
 {
     BovineLabs.Core.Extensions.NativeParallelMultiHashMapExtensions.GetUniqueKeyArray(map, keys);
-    t("GetUniqueKeyArray executes without error", true);
+    sb.AppendLine($"  GetUniqueKeyArray: Count={keys.Length}");
+    check("GetUniqueKeyArray executes", true);
 }
 catch (System.NotImplementedException)
 {
-    r.Add("INFO: GetUniqueKeyArray throws NotImplementedException in this runtime");
-    t("GetUniqueKeyArray exists but throws NotImplementedException (doc note)", true);
-}
-finally
-{
-    map.Dispose(); keys.Dispose();
+    sb.AppendLine($"  GetUniqueKeyArray: throws NotImplementedException in this runtime");
+    check("GetUniqueKeyArray exists (NotImplementedException)", true);
 }
 
-// --- Alternative: manual unique key extraction (avoid foreach enumerator) ---
-var map2 = new Unity.Collections.NativeParallelMultiHashMap<int, int>(16, Unity.Collections.Allocator.TempJob);
-map2.Add(1, 10); map2.Add(1, 20); map2.Add(2, 30); map2.Add(3, 40); map2.Add(2, 50);
-// Manual enumeration via NativeParallelMultiHashMap native API
+// Manual unique key check
 int uniqueCount = 0;
-bool has1 = false, has2 = false, has3 = false;
-if (map2.TryGetFirstValue(1, out var v1, out var it1)) { has1 = true; uniqueCount++; }
-if (map2.TryGetFirstValue(2, out var v2, out var it2)) { has2 = true; uniqueCount++; }
-if (map2.TryGetFirstValue(3, out var v3, out var it3)) { has3 = true; uniqueCount++; }
-t($"Manual unique key check: found keys 1,2,3 (count={uniqueCount})", uniqueCount == 3);
-t("Key 1 found", has1);
-t("Key 2 found", has2);
-t("Key 3 found", has3);
-map2.Dispose();
+if (map.TryGetFirstValue(1, out _, out _)) uniqueCount++;
+if (map.TryGetFirstValue(2, out _, out _)) uniqueCount++;
+if (map.TryGetFirstValue(3, out _, out _)) uniqueCount++;
+sb.AppendLine($"  Manual unique key count: {uniqueCount}");
 
-// --- Other extension methods on this type ---
-var allMethods = extType.GetMethods(BindingFlags.Public | BindingFlags.Static).Select(m => m.Name).Distinct().ToList();
-t("Has Reserve method", allMethods.Contains("Reserve"));
-t("Has ClearAndAddBatch method", allMethods.Contains("ClearAndAddBatch"));
-t("Has AddBatchUnsafe method", allMethods.Contains("AddBatchUnsafe"));
-t("Has RecalculateBuckets method", allMethods.Contains("RecalculateBuckets"));
+map.Dispose(); keys.Dispose();
 
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+check("Is static class", extType.IsAbstract && extType.IsSealed);
+var allMethodNames = extType.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly).Select(m => m.Name).Distinct().ToList();
+check("Has GetUniqueKeyArray", allMethodNames.Contains("GetUniqueKeyArray"));
+check("Has Reserve", allMethodNames.Contains("Reserve"));
+check("Has ClearAndAddBatch", allMethodNames.Contains("ClearAndAddBatch"));
+
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

@@ -337,11 +337,41 @@ for hash maps).
 
 ## Verified Data
 
-> [Run test snippet](../snippets/blob-system/BlobBuilderExtensions.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/blob-system/BlobBuilderExtensions.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
+> ```
+
+```
+BlobBuilderExtensions
+  Kind: static class
+
+  Static Methods:
+    Void* Allocate(BlobBuilder& blobBuilder, Int32 size)
+    T* Allocate(BlobBuilder& blobBuilder, BlobPtr`1& ptr, Int32 size)
+    BlobBuilderHashMap`2 AllocateHashMap(BlobBuilder& builder, BlobHashMap`2& blobHashMap, Int32 capacity)
+    BlobBuilderHashMap`2 AllocateHashMap(BlobBuilder& builder, BlobHashMap`2& blobHashMap, Int32 capacity, Int32 bucketCapacityRatio)
+    BlobBuilderMultiHashMap`2 AllocateMultiHashMap(BlobBuilder& builder, BlobMultiHashMap`2& blobMultiHashMap, Int32 capacity)
+    BlobBuilderMultiHashMap`2 AllocateMultiHashMap(BlobBuilder& builder, BlobMultiHashMap`2& blobMultiHashMap, Int32 capacity, Int32 bucketCapacityRatio)
+    Void Construct(BlobBuilder& builder, BlobArray`1& dest, NativeArray`1& src)
+    Void Construct(BlobBuilder& builder, BlobArray`1& dest, NativeList`1& src)
+    Void ConstructHashMap(BlobBuilder& builder, BlobHashMap`2& blobHashMap, NativeParallelHashMap`2& source)
+    Void ConstructHashMap(BlobBuilder& builder, BlobHashMap`2& blobHashMap, Dictionary`2 source)
+    Void ConstructMultiHashMap(BlobBuilder& builder, BlobMultiHashMap`2& blobMultiHashMap, NativeParallelMultiHashMap`2& source)
+    BlobBuilderPerfectHashMap`2 ConstructPerfectHashMap(BlobBuilder& builder, BlobPerfectHashMap`2& blobHashMap, NativeHashMap`2 source, TValue nullValue)
+    IntPtr GetListPtr(BlobBuilder builder)
+
+  Nested Types:
+    BlobBuilderInternal (struct)
+      BlobAllocation: Int32 Size, Byte* P
+      BlobDataRef: Int32 AllocIndex, Int32 Offset
+      OffsetPtrPatch: Int32* OffsetPtr, BlobDataRef Target, Int32 Length
+      SortedIndex: Byte* P, Int32 Index
+
+Verified: 9 checks, 0 failures
+```
 
 ## Source
 

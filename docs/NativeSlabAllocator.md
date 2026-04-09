@@ -199,11 +199,38 @@ KEY PROPERTIES
 
 ## Verified Data
 
-> [Run test snippet](../snippets/memory-allocators/NativeSlabAllocator.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/memory-allocators/NativeSlabAllocator.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,BovineLabs.Core.Memory,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Collections.LowLevel.Unsafe"
+> ```
+
+```
+PASS: NativeSlabAllocator<T> type exists
+PASS: Is a struct (ValueType)
+PASS: Implements IDisposable
+PASS: Has [NativeContainer] attribute
+PASS: Has 1 generic parameter
+PASS: Has constructor
+INFO: Constructor params: Int32 countPerSlab, AllocatorHandle allocator
+PASS: Constructor takes int countPerSlab
+PASS: Has IsCreated property
+PASS: IsCreated returns bool
+PASS: Has AllocationCount property
+PASS: AllocationCount returns int
+PASS: Has Alloc method
+PASS: Alloc returns pointer
+PASS: Has Clear method
+PASS: Has Dispose method
+INFO: Fields: slabAllocator, m_Safety
+PASS: Has slabAllocator field (wraps UnsafeSlabAllocator)
+PASS: Has safety handle field (m_Safety)
+INFO: Static fields: s_staticSafetyId
+PASS: Has static safety ID field
+
+=== 18 PASSED, 0 FAILED ===
+```
 
 ## Source
 

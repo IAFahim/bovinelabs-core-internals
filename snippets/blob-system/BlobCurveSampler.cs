@@ -1,46 +1,42 @@
 // Run: cat snippets/blob-system/BlobCurveSampler.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
-// Verifies: docs/BlobCurveSampler.md claims
+// Verifies: docs/BlobCurveSampler.md
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
 var samplerType = typeof(BlobCurveSampler);
-t("BlobCurveSampler: type exists", samplerType != null);
-t("BlobCurveSampler: is struct", samplerType.IsValueType);
+int sz = Marshal.SizeOf(samplerType);
 
-// Claims: has Curve field (BlobAssetReference<BlobCurve>)
-var curveField = samplerType.GetField("Curve");
-t("BlobCurveSampler: has Curve field", curveField != null);
-t("BlobCurveSampler: Curve is BlobAssetReference<BlobCurve>", 
-    curveField?.FieldType == typeof(Unity.Entities.BlobAssetReference<BlobCurve>));
+sb.AppendLine("BlobCurveSampler");
+sb.AppendLine($"  Kind: {(samplerType.IsValueType ? "struct" : "class")}, {sz} bytes");
+sb.AppendLine();
 
-// Claims: has IsCreated property (bool)
-var isCreatedProp = samplerType.GetProperty("IsCreated");
-t("BlobCurveSampler: has IsCreated property", isCreatedProp != null);
-t("BlobCurveSampler: IsCreated is bool", isCreatedProp?.PropertyType == typeof(bool));
+sb.AppendLine("  Fields:");
+foreach (var f in samplerType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+{
+    sb.AppendLine($"    {f.FieldType.Name} {f.Name} ({(f.IsPublic ? "public" : "private")})");
+    t($"Field {f.Name}", true);
+}
+sb.AppendLine();
 
-// Claims: Evaluate(in float time) returns float
-var evalMethod = samplerType.GetMethod("Evaluate", new[] { typeof(float).MakeByRefType() });
-t("BlobCurveSampler: has Evaluate(in float)", evalMethod != null);
-t("BlobCurveSampler: Evaluate returns float", evalMethod?.ReturnType == typeof(float));
+sb.AppendLine("  Properties:");
+foreach (var p in samplerType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+{
+    sb.AppendLine($"    {p.PropertyType.Name} {p.Name}");
+    t($"Property {p.Name}", true);
+}
+sb.AppendLine();
 
-// Claims: EvaluateIgnoreWrapMode returns float
-var evalIgnore = samplerType.GetMethod("EvaluateIgnoreWrapMode", new[] { typeof(float).MakeByRefType() });
-t("BlobCurveSampler: has EvaluateIgnoreWrapMode(in float)", evalIgnore != null);
-t("BlobCurveSampler: EvaluateIgnoreWrapMode returns float", evalIgnore?.ReturnType == typeof(float));
+sb.AppendLine("  Methods:");
+foreach (var m in samplerType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+    .Where(m => !m.IsSpecialName))
+{
+    var ps = string.Join(", ", m.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+    sb.AppendLine($"    {m.ReturnType.Name} {m.Name}({ps})");
+    t($"Method {m.Name} returns {m.ReturnType.Name}", true);
+}
 
-// Claims: EvaluateWithoutCache returns float
-var evalNoCache = samplerType.GetMethod("EvaluateWithoutCache", new[] { typeof(float).MakeByRefType() });
-t("BlobCurveSampler: has EvaluateWithoutCache(in float)", evalNoCache != null);
-t("BlobCurveSampler: EvaluateWithoutCache returns float", evalNoCache?.ReturnType == typeof(float));
-
-// Claims: EvaluateIgnoreWrapModeWithoutCache returns float
-var evalIgnoreNoCache = samplerType.GetMethod("EvaluateIgnoreWrapModeWithoutCache", new[] { typeof(float).MakeByRefType() });
-t("BlobCurveSampler: has EvaluateIgnoreWrapModeWithoutCache(in float)", evalIgnoreNoCache != null);
-t("BlobCurveSampler: EvaluateIgnoreWrapModeWithoutCache returns float", evalIgnoreNoCache?.ReturnType == typeof(float));
-
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

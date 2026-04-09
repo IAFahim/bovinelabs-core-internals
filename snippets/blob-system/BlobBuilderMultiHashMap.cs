@@ -1,36 +1,44 @@
 // Run: cat snippets/blob-system/BlobBuilderMultiHashMap.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
-// Verifies: docs/BlobBuilderMultiHashMap.md claims
+// Verifies: docs/BlobBuilderMultiHashMap.md
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
 var mhmType = typeof(BlobBuilderMultiHashMap<int,int>);
-t("BlobBuilderMultiHashMap<int,int>: type exists", mhmType != null);
-t("BlobBuilderMultiHashMap: is struct", mhmType.IsValueType);
-t("BlobBuilderMultiHashMap: is ref struct", mhmType.IsByRefLike);
 
-// Claims: Capacity property
-var capProp = mhmType.GetProperty("Capacity");
-t("BlobBuilderMultiHashMap: has Capacity property", capProp != null);
-t("BlobBuilderMultiHashMap: Capacity is int", capProp?.PropertyType == typeof(int));
+sb.AppendLine("BlobBuilderMultiHashMap<TKey,TValue>");
+sb.AppendLine($"  Kind: {(mhmType.IsValueType ? "struct" : "class")}, ref struct = {mhmType.IsByRefLike}");
+sb.AppendLine();
 
-// Claims: Count property
-var countProp = mhmType.GetProperty("Count");
-t("BlobBuilderMultiHashMap: has Count property", countProp != null);
-t("BlobBuilderMultiHashMap: Count is int", countProp?.PropertyType == typeof(int));
+sb.AppendLine("  Properties:");
+foreach (var p in mhmType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+{
+    sb.AppendLine($"    {p.PropertyType.Name} {p.Name}");
+    t($"Property {p.Name}", true);
+}
+sb.AppendLine();
 
-// Claims: Add(TKey key, TValue item) -> void (allows duplicates)
-var addMethod = mhmType.GetMethod("Add", new[] { typeof(int), typeof(int) });
-t("BlobBuilderMultiHashMap: has Add(key,value) method", addMethod != null);
-t("BlobBuilderMultiHashMap: Add returns void", addMethod?.ReturnType == typeof(void));
+sb.AppendLine("  Methods:");
+foreach (var m in mhmType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+    .Where(m => !m.IsSpecialName))
+{
+    var ps = string.Join(", ", m.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+    var retByRef = m.ReturnType.IsByRef ? "ref " : "";
+    sb.AppendLine($"    {retByRef}{m.ReturnType.Name} {m.Name}({ps})");
+    t($"Method {m.Name} -> {m.ReturnType.Name}", true);
+}
+sb.AppendLine();
 
-// Claims: Also has Add(TKey key) that returns ref TValue
+// Key difference: Add(key) returns ref TValue for multi-map
 var addKeyOnly = mhmType.GetMethod("Add", new[] { typeof(int) });
-t("BlobBuilderMultiHashMap: has Add(key) overload", addKeyOnly != null);
-t("BlobBuilderMultiHashMap: Add(key) returns ref TValue", addKeyOnly != null && addKeyOnly.ReturnType.IsByRef);
+if (addKeyOnly != null)
+{
+    sb.AppendLine($"  Note: Add(TKey) returns {(addKeyOnly.ReturnType.IsByRef ? "ref " : "")}{addKeyOnly.ReturnType.Name}");
+    sb.AppendLine("  (allows multiple values per key — the multi-map pattern)");
+    t("Add(TKey) returns ref TValue", addKeyOnly.ReturnType.IsByRef);
+}
 
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

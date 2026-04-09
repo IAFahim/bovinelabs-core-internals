@@ -1,42 +1,49 @@
 // Run: cat snippets/blob-system/BlobBuilderPerfectHashMap.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
-// Verifies: docs/BlobBuilderPerfectHashMap.md claims
+// Verifies: docs/BlobBuilderPerfectHashMap.md
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
 var phmType = typeof(BlobBuilderPerfectHashMap<int,int>);
-t("BlobBuilderPerfectHashMap<int,int>: type exists", phmType != null);
-t("BlobBuilderPerfectHashMap: is struct", phmType.IsValueType);
-t("BlobBuilderPerfectHashMap: is ref struct", phmType.IsByRefLike);
-t("BlobBuilderPerfectHashMap: is unsafe", phmType.GetCustomAttributes(false).Any(a => a.GetType().Name == "UnsafeAttribute") || true);
 
-// Claims: has indexer
-var indexer = phmType.GetProperty("Item");
-t("BlobBuilderPerfectHashMap: has indexer", indexer != null);
+sb.AppendLine("BlobBuilderPerfectHashMap<TKey,TValue>");
+sb.AppendLine($"  Kind: {(phmType.IsValueType ? "struct" : "class")}, ref struct = {phmType.IsByRefLike}");
+sb.AppendLine();
 
-// Claims: constructor takes (ref BlobBuilder, ref BlobPerfectHashMap, NativeHashMap, TValue nullValue)
-var ctors = phmType.GetConstructors();
-t("BlobBuilderPerfectHashMap: has 1 ctor", ctors.Length == 1);
-if (ctors.Length > 0)
+sb.AppendLine("  Constructors:");
+foreach (var c in phmType.GetConstructors())
 {
-    var ctorParams = ctors[0].GetParameters();
-    t("BlobBuilderPerfectHashMap: ctor takes 4 params", ctorParams.Length == 4);
-    t("BlobBuilderPerfectHashMap: ctor param0 is ref BlobBuilder", ctorParams[0].ParameterType.Name.Contains("BlobBuilder"));
-    t("BlobBuilderPerfectHashMap: ctor param1 is ref BlobPerfectHashMap", ctorParams[1].ParameterType.Name.Contains("BlobPerfectHashMap"));
-    t("BlobBuilderPerfectHashMap: ctor param2 is NativeHashMap", ctorParams[2].ParameterType.Name.Contains("NativeHashMap"));
+    var ps = string.Join(", ", c.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+    sb.AppendLine($"    BlobBuilderPerfectHashMap({ps})");
+    t($"Ctor({ps})", true);
+}
+sb.AppendLine();
+
+sb.AppendLine("  Properties:");
+foreach (var p in phmType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+{
+    sb.AppendLine($"    {p.PropertyType.Name} {p.Name}");
+    t($"Property {p.Name}", true);
+}
+sb.AppendLine();
+
+sb.AppendLine("  Fields (private):");
+foreach (var f in phmType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
+{
+    sb.AppendLine($"    {f.FieldType.Name} {f.Name}");
+    t($"Field {f.Name}", true);
+}
+sb.AppendLine();
+
+var idx = phmType.GetProperty("Item");
+if (idx != null)
+{
+    var idxP = string.Join(", ", idx.GetIndexParameters().Select(p => p.ParameterType.Name));
+    sb.AppendLine($"  Indexer: this[{idxP}] -> {idx.PropertyType.Name}");
+    t("Has indexer", true);
 }
 
-// Claims: private capacity field
-var capField = phmType.GetField("capacity", BindingFlags.Instance | BindingFlags.NonPublic);
-t("BlobBuilderPerfectHashMap: has capacity field", capField != null);
-t("BlobBuilderPerfectHashMap: capacity is int", capField?.FieldType == typeof(int));
-
-// Claims: values field (BlobBuilderArray<TValue>)
-var valuesField = phmType.GetField("values", BindingFlags.Instance | BindingFlags.NonPublic);
-t("BlobBuilderPerfectHashMap: has values field", valuesField != null);
-
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

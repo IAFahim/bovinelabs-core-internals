@@ -173,11 +173,37 @@ KEY PROPERTIES
 
 ## Verified Data
 
-> [Run test snippet](../snippets/memory-allocators/UnsafeFixedPoolAllocator.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/memory-allocators/UnsafeFixedPoolAllocator.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,BovineLabs.Core.Memory,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Collections.LowLevel.Unsafe"
+> ```
+
+```
+PASS: UnsafeFixedPoolAllocator<T> type exists
+PASS: Is a struct (ValueType)
+PASS: Implements IDisposable
+PASS: Has 1 generic parameter
+PASS: Has constructor
+INFO: Constructor params: Int32 maxItems, Allocator allocator
+PASS: Constructor takes int maxItems
+PASS: Constructor takes Allocator
+PASS: Has IsCreated property
+PASS: Has Alloc method
+PASS: Alloc returns pointer
+PASS: Has Free method
+PASS: Has Dispose method
+INFO: Fields: maxItems, allocator, buffer, freeIndex
+PASS: Has maxItems field
+PASS: Has buffer field (Ptr)
+PASS: Has freeIndex field (UnsafeParallelHashSet)
+PASS: Has readonly-like constraint (maxItems)
+INFO: Fixed pool has no growth fields (no countPerSlab, no slabs list)
+PASS: Has ValidatePtr method (editor safety)
+
+=== 17 PASSED, 0 FAILED ===
+```
 
 ## Source
 

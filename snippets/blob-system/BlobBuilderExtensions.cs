@@ -1,57 +1,50 @@
 // Run: cat snippets/blob-system/BlobBuilderExtensions.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
-// Verifies: docs/BlobBuilderExtensions.md claims
+// Verifies: docs/BlobBuilderExtensions.md
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
 var extType = typeof(BlobBuilderExtensions);
-t("BlobBuilderExtensions: type exists", extType != null);
-t("BlobBuilderExtensions: is static class", extType.IsAbstract && extType.IsSealed);
 
-// Claims: has Allocate(this ref BlobBuilder, int size) -> void*
-var allocateMethods = extType.GetMethods().Where(m => m.Name == "Allocate").ToArray();
-t("BlobBuilderExtensions: has Allocate methods", allocateMethods.Length >= 1);
+sb.AppendLine("BlobBuilderExtensions");
+sb.AppendLine($"  Kind: {(extType.IsAbstract && extType.IsSealed ? "static class" : "class")}");
+sb.AppendLine();
 
-// Claims: Construct<T>(NativeArray) and Construct<T>(NativeList)
-var constructMethods = extType.GetMethods().Where(m => m.Name == "Construct").ToArray();
-t("BlobBuilderExtensions: has Construct methods", constructMethods.Length >= 2);
+// Group methods by name
+var methodGroups = extType.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+    .Where(m => !m.IsSpecialName)
+    .GroupBy(m => m.Name)
+    .OrderBy(g => g.Key)
+    .ToList();
 
-// Claims: ConstructHashMap
-var constructHashMapMethods = extType.GetMethods().Where(m => m.Name == "ConstructHashMap").ToArray();
-t("BlobBuilderExtensions: has ConstructHashMap overloads", constructHashMapMethods.Length >= 2);
+sb.AppendLine("  Static Methods:");
+foreach (var grp in methodGroups)
+{
+    foreach (var m in grp)
+    {
+        var ps = string.Join(", ", m.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+        sb.AppendLine($"    {m.ReturnType.Name} {m.Name}({ps})");
+    }
+    t($"{grp.Key} overloads: {grp.Count()}", true);
+}
+sb.AppendLine();
 
-// Claims: AllocateHashMap
-var allocateHashMapMethods = extType.GetMethods().Where(m => m.Name == "AllocateHashMap").ToArray();
-t("BlobBuilderExtensions: has AllocateHashMap overloads", allocateHashMapMethods.Length >= 2);
+// Nested types
+sb.AppendLine("  Nested Types:");
+var nested = extType.GetNestedTypes(BindingFlags.NonPublic);
+foreach (var nt in nested)
+{
+    sb.AppendLine($"    {nt.Name} ({(nt.IsValueType ? "struct" : "class")})");
+    var subNested = nt.GetNestedTypes(BindingFlags.NonPublic | BindingFlags.Public);
+    foreach (var sn in subNested)
+    {
+        var fields = sn.GetFields().Select(f => $"{f.FieldType.Name} {f.Name}");
+        sb.AppendLine($"      {sn.Name}: {string.Join(", ", fields)}");
+    }
+    t($"Nested {nt.Name}", true);
+}
 
-// Claims: ConstructMultiHashMap
-var constructMulti = extType.GetMethods().Where(m => m.Name == "ConstructMultiHashMap").ToArray();
-t("BlobBuilderExtensions: has ConstructMultiHashMap", constructMulti.Length >= 1);
-
-// Claims: AllocateMultiHashMap
-var allocMulti = extType.GetMethods().Where(m => m.Name == "AllocateMultiHashMap").ToArray();
-t("BlobBuilderExtensions: has AllocateMultiHashMap overloads", allocMulti.Length >= 1);
-
-// Claims: ConstructPerfectHashMap
-var constructPerfect = extType.GetMethods().Where(m => m.Name == "ConstructPerfectHashMap").ToArray();
-t("BlobBuilderExtensions: has ConstructPerfectHashMap", constructPerfect.Length >= 1);
-
-// Claims: GetListPtr returns IntPtr
-var getListPtr = extType.GetMethod("GetListPtr");
-t("BlobBuilderExtensions: has GetListPtr", getListPtr != null);
-t("BlobBuilderExtensions: GetListPtr returns IntPtr", getListPtr?.ReturnType == typeof(IntPtr));
-
-// Claims: bucket ratio threshold constant = 16384
-// Can't read private const via reflection easily, but we verify the behavior through AllocateHashMap
-// The constant UseBucketCapacityRatioOfThreeUpTo = 16384 is private
-
-// Claims: has nested BlobBuilderInternal type
-var nestedTypes = extType.GetNestedTypes(BindingFlags.NonPublic);
-var hasInternal = nestedTypes.Any(nt => nt.Name.Contains("BlobBuilderInternal"));
-t("BlobBuilderExtensions: has BlobBuilderInternal nested type", hasInternal);
-
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

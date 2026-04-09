@@ -24,11 +24,24 @@
 
 ## Verified Data
 
-> [Run test snippet](../snippets/blob-system/BlobHashMapTests.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/blob-system/BlobHashMapTests.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
+> ```
+
+```
+BlobHashMapTests - Dependency Verification
+
+  BlobHashMap<int,int>
+    Kind: struct, 44 bytes
+    Fields: BlobHashMapData`2 Data
+    Methods: Boolean TryGetValue, Boolean ContainsKey, BlobHashMapEnumerator`2 GetEnumerator
+  BlobAssetReference<BlobHashMap<int,int>>: 8 bytes
+
+Verified: 3 checks, 0 failures
+```
 
 ## Source
 

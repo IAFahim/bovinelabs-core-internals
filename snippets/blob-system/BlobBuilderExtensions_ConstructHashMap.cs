@@ -1,48 +1,46 @@
 // Run: cat snippets/blob-system/BlobBuilderExtensions_ConstructHashMap.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
-// Verifies: docs/BlobBuilderExtensions_ConstructHashMap.md claims
+// Verifies: docs/BlobBuilderExtensions_ConstructHashMap.md
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
 var extType = typeof(BlobBuilderExtensions);
 
-// Claims: ConstructHashMap from NativeParallelHashMap
-var constructHM = extType.GetMethods().Where(m => m.Name == "ConstructHashMap").ToArray();
-t("ConstructHashMap: has overloads", constructHM.Length >= 2);
+sb.AppendLine("BlobBuilderExtensions — HashMap Construction Methods");
+sb.AppendLine();
 
-// Verify the first overload accepts NativeParallelHashMap
-var nativeOverload = constructHM.FirstOrDefault(m => {
-    var p = m.GetParameters();
-    return p.Any(pp => pp.ParameterType.Name.Contains("NativeParallelHashMap"));
-});
-t("ConstructHashMap: has NativeParallelHashMap overload", nativeOverload != null);
+string[] methodNames = { "ConstructHashMap", "AllocateHashMap", "ConstructMultiHashMap", "AllocateMultiHashMap", "ConstructPerfectHashMap", "AllocatePerfectHashMap" };
 
-// Verify the second overload accepts Dictionary
-var dictOverload = constructHM.FirstOrDefault(m => {
-    var p = m.GetParameters();
-    return p.Any(pp => pp.ParameterType.Name.Contains("Dictionary"));
-});
-t("ConstructHashMap: has Dictionary overload", dictOverload != null);
+foreach (var mn in methodNames)
+{
+    var overloads = extType.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+        .Where(m => m.Name == mn).ToArray();
+    sb.AppendLine($"  {mn}: {overloads.Length} overload(s)");
+    foreach (var m in overloads)
+    {
+        var ps = string.Join(", ", m.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+        sb.AppendLine($"    {m.ReturnType.Name} {mn}({ps})");
+    }
+    t($"{mn} has overloads", overloads.Length >= 1);
+}
+sb.AppendLine();
 
-// Claims: AllocateHashMap returns BlobBuilderHashMap
+// Verify return types
 var allocHM = extType.GetMethods().Where(m => m.Name == "AllocateHashMap").ToArray();
-t("ConstructHashMap: AllocateHashMap has overloads", allocHM.Length >= 2);
+if (allocHM.Length > 0)
+{
+    sb.AppendLine($"  AllocateHashMap returns: {allocHM[0].ReturnType.Name}");
+    t("AllocateHashMap returns BlobBuilderHashMap", allocHM[0].ReturnType.Name.StartsWith("BlobBuilderHashMap"));
+}
 
-// Verify return type is BlobBuilderHashMap
-var hmReturnType = allocHM[0].ReturnType;
-t("ConstructHashMap: AllocateHashMap returns BlobBuilderHashMap", hmReturnType.Name.StartsWith("BlobBuilderHashMap"));
+var allocMHM = extType.GetMethods().Where(m => m.Name == "AllocateMultiHashMap").ToArray();
+if (allocMHM.Length > 0)
+{
+    sb.AppendLine($"  AllocateMultiHashMap returns: {allocMHM[0].ReturnType.Name}");
+    t("AllocateMultiHashMap returns BlobBuilderMultiHashMap", allocMHM[0].ReturnType.Name.StartsWith("BlobBuilderMultiHashMap"));
+}
 
-// Claims: ConstructMultiHashMap exists
-var constructMulti = extType.GetMethods().Where(m => m.Name == "ConstructMultiHashMap").ToArray();
-t("ConstructHashMap: ConstructMultiHashMap exists", constructMulti.Length >= 1);
-
-// Claims: AllocateMultiHashMap returns BlobBuilderMultiHashMap
-var allocMulti = extType.GetMethods().Where(m => m.Name == "AllocateMultiHashMap").ToArray();
-t("ConstructHashMap: AllocateMultiHashMap has overloads", allocMulti.Length >= 1);
-t("ConstructHashMap: AllocateMultiHashMap returns BlobBuilderMultiHashMap", allocMulti[0].ReturnType.Name.StartsWith("BlobBuilderMultiHashMap"));
-
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

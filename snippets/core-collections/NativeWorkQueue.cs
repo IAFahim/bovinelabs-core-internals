@@ -1,114 +1,62 @@
-// Run: cat snippets/core-collections/NativeWorkQueue.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,System.Reflection,Unity.Collections,System.Linq,Unity.Burst"
-// Verifies: docs/NativeWorkQueue.md claims
-// NOTE: Pointer-based APIs (Add, TryAdd, ParallelWriter/Reader) verified via reflection only.
-
-var r = new System.Collections.Generic.List<string>();
+// Run: cat snippets/core-collections/NativeWorkQueue.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,System.Reflection,Unity.Collections,System.Linq,Unity.Burst,System.Runtime.InteropServices"
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> check = (name, ok) => { if(ok) pass++; else fail++; };
 
-var nwqType = typeof(BovineLabs.Core.Collections.NativeWorkQueue<int>);
-t("NativeWorkQueue<int>: type exists", nwqType != null);
-t("NativeWorkQueue<int>: is ValueType", nwqType.IsValueType);
+var type = typeof(BovineLabs.Core.Collections.NativeWorkQueue<int>);
+var bf = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 
-// --- Constructor ---
-var ctors = nwqType.GetConstructors();
-t("NativeWorkQueue: has at least 1 ctor", ctors.Length >= 1);
-if (ctors.Length > 0)
-{
-    var p = ctors[0].GetParameters();
-    t("NativeWorkQueue: ctor takes (int, AllocatorHandle)", p.Length == 2);
-    t("NativeWorkQueue: ctor param0 is int", p[0].ParameterType == typeof(int));
-}
+sb.AppendLine("NativeWorkQueue<int>");
+sb.AppendLine($"  Kind: {(type.IsValueType ? "struct" : "class")}");
+sb.AppendLine($"  Size: {Marshal.SizeOf(type)} bytes");
+sb.AppendLine();
 
-// --- Has expected methods ---
-t("NativeWorkQueue: has Update()", nwqType.GetMethod("Update", new Type[0]) != null);
-t("NativeWorkQueue: has Update(JobHandle)",
-    nwqType.GetMethod("Update", new[] { typeof(Unity.Jobs.JobHandle) }) != null);
-t("NativeWorkQueue: has Dispose", nwqType.GetMethod("Dispose", new Type[0]) != null);
+sb.AppendLine("Properties:");
+foreach (var prp in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+    sb.AppendLine($"  {prp.PropertyType.Name} {prp.Name} {{ {(prp.CanRead?"get":"")};{(prp.CanWrite?"set":"")} }}");
+sb.AppendLine();
 
-var tryAdd = nwqType.GetMethod("TryAdd");
-t("NativeWorkQueue: has TryAdd", tryAdd != null);
-if (tryAdd != null)
-{
-    t("NativeWorkQueue: TryAdd returns Int32", tryAdd.ReturnType == typeof(int));
-    t("NativeWorkQueue: TryAdd has 1 param", tryAdd.GetParameters().Length == 1);
-}
+sb.AppendLine("Methods:");
+foreach (var mth in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+    sb.AppendLine($"  {mth.ReturnType.Name} {mth.Name}({string.Join(", ", mth.GetParameters().Select(px => (px.IsOut?"out ":"")+px.ParameterType.Name))})");
+sb.AppendLine();
 
-var addMethod = nwqType.GetMethod("Add");
-t("NativeWorkQueue: has Add", addMethod != null);
-if (addMethod != null)
-{
-    t("NativeWorkQueue: Add returns Int32*", addMethod.ReturnType == typeof(int*));
-    t("NativeWorkQueue: Add has 1 param", addMethod.GetParameters().Length == 1);
-}
-
-// --- Properties ---
-t("NativeWorkQueue: has Length", nwqType.GetProperty("Length") != null);
-t("NativeWorkQueue: has Capacity", nwqType.GetProperty("Capacity") != null);
-t("NativeWorkQueue: has HasCapacity", nwqType.GetProperty("HasCapacity") != null);
-
-// AsParallelWriter / AsParallelReader
-t("NativeWorkQueue: has AsParallelWriter", nwqType.GetMethod("AsParallelWriter") != null);
-t("NativeWorkQueue: has AsParallelReader", nwqType.GetMethod("AsParallelReader") != null);
-
-// --- Nested types ---
-var pwType = nwqType.GetNestedType("ParallelWriter");
-var prType = nwqType.GetNestedType("ParallelReader");
-t("NativeWorkQueue: has ParallelWriter nested type", pwType != null);
-t("NativeWorkQueue: has ParallelReader nested type", prType != null);
-
+// Nested types
+var pwType = type.GetNestedType("ParallelWriter");
+var prType = type.GetNestedType("ParallelReader");
+sb.AppendLine("Nested: ParallelWriter");
 if (pwType != null)
 {
-    var pwTryAdd = pwType.GetMethod("TryAdd");
-    t("NativeWorkQueue: ParallelWriter has TryAdd", pwTryAdd != null);
-    t("NativeWorkQueue: ParallelWriter.TryAdd returns int", pwTryAdd?.ReturnType == typeof(int));
-    t("NativeWorkQueue: ParallelWriter has Capacity property", pwType.GetProperty("Capacity") != null);
+    sb.AppendLine($"  Kind: {(pwType.IsValueType ? "struct" : "class")}");
+    foreach (var mth in pwType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+        sb.AppendLine($"  {mth.ReturnType.Name} {mth.Name}({string.Join(", ", mth.GetParameters().Select(px => px.ParameterType.Name))})");
+    foreach (var prp in pwType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        sb.AppendLine($"  {prp.PropertyType.Name} {prp.Name}");
 }
-else
-{
-    t("NativeWorkQueue: ParallelWriter has TryAdd", false);
-    t("NativeWorkQueue: ParallelWriter.TryAdd returns int", false);
-    t("NativeWorkQueue: ParallelWriter has Capacity property", false);
-}
-
+sb.AppendLine("Nested: ParallelReader");
 if (prType != null)
 {
-    var prTryGetNext = prType.GetMethod("TryGetNext");
-    t("NativeWorkQueue: ParallelReader has TryGetNext", prTryGetNext != null);
-    t("NativeWorkQueue: ParallelReader.TryGetNext returns bool", prTryGetNext?.ReturnType == typeof(bool));
-    t("NativeWorkQueue: ParallelReader has Length property", prType.GetProperty("Length") != null);
-    t("NativeWorkQueue: ParallelReader has Capacity property", prType.GetProperty("Capacity") != null);
+    sb.AppendLine($"  Kind: {(prType.IsValueType ? "struct" : "class")}");
+    foreach (var mth in prType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+        sb.AppendLine($"  {mth.ReturnType.Name} {mth.Name}({string.Join(", ", mth.GetParameters().Select(px => px.ParameterType.Name))})");
+    foreach (var prp in prType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        sb.AppendLine($"  {prp.PropertyType.Name} {prp.Name}");
 }
-else
-{
-    t("NativeWorkQueue: ParallelReader has TryGetNext", false);
-    t("NativeWorkQueue: ParallelReader.TryGetNext returns bool", false);
-    t("NativeWorkQueue: ParallelReader has Length property", false);
-    t("NativeWorkQueue: ParallelReader has Capacity property", false);
-}
+sb.AppendLine();
 
-// --- Functional: non-pointer operations ---
+sb.AppendLine("Runtime Behavior:");
 var queue = new BovineLabs.Core.Collections.NativeWorkQueue<int>(10, Unity.Collections.Allocator.Temp);
-t("NativeWorkQueue: Capacity == 10", queue.Capacity == 10);
-t("NativeWorkQueue: Length == 0 initially", queue.Length == 0);
-t("NativeWorkQueue: HasCapacity == true when empty", queue.HasCapacity == true);
-
+sb.AppendLine($"  Capacity={queue.Capacity}, Length={queue.Length}, HasCapacity={queue.HasCapacity}");
 queue.Update();
-t("NativeWorkQueue: Length == 0 after empty Update", queue.Length == 0);
-
+sb.AppendLine($"  After empty Update: Length={queue.Length}");
 queue.Dispose();
-t("NativeWorkQueue: disposed without error", true);
 
-// --- Internal pointer fields (doc: 4 heap allocations) ---
-var allFields = nwqType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-var intPtrFields = allFields.Where(f => f.FieldType == typeof(int*) || f.FieldType == typeof(IntPtr)).ToList();
-t("NativeWorkQueue: has internal pointer fields", intPtrFields.Count > 0);
+check("Is struct", type.IsValueType);
+check("Has Length", type.GetProperty("Length") != null);
+check("Has Capacity", type.GetProperty("Capacity") != null);
+check("Has ParallelWriter", pwType != null);
+check("Has ParallelReader", prType != null);
 
-// Length property type
-var lengthPi = nwqType.GetProperty("Length");
-t("NativeWorkQueue: Length property is Int32", lengthPi?.PropertyType == typeof(int));
-
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

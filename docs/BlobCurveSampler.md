@@ -31,11 +31,32 @@
 
 ## Verified Data
 
-> [Run test snippet](../snippets/blob-system/BlobCurveSampler.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/blob-system/BlobCurveSampler.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
+> ```
+
+```
+BlobCurveSampler
+  Kind: struct, 24 bytes
+
+  Fields:
+    BlobAssetReference`1 Curve (public)
+    BlobCurveCache cache (private)
+
+  Properties:
+    Boolean IsCreated
+
+  Methods:
+    Single Evaluate(Single& time)
+    Single EvaluateIgnoreWrapMode(Single& time)
+    Single EvaluateWithoutCache(Single& time)
+    Single EvaluateIgnoreWrapModeWithoutCache(Single& time)
+
+Verified: 7 checks, 0 failures
+```
 
 ## Source
 

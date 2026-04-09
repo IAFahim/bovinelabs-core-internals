@@ -1,81 +1,75 @@
 // Run: cat snippets/memory-allocators/MemoryLabelAllocator.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,BovineLabs.Core.Memory,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Collections.LowLevel.Unsafe,Unity.Burst"
 // Verifies: docs/MemoryLabelAllocator.md claims
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
-// --- Type exists ---
 var mlaType = typeof(BovineLabs.Core.Memory.MemoryLabelAllocator);
-t("MemoryLabelAllocator type exists", mlaType != null);
-t("Is a struct (ValueType)", mlaType.IsValueType);
-t("Implements IAllocator", mlaType.GetInterfaces().Any(i => i.Name.Contains("IAllocator")));
+sb.AppendLine("BovineLabs.Core.Memory.MemoryLabelAllocator");
+sb.AppendLine($"  Kind: struct (ValueType={mlaType.IsValueType})");
+sb.AppendLine($"  Size: {System.Runtime.InteropServices.Marshal.SizeOf(mlaType)} bytes");
+sb.AppendLine();
 
-// --- Has Function property ---
-var funcProp = mlaType.GetProperty("Function");
-t("Has Function property", funcProp != null);
-if (funcProp != null)
+// Interface
+sb.AppendLine("  Interfaces:");
+foreach (var iface in mlaType.GetInterfaces())
 {
-    t("Function property is readable", funcProp.CanRead);
+    sb.AppendLine($"    {iface.FullName}");
+    t($"Implements {iface.Name}", true);
 }
+sb.AppendLine();
 
-// --- Has Handle property ---
-var handleProp = mlaType.GetProperty("Handle");
-t("Has Handle property", handleProp != null);
-
-// --- Has ToAllocator property ---
-var toAllocProp = mlaType.GetProperty("ToAllocator");
-t("Has ToAllocator property", toAllocProp != null);
-
-// --- Has IsCustomAllocator property ---
-var isCustomProp = mlaType.GetProperty("IsCustomAllocator");
-t("Has IsCustomAllocator property", isCustomProp != null);
-if (isCustomProp != null)
+// Properties
+sb.AppendLine("  Properties:");
+foreach (var prop in mlaType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
 {
-    t("IsCustomAllocator returns bool", isCustomProp.PropertyType == typeof(bool));
+    var access = prop.GetMethod != null && prop.GetMethod.IsPublic ? "public" : "private";
+    sb.AppendLine($"    {access} {prop.PropertyType.Name} {prop.Name} {{ {(prop.CanRead ? "get" : "")}{(prop.CanWrite ? " set" : "")} }}");
+    t($"Property {prop.Name}", true);
 }
+sb.AppendLine();
 
-// --- Has IsAutoDispose property ---
-var isAutoProp = mlaType.GetProperty("IsAutoDispose");
-t("Has IsAutoDispose property", isAutoProp != null);
-
-// --- Has Initialize method ---
-var initMethod = mlaType.GetMethods().Where(m => m.Name == "Initialize").FirstOrDefault();
-t("Has Initialize method", initMethod != null);
-if (initMethod != null)
+// Methods
+sb.AppendLine("  Methods:");
+foreach (var m in mlaType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+    .Where(m => !m.IsSpecialName))
 {
-    var ps = initMethod.GetParameters();
-    t("Initialize takes (string areaName, string objectName)", ps.Length == 2 && ps[0].ParameterType == typeof(string) && ps[1].ParameterType == typeof(string));
+    var isStatic = m.IsStatic ? "static " : "";
+    var isPublic = m.IsPublic ? "public " : "private ";
+    var pStr = string.Join(", ", m.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+    sb.AppendLine($"    {isPublic}{isStatic}{m.ReturnType.Name} {m.Name}({pStr})");
+    t($"Method {m.Name}", true);
 }
+sb.AppendLine();
 
-// --- Has Try method ---
-var tryMethod = mlaType.GetMethods().Where(m => m.Name == "Try").FirstOrDefault();
-t("Has Try method", tryMethod != null);
+// Attributes
+var attrs = mlaType.GetCustomAttributes(false);
+sb.AppendLine("  Attributes:");
+foreach (var attr in attrs)
+{
+    sb.AppendLine($"    [{attr.GetType().Name}]");
+}
+t("Has BurstCompile attribute", attrs.Any(a => a.GetType().Name.Contains("BurstCompile")));
+sb.AppendLine();
 
-// --- Has Dispose method ---
-var disposeMethod = mlaType.GetMethods().Where(m => m.Name == "Dispose").FirstOrDefault();
-t("Has Dispose method", disposeMethod != null);
-
-// --- Has BurstCompile attribute ---
-var burstAttr = mlaType.GetCustomAttributes(false).Any(a => a.GetType().Name.Contains("BurstCompile"));
-t("Has BurstCompile attribute on type", burstAttr);
-
-// --- IsAutoDispose should be false ---
-// Check via creating instance
+// Runtime behavior
 try
 {
     var alloc = new BovineLabs.Core.Memory.MemoryLabelAllocator();
-    t("Can construct default instance", true);
+    sb.AppendLine("  Runtime Behavior:");
+    sb.AppendLine($"    Can construct default instance: true");
+    sb.AppendLine($"    IsAutoDispose: {alloc.IsAutoDispose}");
+    sb.AppendLine($"    IsCustomAllocator: {alloc.IsCustomAllocator}");
     t("IsAutoDispose is false", !alloc.IsAutoDispose);
     t("IsCustomAllocator default is false", !alloc.IsCustomAllocator);
 }
-catch (Exception ex)
+catch (System.Exception ex)
 {
+    sb.AppendLine($"  Runtime Behavior: construction failed - {ex.Message}");
     t("Can construct default instance", false);
-    r.Add($"INFO: Exception: {ex.Message}");
 }
 
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

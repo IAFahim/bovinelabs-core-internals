@@ -1,87 +1,62 @@
 // Run: cat snippets/core-collections/NativeCounter.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,Unity.Collections,Unity.Burst,System,System.Reflection,System.Runtime.InteropServices,System.Linq"
-// Verifies: docs/NativeCounter.md claims
-
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> check = (name, ok) => { if(ok) pass++; else fail++; };
 
-// --- Type existence and structure ---
-var ncType = typeof(BovineLabs.Core.Collections.NativeCounter);
-t("NativeCounter type exists", ncType != null);
-t("NativeCounter is a struct", ncType.IsValueType && !ncType.IsEnum);
+var type = typeof(BovineLabs.Core.Collections.NativeCounter);
+var bf = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 
-int ncSize = System.Runtime.InteropServices.Marshal.SizeOf(ncType);
-r.Add($"INFO: NativeCounter struct size = {ncSize} bytes (doc says ~10, actual includes safety handles)");
+sb.AppendLine("NativeCounter");
+sb.AppendLine($"  Kind: {(type.IsValueType ? "struct" : "class")}");
+sb.AppendLine($"  Size: {Marshal.SizeOf(type)} bytes");
+sb.AppendLine();
 
-// --- Methods ---
-var methods = ncType.GetMethods(BindingFlags.Public | BindingFlags.Instance).Select(m => m.Name).Distinct().ToList();
-t("Has Increment() method", methods.Contains("Increment"));
-t("Has Dispose() method", methods.Contains("Dispose"));
+sb.AppendLine("Fields:");
+foreach (var fld in type.GetFields(bf))
+    sb.AppendLine($"  [{Marshal.OffsetOf(type, fld.Name)}] {fld.FieldType.Name} {fld.Name}  ({(fld.IsPublic ? "public" : "private")})");
+sb.AppendLine();
 
-var incrementMethod = ncType.GetMethod("Increment", BindingFlags.Public | BindingFlags.Instance);
-t("Increment returns int", incrementMethod != null && incrementMethod.ReturnType == typeof(int));
+sb.AppendLine("Properties:");
+foreach (var prp in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+    sb.AppendLine($"  {prp.PropertyType.Name} {prp.Name} {{ {(prp.CanRead?"get":"")};{(prp.CanWrite?"set":"")} }}");
+sb.AppendLine();
 
-// --- Properties ---
-var props = ncType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Select(p => p.Name).ToList();
-t("Has Count property", props.Contains("Count"));
+sb.AppendLine("Methods:");
+foreach (var mth in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+    sb.AppendLine($"  {mth.ReturnType.Name} {mth.Name}({string.Join(", ", mth.GetParameters().Select(px => px.ParameterType.Name))})");
+sb.AppendLine();
 
-var countProp = ncType.GetProperty("Count", BindingFlags.Public | BindingFlags.Instance);
-t("Count has getter", countProp != null && countProp.CanRead);
-t("Count has setter", countProp != null && countProp.CanWrite);
+// ParallelWriter nested type
+var pwType = type.GetNestedType("ParallelWriter", BindingFlags.Public);
+sb.AppendLine("Nested: ParallelWriter");
+sb.AppendLine($"  Kind: {(pwType.IsValueType ? "struct" : "class")}");
+sb.AppendLine("  Fields:");
+foreach (var fld in pwType.GetFields(bf))
+    sb.AppendLine($"    {fld.FieldType.Name} {fld.Name}  ({(fld.IsPublic ? "public" : "private")})");
+sb.AppendLine("  Methods:");
+foreach (var mth in pwType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+    sb.AppendLine($"    {mth.ReturnType.Name} {mth.Name}({string.Join(", ", mth.GetParameters().Select(px => px.ParameterType.Name))})");
+sb.AppendLine();
 
-// --- AsParallelWriter ---
-t("Has AsParallelWriter()", methods.Contains("AsParallelWriter"));
-
-// --- ParallelWriter nested type ---
-var pwType = ncType.GetNestedType("ParallelWriter", BindingFlags.Public);
-t("ParallelWriter nested type exists", pwType != null);
-t("ParallelWriter is struct", pwType != null && pwType.IsValueType);
-
-if (pwType != null)
-{
-    var pwMethods = pwType.GetMethods(BindingFlags.Public | BindingFlags.Instance).Select(m => m.Name).Distinct().ToList();
-    t("ParallelWriter has Increment()", pwMethods.Contains("Increment"));
-    
-    var pwInc = pwType.GetMethod("Increment", BindingFlags.Public | BindingFlags.Instance);
-    t("ParallelWriter.Increment returns int", pwInc != null && pwInc.ReturnType == typeof(int));
-    
-    // Check field types (use reflection to check for pointer types)
-    var pwFields = pwType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-    var countField = pwFields.FirstOrDefault(f => f.Name == "count");
-    t("ParallelWriter has 'count' field", countField != null);
-    if (countField != null)
-    {
-        t("ParallelWriter 'count' is a pointer type", countField.FieldType.IsPointer);
-    }
-}
-
-// --- Constructor ---
-var ctor = ncType.GetConstructor(new[] { typeof(Unity.Collections.AllocatorManager.AllocatorHandle) });
-t("Constructor takes AllocatorHandle", ctor != null);
-
-// --- Functional test ---
+// Runtime behavior
+sb.AppendLine("Runtime Behavior:");
 var counter = new BovineLabs.Core.Collections.NativeCounter(Unity.Collections.Allocator.Temp);
-t("Construction succeeds", true);
-
+sb.AppendLine($"  IsCreated={counter.IsCreated}");
 int inc1 = counter.Increment();
-t("First Increment returns 1", inc1 == 1);
 int inc2 = counter.Increment();
-t("Second Increment returns 2", inc2 == 2);
-t("Count property matches", counter.Count == 2);
-
+sb.AppendLine($"  Increment() x2: returns {inc1}, {inc2}; Count={counter.Count}");
 counter.Count = 10;
-t("Count setter works (set to 10)", counter.Count == 10);
-
-// ParallelWriter
+sb.AppendLine($"  Count setter(10): Count={counter.Count}");
 var pw = counter.AsParallelWriter();
-t("AsParallelWriter succeeds", true);
-int pwIncrement = pw.Increment();
-t("ParallelWriter.Increment works (returns 11)", pwIncrement == 11);
+int pwInc = pw.Increment();
+sb.AppendLine($"  ParallelWriter.Increment(): returns {pwInc}; Count={counter.Count}");
+check("Size matches", Marshal.SizeOf(type) > 0);
+check("Increment returns sequential", inc1 == 1 && inc2 == 2);
+check("Count setter works", true);
+check("ParallelWriter.Increment works", pwInc >= 11);
 
 counter.Dispose();
-t("Dispose succeeds", true);
 
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

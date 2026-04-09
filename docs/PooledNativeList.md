@@ -180,11 +180,57 @@ USE CASE
 
 ## Verified Data
 
-> [Run test snippet](../snippets/memory-allocators/PooledNativeList.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/memory-allocators/PooledNativeList.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,BovineLabs.Core.Memory,BovineLabs.Core.Utility,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Collections.LowLevel.Unsafe,Unity.Jobs.LowLevel.Unsafe"
+> ```
+
+```
+PooledNativeList<T>
+  Kind: struct
+  Size: 48 bytes
+  Generic params: T (unmanaged)
+  Interfaces:
+    System.IDisposable
+
+  Fields:
+    [0] NativeList`1 list
+    [32] AtomicSafetyHandle oldHandle
+
+  Properties:
+    NativeList`1 List (read=True, write=False)
+
+  Methods:
+    PooledNativeList`1 Create()
+    static PooledNativeList`1 Make()
+    Void Dispose()
+
+PooledNativeList (inner non-generic)
+  Kind: class
+
+  Static fields:
+    Int32 MaxPoolSizePerThread = 8
+    SharedStatic`1 Pool = (non-literal)
+
+  Nested types:
+    Data (struct)
+      AllocatorHandle Allocator
+      ThreadData* buffer
+    ThreadData (struct)
+      UnsafeList`1 ThreadList
+
+Runtime Behavior:
+  Make() -> List.IsCreated=True, Length=0, Capacity=16
+  After Add(42,99): Length=2, [0]=42, [1]=99
+  Dispose() completed (capacity was 16)
+  Second Make() -> IsCreated=True, Capacity=16
+    Pool reuse: Capacity=16 >= disposed capacity=16: True
+  Third Make() -> IsCreated=True, Capacity=16
+
+Verified: 22 checks, 0 failures
+```
 
 ## Source
 

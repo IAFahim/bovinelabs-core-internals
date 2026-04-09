@@ -427,11 +427,53 @@ compact if needed. Holes do not affect correctness, only waste space.
 
 ## Verified Data
 
-> [Run test snippet](../snippets/dynamic-buffers/DynamicMultiHashMap.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/dynamic-buffers/DynamicMultiHashMap.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Iterators,BovineLabs.Core.Extensions,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Entities"
+> ```
+
+```
+PASS: DynamicMultiHashMap: type exists
+PASS: DynamicMultiHashMap: is ValueType
+PASS: DynamicMultiHashMap: implements IEnumerable
+PASS: DynamicMultiHashMap: has Count property
+PASS: DynamicMultiHashMap: has Capacity property
+PASS: DynamicMultiHashMap: has IsCreated property
+PASS: DynamicMultiHashMap: has IsEmpty property
+PASS: DynamicMultiHashMap: has Add(TKey, TValue)
+PASS: DynamicMultiHashMap: has Remove(TKey)
+PASS: DynamicMultiHashMap: has Clear()
+PASS: DynamicMultiHashMap: has TryGetFirstValue
+PASS: DynamicMultiHashMap: has TryGetNextValue
+PASS: DynamicMultiHashMap: has ContainsKey
+PASS: DynamicMultiHashMap: has Flatten()
+PASS: DynamicMultiHashMap: has CountValuesForKey
+PASS: DynamicHashMapHelper: type exists
+PASS: DynamicHashMapHelper: is ValueType
+PASS: DynamicHashMapHelper: has StructLayout(LayoutKind.Sequential)
+PASS: DynamicHashMapHelper: has 11 fields
+PASS: DynamicHashMapHelper: has ValuesOffset
+PASS: DynamicHashMapHelper: has KeysOffset
+PASS: DynamicHashMapHelper: has NextOffset
+PASS: DynamicHashMapHelper: has BucketsOffset
+PASS: DynamicHashMapHelper: has Count
+PASS: DynamicHashMapHelper: has Capacity
+PASS: DynamicHashMapHelper: has BucketCapacityMask
+PASS: DynamicHashMapHelper: has Log2MinGrowth
+PASS: DynamicHashMapHelper: has AllocatedIndex
+PASS: DynamicHashMapHelper: has FirstFreeIdx
+PASS: DynamicHashMapHelper: has SizeOfTValue
+PASS: DynamicHashMapHelper: all 11 fields are int
+PASS: DynamicHashMapHelper: Marshal.SizeOf == 44 bytes
+PASS: IDynamicMultiHashMap: interface exists
+PASS: IDynamicMultiHashMap: is interface
+PASS: IDynamicMultiHashMap: implements IBufferElementData
+PASS: IDynamicMultiHashMap: has Value property returning byte
+
+=== 36 PASSED, 0 FAILED ===
+```
 
 ## Source
 

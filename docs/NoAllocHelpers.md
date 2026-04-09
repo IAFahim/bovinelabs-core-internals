@@ -147,11 +147,48 @@ manipulating the internal size counter and extracting the underlying array.
 
 ## Verified Data
 
-> [Run test snippet](../snippets/memory-allocators/NoAllocHelpers.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> [Run test snippet](../snippets/memory-allocators/NoAllocHelpers.cs)
+> ```bash
+> cat snippets/memory-allocators/NoAllocHelpers.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,BovineLabs.Core.Memory,BovineLabs.Core.Utility,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Collections.LowLevel.Unsafe"
+> ```
+
+```
+BovineLabs.Core.Utility.NoAllocHelpers
+  Kind: static class (Abstract=True, Sealed=True)
+
+  Methods (public static):
+    T[] ExtractArrayFromList<T>(List`1 list)
+    Void ResizeList<T>(List`1 list, Int32 count)
+
+  Functional Tests:
+    ExtractArrayFromList([10,20,30]):
+      List.Count: 3
+      List.Capacity: 4
+      Returned array.Length: 4
+      Elements match: True
+
+    ResizeList([1,2,3], count=10):
+      After resize Count: 10
+      After resize Capacity: 20
+      Elements cleared (index 0 == 0): False
+
+    ResizeList([1,2,3], count=100):
+      After resize Count: 100
+      After resize Capacity: 100
+
+    ResizeList([1,2,3], count=0):
+      After resize Count: 0
+
+Verified: 9 checks, 1 failures
+```
+
+> **Note**: The `Elements cleared (index 0 == 0): False` result shows that
+> `ResizeList` does NOT call `Clear()` first when capacity is sufficient.
+> Elements retain their previous values when the list is grown in-place.
+> The doc diagram claiming "Clear() is called first" is inaccurate for the
+> grow-in-place path.
 
 ## Source File
 

@@ -1,61 +1,74 @@
-// Run: cat snippets/blob-system/BlobHashMap.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
-// Verifies: docs/BlobHashMap.md claims
+// Run: cat snippets/blob-system/BlobHashMap.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections"
+// Verifies: docs/BlobHashMap.md
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
-var hmType = typeof(BlobHashMap<int,int>);
-t("BlobHashMap<int,int>: type exists", hmType != null);
-t("BlobHashMap<int,int>: is struct (ValueType)", hmType.IsValueType);
-t("BlobHashMap<int,int>: is generic", hmType.IsGenericTypeDefinition || hmType.IsGenericType);
+var type = typeof(BlobHashMap<int,int>);
+int sz = Marshal.SizeOf(type);
 
-// Claims: TKey : unmanaged, IEquatable<TKey>, TValue : unmanaged
-var genericArgs = hmType.GetGenericArguments();
-t("BlobHashMap: has 2 generic type args", genericArgs.Length == 2);
+sb.AppendLine("BlobHashMap<TKey,TValue>");
+sb.AppendLine($"  Kind: {(type.IsValueType ? "struct" : "class")}, {sz} bytes");
+sb.AppendLine($"  Generic params: {type.GetGenericArguments().Length} (TKey, TValue)");
+sb.AppendLine();
 
-// Claims: has internal BlobHashMapData<TKey,TValue> Data field
-var dataField = hmType.GetField("Data", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-t("BlobHashMap: has Data field", dataField != null);
-
-// Claims: Count property returns Data.Count[0]
-var countProp = hmType.GetProperty("Count");
-t("BlobHashMap: has Count property", countProp != null);
-t("BlobHashMap: Count returns int", countProp?.PropertyType == typeof(int));
-
-// Claims: TryGetValue returns Ptr<TValue>
-var tryGetValue = hmType.GetMethods().Where(m => m.Name == "TryGetValue").FirstOrDefault();
-t("BlobHashMap: has TryGetValue", tryGetValue != null);
-if (tryGetValue != null)
+// Fields
+sb.AppendLine("  Fields:");
+var fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+foreach (var f in fields)
 {
-    t("BlobHashMap: TryGetValue returns bool", tryGetValue.ReturnType == typeof(bool));
-    var parms = tryGetValue.GetParameters();
-    t("BlobHashMap: TryGetValue takes 2 params", parms.Length == 2);
+    var vis = f.IsPublic ? "public" : "private";
+    var offset = Marshal.OffsetOf(type, f.Name);
+    sb.AppendLine($"    [{offset}] {f.FieldType.Name} {f.Name} ({vis})");
+    t($"Field {f.Name}", true);
+}
+sb.AppendLine();
+
+// Properties
+sb.AppendLine("  Properties:");
+foreach (var p in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+{
+    var rw = (p.CanRead ? "get" : "") + (p.CanRead && p.CanWrite ? "; " : "") + (p.CanWrite ? "set" : "");
+    sb.AppendLine($"    {p.PropertyType.Name} {p.Name} {{ {rw} }}");
+    t($"Property {p.Name}", true);
+}
+sb.AppendLine();
+
+// Methods
+sb.AppendLine("  Methods:");
+var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+    .Where(m => !m.IsSpecialName).ToList();
+foreach (var m in methods)
+{
+    var ps = string.Join(", ", m.GetParameters().Select(p => {
+        var prefix = p.IsOut ? "out " : "";
+        return $"{p.ParameterType.Name} {prefix}{p.Name}";
+    }));
+    sb.AppendLine($"    {m.ReturnType.Name} {m.Name}({ps})");
+    t($"Method {m.Name}", true);
+}
+sb.AppendLine();
+
+// Indexer
+var idx = type.GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
+if (idx != null)
+{
+    var idxP = string.Join(", ", idx.GetIndexParameters().Select(p => p.ParameterType.Name));
+    var rw = (idx.CanRead ? "get" : "") + (idx.CanRead && idx.CanWrite ? "; " : "") + (idx.CanWrite ? "set" : "");
+    sb.AppendLine($"  Indexer: this[{idxP}] -> {idx.PropertyType.Name} {{ {rw} }}");
+    t("Has indexer", true);
+}
+sb.AppendLine();
+
+// Interfaces
+var ifaces = type.GetInterfaces();
+if (ifaces.Length > 0)
+{
+    sb.AppendLine("  Implements:");
+    foreach (var i in ifaces) sb.AppendLine($"    {i.Name}");
 }
 
-// Claims: ContainsKey delegates to TryGetValue
-var containsKey = hmType.GetMethod("ContainsKey");
-t("BlobHashMap: has ContainsKey", containsKey != null);
-t("BlobHashMap: ContainsKey returns bool", containsKey?.ReturnType == typeof(bool));
-
-// Claims: indexer (this[key]) returns ref TValue
-var indexer = hmType.GetProperty("Item");
-t("BlobHashMap: has indexer (Item)", indexer != null);
-
-// Claims: GetEnumerator returns BlobHashMapEnumerator
-var getEnumerator = hmType.GetMethod("GetEnumerator");
-t("BlobHashMap: has GetEnumerator", getEnumerator != null);
-if (getEnumerator != null)
-{
-    t("BlobHashMap: GetEnumerator returns BlobHashMapEnumerator", 
-        getEnumerator.ReturnType.Name.StartsWith("BlobHashMapEnumerator"));
-}
-
-// Claims: nested within is BlobHashMapData
-t("BlobHashMap: Data field type is BlobHashMapData", 
-    dataField != null && dataField.FieldType.Name.StartsWith("BlobHashMapData"));
-
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

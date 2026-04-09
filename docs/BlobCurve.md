@@ -325,11 +325,45 @@ SIMD-friendly:      Yes (float4 dot product, float2 reads)
 
 ## Verified Data
 
-> [Run test snippet](../snippets/blob-system/BlobCurve.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/blob-system/BlobCurve.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
+> ```
+
+```
+BlobCurve
+  Kind: struct, 32 bytes
+
+  Implements:
+    IBlobCurve`1
+
+  Fields:
+    BlobCurveHeader header (private)
+    BlobArray`1 segments (private)
+
+  Properties:
+    BlobCurveHeader& Header { get }
+    BlobArray`1& Times { get }
+    WrapMode WrapModePrev { get }
+    WrapMode WrapModePost { get }
+    Int32 SegmentCount { get }
+    Single StartTime { get }
+    Single EndTime { get }
+    Single Duration { get }
+    Boolean IsCreated { get }
+
+  Methods:
+    static BlobAssetReference`1 Create(AnimationCurve curve, Allocator allocator)
+    static Void Construct(BlobBuilder& builder, BlobCurve& blobCurve, AnimationCurve curve)
+    Single EvaluateIgnoreWrapMode(Single& time, BlobCurveCache& cache)
+    Single EvaluateIgnoreWrapMode(Single& time)
+    Single Evaluate(Single& time, BlobCurveCache& cache)
+    Single Evaluate(Single& time)
+
+Verified: 19 checks, 0 failures
+```
 
 ## Source
 

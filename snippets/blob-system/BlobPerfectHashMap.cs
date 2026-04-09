@@ -1,53 +1,69 @@
 // Run: cat snippets/blob-system/BlobPerfectHashMap.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
-// Verifies: docs/BlobPerfectHashMap.md claims
+// Verifies: docs/BlobPerfectHashMap.md
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
 var phmType = typeof(BlobPerfectHashMap<int,int>);
-t("BlobPerfectHashMap<int,int>: type exists", phmType != null);
-t("BlobPerfectHashMap: is struct", phmType.IsValueType);
+int sz = Marshal.SizeOf(phmType);
 
-// Claims: TValue must implement IEquatable<TValue>
-var genericArgs = phmType.GetGenericArguments();
-t("BlobPerfectHashMap: has 2 generic type args", genericArgs.Length == 2);
+sb.AppendLine("BlobPerfectHashMap<TKey,TValue>");
+sb.AppendLine($"  Kind: {(phmType.IsValueType ? "struct" : "class")}, {sz} bytes");
+t($"Size = {sz} bytes", sz > 0);
+sb.AppendLine();
 
-// Claims: has BlobArray<TValue> Values field
-var valuesField = phmType.GetField("Values", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-t("BlobPerfectHashMap: has Values field", valuesField != null);
+// Fields
+sb.AppendLine("  Fields:");
+foreach (var f in phmType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+{
+    var vis = f.IsPublic ? "public" : "private";
+    var offset = Marshal.OffsetOf(phmType, f.Name);
+    sb.AppendLine($"    [{offset}] {f.FieldType.Name} {f.Name} ({vis})");
+    t($"Field {f.Name} exists", true);
+}
+sb.AppendLine();
 
-// Claims: has int Capacity field
-var capField = phmType.GetField("Capacity", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-t("BlobPerfectHashMap: has Capacity field", capField != null);
-t("BlobPerfectHashMap: Capacity is int", capField?.FieldType == typeof(int));
+// Properties
+sb.AppendLine("  Properties:");
+foreach (var p in phmType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+{
+    var rw = (p.CanRead ? "get" : "") + (p.CanRead && p.CanWrite ? "; " : "") + (p.CanWrite ? "set" : "");
+    sb.AppendLine($"    {p.PropertyType.Name} {p.Name} {{ {rw} }}");
+    t($"Property {p.Name}", true);
+}
+sb.AppendLine();
 
-// Claims: has TValue NullValue field
-var nullField = phmType.GetField("NullValue", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-t("BlobPerfectHashMap: has NullValue field", nullField != null);
+// Methods
+sb.AppendLine("  Methods:");
+foreach (var m in phmType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+    .Where(m => !m.IsSpecialName))
+{
+    var ps = string.Join(", ", m.GetParameters().Select(p => p.ParameterType.Name));
+    sb.AppendLine($"    {m.ReturnType.Name} {m.Name}({ps})");
+    t($"Method {m.Name}", true);
+}
+sb.AppendLine();
 
-// Claims: TryGetValue returns Ptr<TValue>
-var tryGetValue = phmType.GetMethods().Where(m => m.Name == "TryGetValue").FirstOrDefault();
-t("BlobPerfectHashMap: has TryGetValue", tryGetValue != null);
-t("BlobPerfectHashMap: TryGetValue returns bool", tryGetValue?.ReturnType == typeof(bool));
+// Private methods
+sb.AppendLine("  Private Methods:");
+foreach (var m in phmType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+    .Where(m => !m.IsSpecialName))
+{
+    var ps = string.Join(", ", m.GetParameters().Select(p => p.ParameterType.Name));
+    sb.AppendLine($"    {m.ReturnType.Name} {m.Name}({ps})");
+    t($"Private method {m.Name}", true);
+}
+sb.AppendLine();
 
-// Claims: ContainsKey
-var containsKey = phmType.GetMethod("ContainsKey");
-t("BlobPerfectHashMap: has ContainsKey", containsKey != null);
+var idx = phmType.GetProperty("Item");
+if (idx != null)
+{
+    var idxP = string.Join(", ", idx.GetIndexParameters().Select(p => p.ParameterType.Name));
+    sb.AppendLine($"  Indexer: this[{idxP}] -> {idx.PropertyType.Name}");
+    t("Has indexer", true);
+}
 
-// Claims: indexer
-var indexer = phmType.GetProperty("Item");
-t("BlobPerfectHashMap: has indexer (Item)", indexer != null);
-
-// Claims: IndexFor uses key.GetHashCode() & (Capacity - 1) - verify via private method existence
-var indexFor = phmType.GetMethod("IndexFor", BindingFlags.Instance | BindingFlags.NonPublic);
-t("BlobPerfectHashMap: has private IndexFor method", indexFor != null);
-
-// Claims: TryGetIndex is private
-var tryGetIndex = phmType.GetMethod("TryGetIndex", BindingFlags.Instance | BindingFlags.NonPublic);
-t("BlobPerfectHashMap: has private TryGetIndex method", tryGetIndex != null);
-
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

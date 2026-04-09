@@ -20,11 +20,27 @@
 
 ## Verified Data
 
-> [Run test snippet](../snippets/blob-system/EntityBlobBakedData.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/blob-system/EntityBlobBakedData.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
+> ```
+
+```
+EntityBlobBakedData
+  Namespace: BovineLabs.Core.Authoring.Blobs
+  Kind: struct, 24 bytes
+  Implements: IQueryTypeParameter, IComponentData
+  Attributes: BakingTypeAttribute
+
+  Fields:
+    Entity Target (public)
+    Int32 Key (public)
+    BlobAssetReference`1 Blob (public)
+
+Verified: 5 checks, 0 failures
+```
 
 ## Source
 

@@ -126,11 +126,63 @@
 
 ## Verified Data
 
-> [Run test snippet](../snippets/dynamic-buffers/ArchetypeChunk_GetDynamicBufferAccessor.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/dynamic-buffers/ArchetypeChunk_GetDynamicBufferAccessor.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Extensions,BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Entities"
+> ```
+
+```
+ArchetypeChunkExtensions
+  Kind: static class
+
+Methods:
+  GetDynamicBufferAccessor(this ArchetypeChunk, ref DynamicComponentTypeHandle) -> DynamicBufferAccessor
+    Param0: ArchetypeChunk
+    Param1: DynamicComponentTypeHandle& (by-ref=True)
+
+DynamicBufferAccessor
+  Kind: struct
+  Size: 64 bytes
+  Fields:
+    [0] Byte* pointer
+    [8] Int32 internalCapacity
+    [12] Int32 stride
+    [16] AtomicSafetyHandle safety0
+    [32] AtomicSafetyHandle arrayInvalidationSafety
+    [48] Boolean isReadOnly
+    [52] Int32 <Length>k__BackingField
+    [56] Int32 <ElementSize>k__BackingField
+    [60] Int32 <ElementAlign>k__BackingField
+  Properties:
+    Int32 Length (canRead=True, canWrite=False)
+    Int32 ElementSize (canRead=True, canWrite=False)
+    Int32 ElementAlign (canRead=True, canWrite=False)
+  Methods:
+    DynamicBuffer`1 GetBuffer(Int32)
+    UntypedDynamicBuffer GetUntypedBuffer(Int32)
+    Void CheckWriteAccess()
+    Void AssertIndexInRange(Int32)
+
+UnsafeUntypedDynamicBufferAccessor
+  Kind: struct
+  Size: 24 bytes
+  Fields:
+    [0] Byte* pointer
+    [8] Int32 internalCapacity
+    [12] Int32 stride
+    [16] Int32 <Length>k__BackingField
+    [20] Int32 <ElementSize>k__BackingField
+  Properties:
+    Int32 Length
+    Int32 ElementSize
+  Methods:
+    UnsafeUntypedDynamicBuffer GetUntypedBuffer(Int32)
+    Void AssertIndexInRange(Int32)
+
+Verified: 9 checks, 0 failures
+```
 
 ## Source
 

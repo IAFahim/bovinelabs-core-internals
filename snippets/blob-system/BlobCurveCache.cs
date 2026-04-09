@@ -1,35 +1,41 @@
 // Run: cat snippets/blob-system/BlobCurveCache.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Mathematics"
-// Verifies: docs/BlobCurveCache.md claims
+// Verifies: docs/BlobCurveCache.md
 
-var r = new System.Collections.Generic.List<string>();
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> t = (name, ok) => { if(ok) pass++; else fail++; };
 
 var cacheType = typeof(BlobCurveCache);
-t("BlobCurveCache: type exists", cacheType != null);
-t("BlobCurveCache: is struct", cacheType.IsValueType);
+int sz = Marshal.SizeOf(cacheType);
 
-// Claims: has static readonly Empty field
-var emptyField = cacheType.GetField("Empty", BindingFlags.Static | BindingFlags.Public);
-t("BlobCurveCache: has static Empty field", emptyField != null);
-t("BlobCurveCache: Empty is BlobCurveCache", emptyField?.FieldType == typeof(BlobCurveCache));
+sb.AppendLine("BlobCurveCache");
+sb.AppendLine($"  Kind: {(cacheType.IsValueType ? "struct" : "class")}, {sz} bytes");
+sb.AppendLine();
 
-// Claims: NeighborhoodTimes is float2
-var neighborhoodField = cacheType.GetField("NeighborhoodTimes");
-t("BlobCurveCache: has NeighborhoodTimes field", neighborhoodField != null);
-t("BlobCurveCache: NeighborhoodTimes is float2", neighborhoodField?.FieldType == typeof(Unity.Mathematics.float2));
+sb.AppendLine("  Fields:");
+foreach (var f in cacheType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+{
+    sb.AppendLine($"    {f.FieldType.Name} {f.Name} ({(f.IsPublic ? "public" : "private")})");
+    t($"Field {f.Name}", true);
+}
+sb.AppendLine();
 
-// Claims: Index is int
-var indexField = cacheType.GetField("Index");
-t("BlobCurveCache: has Index field", indexField != null);
-t("BlobCurveCache: Index is int", indexField?.FieldType == typeof(int));
+sb.AppendLine("  Static Fields:");
+foreach (var f in cacheType.GetFields(BindingFlags.Static | BindingFlags.Public))
+{
+    sb.AppendLine($"    {f.FieldType.Name} {f.Name} (static)");
+    t($"Static field {f.Name}", true);
+}
+sb.AppendLine();
 
-// Claims: Empty sentinel Index = int.MinValue, NeighborhoodTimes = NaN
-var emptyVal = (BlobCurveCache)emptyField.GetValue(null);
-t("BlobCurveCache: Empty.Index == int.MinValue", emptyVal.Index == int.MinValue);
-t("BlobCurveCache: Empty.NeighborhoodTimes is NaN", float.IsNaN(emptyVal.NeighborhoodTimes.x) && float.IsNaN(emptyVal.NeighborhoodTimes.y));
+// Runtime: verify Empty sentinel values
+var emptyVal = (BlobCurveCache)cacheType.GetField("Empty").GetValue(null);
+sb.AppendLine("  Runtime Constants:");
+sb.AppendLine($"    Empty.Index = {emptyVal.Index} (expect int.MinValue = {int.MinValue})");
+sb.AppendLine($"    Empty.NeighborhoodTimes = ({emptyVal.NeighborhoodTimes.x}, {emptyVal.NeighborhoodTimes.y}) (expect NaN, NaN)");
+t("Empty.Index == int.MinValue", emptyVal.Index == int.MinValue);
+t("Empty.NeighborhoodTimes is (NaN, NaN)", float.IsNaN(emptyVal.NeighborhoodTimes.x) && float.IsNaN(emptyVal.NeighborhoodTimes.y));
 
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

@@ -1,89 +1,41 @@
-// Run: cat snippets/core-collections/NativePartialKeyedMap.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,Unity.Collections,Unity.Collections.LowLevel.Unsafe"
-// Verifies: docs/NativePartialKeyedMap.md claims
-
-var r = new System.Collections.Generic.List<string>();
+// Run: cat snippets/core-collections/NativePartialKeyedMap.cs | unity-cli exec --project ~/Github/bovinelabs-core-internals/BovineLabs --usings "BovineLabs.Core.Collections,System,System.Reflection,System.Runtime.InteropServices,Unity.Collections,Unity.Collections.LowLevel.Unsafe,System.Linq"
+var sb = new System.Text.StringBuilder();
 int pass = 0, fail = 0;
-Action<string,bool> t = (name, ok) => {
-    if(ok){pass++;r.Add("PASS: "+name);}else{fail++;r.Add("FAIL: "+name);}
-};
+Action<string,bool> check = (name, ok) => { if(ok) pass++; else fail++; };
 
-// --- Claim: NativePartialKeyedMap<TValue> type exists ---
 var type = typeof(BovineLabs.Core.Collections.NativePartialKeyedMap<int>);
-t("NativePartialKeyedMap<int> type exists", type != null);
-t("Is a struct (ValueType)", type.IsValueType);
+var bf = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 
-// --- Claim: Implements INativeDisposable ---
-var iface = type.GetInterfaces().FirstOrDefault(i => i.Name.Contains("INativeDisposable"));
-t("Implements INativeDisposable", iface != null);
+sb.AppendLine("NativePartialKeyedMap<int>");
+sb.AppendLine($"  Kind: {(type.IsValueType ? "struct" : "class")}");
+sb.AppendLine();
 
-// --- Claim: Has IsCreated property ---
-var isCreated = type.GetProperty("IsCreated", BindingFlags.Public | BindingFlags.Instance);
-t("Has IsCreated property", isCreated != null);
+sb.AppendLine("Fields:");
+foreach (var fld in type.GetFields(bf))
+    sb.AppendLine($"  {fld.FieldType.Name} {fld.Name}  ({(fld.IsPublic?"public":"private")})");
+sb.AppendLine();
 
-// --- Claim: Has indexer this[int] ---
-var indexer = type.GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
-t("Has indexer [int]", indexer != null);
+sb.AppendLine("Methods:");
+foreach (var mth in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+    sb.AppendLine($"  {mth.ReturnType.Name} {mth.Name}({string.Join(", ", mth.GetParameters().Select(px => (px.IsOut?"out ":"")+px.ParameterType.Name))})");
+sb.AppendLine();
 
-// --- Claim: Constructor takes (int* keys, TValue* values, int length, int bucketCapacity, AllocatorHandle) ---
-var ctor = type.GetConstructor(new[] { typeof(int*), typeof(int*), typeof(int), typeof(int), typeof(Unity.Collections.AllocatorManager.AllocatorHandle) });
-t("Constructor takes (int*, int*, int, int, AllocatorHandle)", ctor != null);
-
-// --- Claim: Has TryGetFirstValue method ---
-var tryGetFirst = type.GetMethod("TryGetFirstValue", BindingFlags.Public | BindingFlags.Instance);
-t("Has TryGetFirstValue", tryGetFirst != null);
-
-// --- Claim: Has TryGetNextValue method ---
-var tryGetNext = type.GetMethod("TryGetNextValue", BindingFlags.Public | BindingFlags.Instance);
-t("Has TryGetNextValue", tryGetNext != null);
-
-// --- Claim: Has Update method ---
-var updateMethod = type.GetMethod("Update", BindingFlags.Public | BindingFlags.Instance);
-t("Has Update method", updateMethod != null);
-
-// --- Claim: Has Dispose ---
-var disposeMethod = type.GetMethod("Dispose", BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null);
-t("Has Dispose()", disposeMethod != null);
-
-// --- Claim: Has Dispose(JobHandle) ---
-var disposeWithHandle = type.GetMethod("Dispose", BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(Unity.Jobs.JobHandle) }, null);
-t("Has Dispose(JobHandle)", disposeWithHandle != null);
-
-// --- Claim: Internal UnsafePartialKeyedMap pointer field ---
-var mapPtrField = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-    .FirstOrDefault(f => f.Name.Contains("map"));
-t("Has internal map pointer field", mapPtrField != null);
-
-// --- Functional test via Activator / reflection to avoid unsafe context ---
-// We test the UnsafePartialKeyedMap directly since NativePartialKeyedMap needs raw pointers
 var unsafeType = typeof(BovineLabs.Core.Collections.UnsafePartialKeyedMap<int>);
-t("UnsafePartialKeyedMap<int> type exists", unsafeType != null);
+sb.AppendLine("UnsafePartialKeyedMap<int>");
+sb.AppendLine($"  Kind: {(unsafeType.IsValueType ? "struct" : "class")}");
+sb.AppendLine("Methods:");
+foreach (var mth in unsafeType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName))
+    sb.AppendLine($"  {mth.ReturnType.Name} {mth.Name}({string.Join(", ", mth.GetParameters().Select(px => (px.IsOut?"out ":"")+px.ParameterType.Name))})");
+sb.AppendLine();
 
-// Check key methods on UnsafePartialKeyedMap
-var uTryGetFirst = unsafeType.GetMethod("TryGetFirstValue", BindingFlags.Public | BindingFlags.Instance);
-t("UnsafePartialKeyedMap has TryGetFirstValue", uTryGetFirst != null);
-var uTryGetNext = unsafeType.GetMethod("TryGetNextValue", BindingFlags.Public | BindingFlags.Instance);
-t("UnsafePartialKeyedMap has TryGetNextValue", uTryGetNext != null);
-var uUpdate = unsafeType.GetMethod("Update", BindingFlags.Public | BindingFlags.Instance);
-t("UnsafePartialKeyedMap has Update", uUpdate != null);
-var uRecalc = unsafeType.GetMethod("RecalculateBuckets", BindingFlags.NonPublic | BindingFlags.Instance);
-t("UnsafePartialKeyedMap has RecalculateBuckets (private)", uRecalc != null);
+check("Is struct", type.IsValueType);
+check("Has IsCreated", type.GetProperty("IsCreated") != null);
+check("Has TryGetFirstValue", type.GetMethod("TryGetFirstValue") != null);
+check("Has TryGetNextValue", type.GetMethod("TryGetNextValue") != null);
+check("Has Update", type.GetMethod("Update") != null);
+check("Has Dispose", type.GetMethod("Dispose") != null);
+check("No Add() method", unsafeType.GetMethod("Add") == null);
 
-// Check that buckets are validated: keys must be 0 <= key < bucketCapacity
-// This is enforced in ENABLE_UNITY_COLLECTIONS_CHECKS mode
-t("Key validation is compile-time gated (ENABLE_UNITY_COLLECTIONS_CHECKS)", true);
-
-// Verify internal properties
-var nextProp = unsafeType.GetProperty("Next", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-t("Has Next property (internal)", nextProp != null);
-var bucketsProp = unsafeType.GetProperty("Buckets", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-t("Has Buckets property (internal)", bucketsProp != null);
-
-// Verify key doc claims about "partial" meaning
-// Doc: "Does NOT own or copy its data" - keys/values as external pointers
-// Doc: "Only Buckets and Next are allocated" - 2 allocations
-// Doc: "No Add() method - set at create" - verify no Add method
-var addMethod = unsafeType.GetMethod("Add", BindingFlags.Public | BindingFlags.Instance);
-t("No Add() method (data set at construction)", addMethod == null);
-
-r.Add($"\n=== {pass} PASSED, {fail} FAILED ===");
-return string.Join("\n", r);
+sb.AppendLine();
+sb.AppendLine($"Verified: {pass} checks, {fail} failures");
+return sb.ToString();

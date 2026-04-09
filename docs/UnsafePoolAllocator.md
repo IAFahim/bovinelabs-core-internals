@@ -221,11 +221,38 @@ KEY PROPERTIES
 
 ## Verified Data
 
-> [Run test snippet](../snippets/memory-allocators/UnsafePoolAllocator.cs) — verified via unity-cli exec
->
-> Key findings:
-> - Type verified as struct/class/static
-> - Methods and properties confirmed via reflection
+> Run the verification snippet:
+> ```bash
+> cat snippets/memory-allocators/UnsafePoolAllocator.cs | unity-cli exec \
+>   --project ~/Github/bovinelabs-core-internals/BovineLabs \
+>   --usings "BovineLabs.Core.Collections,BovineLabs.Core.Memory,System,System.Reflection,System.Runtime.InteropServices,System.Linq,Unity.Collections,Unity.Collections.LowLevel.Unsafe"
+> ```
+
+```
+PASS: UnsafePoolAllocator<T> type exists
+PASS: Is a struct (ValueType)
+PASS: Implements IDisposable
+PASS: Has 1 generic parameter
+PASS: Has constructor
+INFO: Constructor params: Int32 countPerChunk, Allocator allocator
+PASS: Constructor takes int countPerChunk
+PASS: Constructor takes Allocator
+PASS: Has IsCreated property
+PASS: IsCreated returns bool
+PASS: Has Alloc method
+PASS: Alloc returns pointer
+PASS: Has Free method
+PASS: Free takes pointer parameter
+PASS: Has Allocated method
+PASS: Allocated returns int
+PASS: Has Dispose method
+INFO: Fields: slabAllocator, free
+PASS: Has slabAllocator field (UnsafeSlabAllocator<T>)
+PASS: Has free field (UnsafeParallelHashSet<Ptr>)
+PASS: No lock/spinlock fields (not thread-safe)
+
+=== 19 PASSED, 0 FAILED ===
+```
 
 ## Source
 
