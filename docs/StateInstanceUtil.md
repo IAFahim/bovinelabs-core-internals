@@ -176,6 +176,13 @@ Method: GetAllStateInstances(ref SystemState, Allocator) → NativeArray<StateIn
 
 5. **Static Class**: No state, no allocation, no disposal concerns for the utility itself. Pure function over `SystemState`.
 
+## Verified Data
+
+```
+with: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/States/StateInstanceUtil.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/States/StateInstanceUtil.cs)

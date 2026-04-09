@@ -107,6 +107,13 @@ then provides instant lookup without re-allocating string arrays on each call.
 - **Value is next element**: Convention is `--flag value` where value is simply
   the adjacent element; returns `string.Empty` if the flag is the last entry.
 
+## Verified Data
+
+```
+load: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source File
 
 - `BovineLabs.Core/Utility/CommandLineArgs.cs`

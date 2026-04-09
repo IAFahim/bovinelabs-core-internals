@@ -135,6 +135,13 @@ while preserving mesh shape. Operates entirely on native collections.
   └────────────────────────────────────────────────────┘
 ```
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Utility/Mesh/MeshSimplifier.cs`

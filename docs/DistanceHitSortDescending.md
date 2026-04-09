@@ -49,6 +49,13 @@ descending distance, placing the furthest hits first.
   └──────────────────┴──────────────────────────────┘
 ```
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Sort/DistanceHitSortDescending.cs`

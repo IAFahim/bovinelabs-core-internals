@@ -163,6 +163,14 @@ plus no-resize variants for performance-critical paths.
   serialization (write header placeholder, write body, fill header with offsets/sizes).
 - **IDisposable**: Caller must `Dispose()` to free the UnsafeList.
 
+## Verified Data
+
+```
+that: TYPE NOT FOUND
+is: TYPE NOT FOUND
+Verified: 0 checks, 2 failures
+```
+
 ## Source File
 
 - `BovineLabs.Core/Utility/Serializer.cs`

@@ -44,6 +44,13 @@
  └────────────────────────────────────────────────────────────────────┘
 ```
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 - [SourceGenerators~/CodeGenHelpers/RecordBuilder.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/SourceGenerators~/CodeGenHelpers/RecordBuilder.cs)

@@ -139,6 +139,13 @@ operating directly on raw byte pointers and NativeArrays with zero managed overh
 - **Error handling**: Negative return from compression triggers immediate free+null;
   decompression returns a boolean for easy flow control.
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source File
 
 - `BovineLabs.Core/Utility/CodecService.cs`

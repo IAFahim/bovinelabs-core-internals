@@ -129,6 +129,15 @@ Standard vs GetROAndChunk
  This int is used for chunk-based filtering, ordering, and indexing.
 ```
 
+## Verified Data
+
+```
+to: TYPE NOT FOUND
+and: TYPE NOT FOUND
+BufferLookupInternal: TYPE NOT FOUND
+Verified: 0 checks, 3 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Extensions/BufferLookupExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/BufferLookupExtensions.cs)

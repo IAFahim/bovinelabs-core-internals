@@ -105,6 +105,13 @@ overrides) into an ECS `CollisionFilter` for use with Unity Physics.
   final = includeMask & ~excludeMask
 ```
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Utility/PhysicsLayerUtil.cs`

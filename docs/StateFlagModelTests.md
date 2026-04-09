@@ -31,6 +31,13 @@
  └────────────────────────────────────────────────────────────────────┘
 ```
 
+## Verified Data
+
+```
+States: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source
 
 - [BovineLabs.Core.Tests/States/StateFlagModelTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/States/StateFlagModelTests.cs)

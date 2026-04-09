@@ -142,6 +142,13 @@ Linux, macOS, Android, and iOS.
 - **Delegate creation**: `GetSymbolDelegate<T>` bridges native function pointers to
   managed delegates via `Marshal.GetDelegateForFunctionPointer`.
 
+## Verified Data
+
+```
+for: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source File
 
 - `BovineLabs.Core/Utility/LibraryLoader.cs`

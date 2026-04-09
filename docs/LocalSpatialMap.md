@@ -139,6 +139,13 @@ full parallel-safe multi-map.
 | Parallelism | QuantizeJob parallel, UpdateMap single | Map rebuild is not thread-safe |
 | Generic constraint | `ISpatialPosition` (float2) | 2D spatial only; see SpatialMap3 for 3D |
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Spatial/LocalSpatialMap.cs`

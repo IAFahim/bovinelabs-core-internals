@@ -25,6 +25,13 @@
  └────────────────────────────────────────────────────────────────────┘
 ```
 
+## Verified Data
+
+```
+SwitchBuilder: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source
 
 - [SourceGenerators~/CodeGenHelpers/SwitchBuilder.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/SourceGenerators~/CodeGenHelpers/SwitchBuilder.cs)

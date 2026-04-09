@@ -106,6 +106,13 @@ zero-cost type reinterpretation between the two representations.
 - **Constructor zeros first**: The non-target field is explicitly set to `default`
   to satisfy C# definite assignment rules for explicit-layout structs.
 
+## Verified Data
+
+```
+that: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source File
 
 - `BovineLabs.Core/Utility/ShortHalfUnion.cs`

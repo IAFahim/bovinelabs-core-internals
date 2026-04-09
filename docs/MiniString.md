@@ -180,6 +180,14 @@ USE CASES
   ● Interop with FixedString32Bytes for Unity APIs
 ```
 
+## Verified Data
+
+```
+for: TYPE NOT FOUND
+MiniString: TYPE NOT FOUND
+Verified: 0 checks, 2 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Collections/MiniString.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/MiniString.cs)

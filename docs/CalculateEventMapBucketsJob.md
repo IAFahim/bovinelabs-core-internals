@@ -100,6 +100,13 @@ bucket structure must be rebuilt before it can be queried efficiently.
   TryGetFirstValue → CORRECT results
 ```
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 `BovineLabs.Core.Extensions/PhysicsStates/Jobs/CalculateEventMapBucketsJob.cs`

@@ -14,6 +14,13 @@ over inner-loop optimization.
 
 ---
 
+## Verified Data
+
+```
+calls: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Jobs/IJobParallelForDeferBatch.cs`

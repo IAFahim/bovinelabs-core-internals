@@ -136,6 +136,13 @@ float2 or float3 points.
 - **No normalization**: Returns raw signed area (2×actual), which is sufficient for
   winding order checks. Divide by 2 for actual area.
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source File
 
 - `BovineLabs.Core/Utility/PolygonUtility.cs`

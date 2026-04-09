@@ -176,6 +176,15 @@ Property: T Value { get; set; }
 
 5. **Singleton Pattern**: Typically used as a singleton component representing global application state (game state, UI state, input state).
 
+## Verified Data
+
+```
+that: TYPE NOT FOUND
+GameState: TYPE NOT FOUND
+from: TYPE NOT FOUND
+Verified: 0 checks, 3 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/States/IState.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/States/IState.cs)

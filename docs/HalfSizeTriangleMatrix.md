@@ -116,6 +116,13 @@ to N*(N+1)/2 — roughly a 2x savings.
 - **No storage allocation**: Just index calculation — caller provides the flat array.
 - **O(1) lookup**: Constant-time index computation regardless of matrix size.
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source File
 
 - `BovineLabs.Core/Utility/HalfSizeTriangleMatrix.cs`

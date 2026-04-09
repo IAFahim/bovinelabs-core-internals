@@ -133,6 +133,13 @@ native wrapper trampoline.
 - **Safety check**: `ArgumentsFromPtr` validates size matches `sizeof(T)` in
   `ENABLE_UNITY_COLLECTIONS_CHECKS` builds.
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source Files
 
 - `BovineLabs.Core/Utility/BurstTrampoline.cs` — Core struct

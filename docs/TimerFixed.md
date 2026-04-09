@@ -206,6 +206,13 @@ Constructor: TimerFixed(float duration)  -- fixed duration for ALL entities
 
 5. **Change Detection**: Both `TActive` changes and `TRemaining` changes trigger recalculation, ensuring `TOn` stays consistent.
 
+## Verified Data
+
+```
+at: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Model/TimerFixed.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Model/TimerFixed.cs)

@@ -126,6 +126,14 @@ burst-compiled `IJobChunk` job with stride-aware `MemCpy`.
 | Copy method | `MemCpyStride` | Extracts position field from strided chunk data |
 | Dual interface | `ISpatialPosition` + `ISpatialPosition3` | Same data works for both 2D and 3D spatial maps |
 
+## Verified Data
+
+```
+that: TYPE NOT FOUND
+SpatialPosition: TYPE NOT FOUND
+Verified: 0 checks, 2 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Spatial/PositionBuilder.cs`

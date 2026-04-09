@@ -42,6 +42,13 @@
  └────────────────────────────────────────────────────────────────────┘
 ```
 
+## Verified Data
+
+```
+UnsafeUntypedDynamicBuffer: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Collections/UnsafeUntypedDynamicBuffer.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/UnsafeUntypedDynamicBuffer.cs)

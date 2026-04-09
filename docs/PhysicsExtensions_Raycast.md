@@ -75,6 +75,13 @@ ray-plane intersection using pure math. No physics scene queries needed.
   └──────────────────────────────────────────────┘
 ```
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Extensions/PhysicsExtensions.cs`

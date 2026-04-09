@@ -53,6 +53,13 @@
  └────────────────────────────────────────────────────────────────────┘
 ```
 
+## Verified Data
+
+```
+Utility: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source
 
 - [BovineLabs.Core.Tests/Utility/MathExPerformanceTests.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Tests/Utility/MathExPerformanceTests.cs)

@@ -121,6 +121,13 @@ same double-buffered event comparison pattern.
   └───────────────────┴──────────────────┴──────────────────┘
 ```
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 `BovineLabs.Core.Extensions/PhysicsStates/Data/StatefulTriggerEvent.cs`

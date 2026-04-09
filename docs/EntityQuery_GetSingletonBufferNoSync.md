@@ -108,6 +108,13 @@
  (e.g. from main thread, or after manual dependency management).
 ```
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Extensions/EntityQueryExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/EntityQueryExtensions.cs)

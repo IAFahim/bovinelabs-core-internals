@@ -104,6 +104,13 @@
  skipping the O(N) type-array scan on subsequent invocations.
 ```
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Extensions/ArchetypeChunkExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/ArchetypeChunkExtensions.cs)

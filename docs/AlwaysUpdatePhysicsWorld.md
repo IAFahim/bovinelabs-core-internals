@@ -102,6 +102,13 @@ remain accurate even between fixed steps.
   └──────────────────────────────────────────────────────┘
 ```
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 `BovineLabs.Core.Extensions/PhysicsUpdate/AlwaysUpdatePhysicsWorld.cs`

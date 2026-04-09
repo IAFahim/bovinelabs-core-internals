@@ -159,6 +159,13 @@ to prevent false sharing between threads.
 - **Not deterministic**: Explicitly documented — thread scheduling is nondeterministic,
   so global random is only for gameplay variety, not replay/serialization.
 
+## Verified Data
+
+```
+is: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source Files
 
 - `BovineLabs.Core/Utility/GlobalRandom.cs`

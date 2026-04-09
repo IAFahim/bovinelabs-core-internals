@@ -137,6 +137,13 @@ causing more slowness, ad infinitum.
 - **Single update per frame**: `didPushTime` flag ensures at most one update per
   frame even if the group's ShouldGroupUpdate is called multiple times.
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source File
 
 - `BovineLabs.Core/Utility/LimitedRateNoCatchUpManager.cs`

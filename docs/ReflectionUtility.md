@@ -121,6 +121,13 @@ runtime.
 - **Editor vs Player**: Uses `TypeCache.GetMethodsWithAttribute<T>()` in Editor
   (faster Unity-native cache) and manual reflection in Player builds.
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source File
 
 - `BovineLabs.Core/Utility/ReflectionUtility.cs`

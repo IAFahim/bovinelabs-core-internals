@@ -106,6 +106,15 @@ loop, eliminating per-frame overhead.
 - **Not destroyed**: The system object still exists in the World; it's just removed
   from the update list. It can be re-added if needed.
 
+## Verified Data
+
+```
+for: TYPE NOT FOUND
+overrides: TYPE NOT FOUND
+implements: TYPE NOT FOUND
+Verified: 0 checks, 3 failures
+```
+
 ## Source File
 
 - `BovineLabs.Core/Utility/InitSystemBase.cs`

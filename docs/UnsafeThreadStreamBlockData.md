@@ -27,6 +27,15 @@
  └────────────────────────────────────────────────────────────────────┘
 ```
 
+## Verified Data
+
+```
+UnsafeThreadStreamBlock: TYPE NOT FOUND
+UnsafeThreadStreamRange: TYPE NOT FOUND
+UnsafeThreadStreamBlockData: TYPE NOT FOUND
+Verified: 0 checks, 3 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Collections/EventStream/UnsafeThreadStreamBlockData.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/EventStream/UnsafeThreadStreamBlockData.cs)

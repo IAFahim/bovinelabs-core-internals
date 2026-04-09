@@ -245,6 +245,13 @@ Parameter: maxHistorySize - maximum entries in each buffer
 
 6. **Single Byte State**: Only supports 1-byte state values (like StateModel), enabling simple equality comparison for pop detection.
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/States/StateModelWithHistory.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/States/StateModelWithHistory.cs)

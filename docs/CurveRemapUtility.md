@@ -138,6 +138,13 @@ slopes accordingly. Only works with Clamp wrap modes.
 - **Zero-duration edge case**: When all keys have the same time, they collapse to
   `clipIn` — prevents division by zero.
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source File
 
 - `BovineLabs.Core/Utility/CurveRemapUtility.cs`

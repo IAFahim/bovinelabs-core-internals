@@ -163,6 +163,14 @@ Based on Oskar Sigvardsson's unity-quickhull implementation.
   └────────────────────────────────────────────────┘
 ```
 
+## Verified Data
+
+```
+that: TYPE NOT FOUND
+cone: TYPE NOT FOUND
+Verified: 0 checks, 2 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Utility/Mesh/ConvexHullBuilder.cs`

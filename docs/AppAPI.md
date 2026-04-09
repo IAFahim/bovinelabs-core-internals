@@ -226,6 +226,13 @@ Methods: StateCurrent, StateIsEnabled, StateSet, StateEnable, StateDisable
 
 6. **Conditional Debug Logging**: Log messages only in `UNITY_EDITOR` or `BL_DEBUG` builds, ensuring zero overhead in release.
 
+## Verified Data
+
+```
+providing: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/States/AppAPI.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/States/AppAPI.cs)

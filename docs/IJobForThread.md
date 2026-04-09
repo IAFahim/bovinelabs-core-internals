@@ -12,6 +12,13 @@ thread per spatial partition), rather than letting the job scheduler decide the 
 
 ---
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Jobs/IJobForThread.cs`

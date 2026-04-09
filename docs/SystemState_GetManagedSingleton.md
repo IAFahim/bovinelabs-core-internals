@@ -138,6 +138,15 @@
  This means it compiles away entirely in builds that disable managed
  components (e.g. some console/platform targets).
 
+## Verified Data
+
+```
+IComponentData: TYPE NOT FOUND
+GameConfig: TYPE NOT FOUND
+ref: TYPE NOT FOUND
+Verified: 0 checks, 3 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Extensions/SystemStateExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/SystemStateExtensions.cs)

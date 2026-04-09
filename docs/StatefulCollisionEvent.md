@@ -153,6 +153,13 @@ new, ongoing, or ended relative to the previous frame.
   └──────────────────────────────────────────────────────────┘
 ```
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 `BovineLabs.Core.Extensions/PhysicsStates/Data/StatefulCollisionEvent.cs`

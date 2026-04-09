@@ -142,6 +142,13 @@ Generic Parameters:
 
 5. **TTo is ReadWrite**: Only the target's enable bits are modified.
 
+## Verified Data
+
+```
+that: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Model/CopyEnableable.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Model/CopyEnableable.cs)

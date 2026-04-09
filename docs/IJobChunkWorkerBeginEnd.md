@@ -9,6 +9,13 @@ allocations, cached NativeContainer views, or per-thread accumulator state witho
 
 ---
 
+## Verified Data
+
+```
+default: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Jobs/IJobChunkWorkerBeginEnd.cs`

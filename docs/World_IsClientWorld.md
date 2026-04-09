@@ -152,6 +152,13 @@
  thin clients are clients. Use IsThinClientWorld() when you need
  to distinguish full clients from thin clients.
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Worlds.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Worlds.cs)

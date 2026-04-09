@@ -10,6 +10,14 @@ needing to know the buffer's length.
 
 ---
 
+## Verified Data
+
+```
+that: TYPE NOT FOUND
+cast: TYPE NOT FOUND
+Verified: 0 checks, 2 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Extensions/IJobParallelForDeferExtensions.cs`

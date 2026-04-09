@@ -212,6 +212,13 @@ Key: Bit-level diffing → add/remove tag components per-bit
 
 6. **Dynamic Component Handles**: Uses `DynamicComponentTypeHandle` to support any state component type regardless of size, reinterpreted as byte arrays.
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/States/StateFlagModel.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/States/StateFlagModel.cs)

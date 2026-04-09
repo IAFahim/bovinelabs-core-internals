@@ -134,6 +134,13 @@ job scheduling. Modified from Unity's rendering light-transport implementation.
              ↑ cross product of gradient components
 ```
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Utility/Mesh/TerrainToMesh.cs`

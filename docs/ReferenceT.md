@@ -42,6 +42,14 @@
  └────────────────────────────────────────────────────────────────────┘
 ```
 
+## Verified Data
+
+```
+ReferenceData: TYPE NOT FOUND
+ReferenceHeader: TYPE NOT FOUND
+Verified: 0 checks, 2 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Collections/Reference.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/Reference.cs)

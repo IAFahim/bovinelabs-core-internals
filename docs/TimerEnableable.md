@@ -216,6 +216,13 @@ Key: TOn and TActive use ENABLED BITS, not bool data values
 
 5. **Per-Entity Duration**: Unlike TimerFixed, each entity can have a different duration via the `TDuration` component.
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Model/TimerEnableable.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Model/TimerEnableable.cs)

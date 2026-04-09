@@ -113,6 +113,13 @@ fully Burst-compatible.
 - Pure float math, fully Burst-compatible
 - No epsilon used in comparisons (exact math)
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Utility/IntersectionTests.cs`

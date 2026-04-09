@@ -145,6 +145,13 @@ reinterpretation — no copying, no boxing, no allocations.
 - **ReadBuffer returns pointer**: Gives direct access into the underlying buffer for
   zero-copy array access — caller must ensure lifetime.
 
+## Verified Data
+
+```
+that: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source File
 
 - `BovineLabs.Core/Utility/Deserializer.cs`

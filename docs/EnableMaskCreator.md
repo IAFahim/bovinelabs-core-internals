@@ -211,6 +211,14 @@ Method: Create(SafeBitRef, int*) → EnabledMask
 
 6. **Integration Point**: Works alongside `GetRequiredEnabledBitsRW` and `GetRequiredEnabledBitsRO` extension methods to provide full manual control over enableable component iteration.
 
+## Verified Data
+
+```
+that: TYPE NOT FOUND
+EnabledMask: TYPE NOT FOUND
+Verified: 0 checks, 2 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Utility/EnableMaskCreator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Utility/EnableMaskCreator.cs)

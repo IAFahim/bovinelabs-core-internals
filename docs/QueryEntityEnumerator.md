@@ -107,6 +107,13 @@ over entity iteration inside Burst jobs.
 - **Stateful cursor**: `chunkIndex = -1` starts before the first chunk; each
   `MoveNextChunk` call advances it.
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source File
 
 - `BovineLabs.Core/Utility/QueryEntityEnumerator.cs`

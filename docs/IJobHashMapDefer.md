@@ -13,6 +13,13 @@ not per bucket. The producer walks each bucket's linked list internally.
 
 ---
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Sources
 
 - `BovineLabs.Core/Jobs/IJobHashMapDefer.cs` -- core implementation

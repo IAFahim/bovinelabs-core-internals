@@ -106,6 +106,13 @@ suitable for use inside Burst-compiled jobs.
 - **No alpha channel**: Returns `Color` (which includes alpha=1 by default from
   the 3-argument Color constructor).
 
+## Verified Data
+
+```
+that: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source File
 
 - `BovineLabs.Core/Utility/HSV.cs`

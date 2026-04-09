@@ -113,6 +113,14 @@ enabling zero-cost bit reinterpretation between the two.
 - **Constructor zeros first**: The non-target field is set to `default` to satisfy
   C# definite assignment for explicit-layout structs.
 
+## Verified Data
+
+```
+that: TYPE NOT FOUND
+float: TYPE NOT FOUND
+Verified: 0 checks, 2 failures
+```
+
 ## Source File
 
 - `BovineLabs.Core/Utility/IntFloatUnion.cs`

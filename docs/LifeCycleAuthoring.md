@@ -18,6 +18,14 @@
  └────────────────────────────────────────────────────────────────────┘
 ```
 
+## Verified Data
+
+```
+LifeCycle: TYPE NOT FOUND
+Authoring: TYPE NOT FOUND
+Verified: 0 checks, 2 failures
+```
+
 ## Source
 
 - [BovineLabs.Core.Extensions.Authoring/LifeCycle/LifeCycleAuthoring.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Extensions.Authoring/LifeCycle/LifeCycleAuthoring.cs)

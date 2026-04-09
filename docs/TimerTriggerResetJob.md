@@ -168,6 +168,13 @@ Generic Parameter:
 
 5. **Standalone Job**: Unlike other timer utilities, this is a pure `IJobChunk` struct with no enclosing helper type -- it's meant to be composed into existing timer systems.
 
+## Verified Data
+
+```
+with: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Model/TimerTriggerResetJob.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Model/TimerTriggerResetJob.cs)

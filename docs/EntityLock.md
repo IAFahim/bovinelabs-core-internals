@@ -149,6 +149,13 @@ per-entity spin locks provide fine-grained mutual exclusion.
 - **Fixed slot count**: `length = JobsUtility.ThreadIndexCount` — one slot per
   potential worker thread limits memory usage.
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source File
 
 - `BovineLabs.Core/Utility/EntityLock.cs`

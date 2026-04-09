@@ -123,6 +123,13 @@ Uses `NativeParallelMultiHashMap<long, int>` for storage.
   └───────────────┴──────────────────┴──────────────────────┘
 ```
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Spatial/SpatialMap3.cs`

@@ -111,6 +111,13 @@ prevents negative extents (inverted boxes).
 
 All methods are `AggressiveInlining` for zero overhead in Burst-compiled code.
 
+## Verified Data
+
+```
+symmetrically: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Extensions/AabbExtensions.cs`

@@ -142,6 +142,13 @@
    • ARM: FMIN / FMAX (NEON)
  This means all 3 components (x,y,z) are compared in parallel.
 
+## Verified Data
+
+```
+with: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Extensions/MathematicsExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/MathematicsExtensions.cs)

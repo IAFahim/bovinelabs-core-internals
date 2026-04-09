@@ -151,6 +151,15 @@ raw `byte*` access to its memory — all without GCHandle or Marshal.
   the same object but with different types.
 - **Origin**: Adapted from a StackOverflow technique for pinning arbitrary objects.
 
+## Verified Data
+
+```
+Editor: TYPE NOT FOUND
+to: TYPE NOT FOUND
+would: TYPE NOT FOUND
+Verified: 0 checks, 3 failures
+```
+
 ## Source File
 
 - `BovineLabs.Core/Utility/Pin.cs`

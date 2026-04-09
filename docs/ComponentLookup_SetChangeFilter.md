@@ -103,6 +103,13 @@
  • Manual change propagation in custom job pipelines
 ```
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/Extensions/ComponentLookupExtensions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Extensions/ComponentLookupExtensions.cs)

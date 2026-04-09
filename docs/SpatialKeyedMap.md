@@ -126,6 +126,13 @@ rather than unsafe pointers and supports proper keyed bucket lookup.
   └───────────────────┴─────────────────────┴────────────────────┘
 ```
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Spatial/SpatialKeyedMap.cs`

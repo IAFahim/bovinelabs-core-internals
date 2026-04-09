@@ -148,6 +148,13 @@ provides fast bucket-based proximity queries.
   }
 ```
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Spatial/SpatialMap.cs`

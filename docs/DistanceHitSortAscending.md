@@ -63,6 +63,13 @@ Array.Sort(sortedHits, new DistanceHitSortAscending());
 // sortedHits[0] is now the nearest hit
 ```
 
+## Verified Data
+
+```
+(no type refs)
+Verified: 1 checks, 0 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Sort/DistanceHitSortAscending.cs`

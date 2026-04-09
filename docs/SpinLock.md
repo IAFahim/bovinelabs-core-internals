@@ -12,6 +12,25 @@ Adapted from `com.unity.collections/Unity.Collections/AllocatorManager.cs`.
 
 ---
 
+## Verified Data
+
+```
+SpinLock
+  Kind: struct
+  Size: 4 bytes
+  Interfaces:
+  Properties:
+  Methods:
+    Void Acquire()
+    Boolean TryAcquire()
+    Boolean TryAcquire(Boolean)
+    Void Release()
+  Fields:
+    Int32 lock (private)
+MyJob: TYPE NOT FOUND
+Verified: 1 checks, 1 failures
+```
+
 ## Source
 
 `BovineLabs.Core/Utility/SpinLock.cs`

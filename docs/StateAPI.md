@@ -213,6 +213,13 @@ Purpose: Register state-to-tag mappings during OnCreate
 
 6. **TypeIndex-Based Matching**: Uses `TypeManager.GetTypeIndex<TState>()` for type identity, ensuring the same state component type is used consistently.
 
+## Verified Data
+
+```
+that: TYPE NOT FOUND
+Verified: 0 checks, 1 failures
+```
+
 ## Source
 
 - [BovineLabs.Core/States/StateAPI.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/States/StateAPI.cs)
