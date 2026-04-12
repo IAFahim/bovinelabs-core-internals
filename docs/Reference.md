@@ -93,6 +93,9 @@ ReferenceData
 Verified: 3 checks, 0 failures
 ```
 
+
+> Tested example: [Example/ReferenceExample.cs](../Example/ReferenceExample.cs)
+
 ## Source
 
 - [BovineLabs.Core/Collections/Reference.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Collections/Reference.cs)

@@ -104,6 +104,9 @@ ElementProperty
 Verified: 2 checks, 0 failures
 ```
 
+
+> Tested example: [Example/EditorUIExample.cs](../Example/EditorUIExample.cs)
+
 ## Source
 
 - [BovineLabs.Core.Editor/Inspectors/ElementEditor.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Editor/Inspectors/ElementEditor.cs)

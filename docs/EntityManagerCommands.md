@@ -70,6 +70,9 @@ EntityManagerCommands
 Verified: 2 checks, 0 failures
 ```
 
+
+> Tested example: [Example/EntityCommandsExample.cs](../Example/EntityCommandsExample.cs)
+
 ## Source
 
 - [BovineLabs.Core/EntityCommands/EntityManagerCommands.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/EntityCommands/EntityManagerCommands.cs)

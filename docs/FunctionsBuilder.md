@@ -90,6 +90,9 @@ FunctionData
 Verified: 6 checks, 0 failures
 ```
 
+
+> Tested example: [Example/FunctionsExample.cs](../Example/FunctionsExample.cs)
+
 ## Source
 
 - [https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Functions/FunctionsBuilder.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Functions/FunctionsBuilder.cs)

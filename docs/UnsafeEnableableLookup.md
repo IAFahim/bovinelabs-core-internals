@@ -42,6 +42,9 @@ UnsafeEnableableLookup
 Verified: 2 checks, 0 failures
 ```
 
+
+> Tested example: [Example/UnsafeLookupsExample.cs](../Example/UnsafeLookupsExample.cs)
+
 ## Source
 
 - [BovineLabs.Core/Iterators/UnsafeEnableableLookup.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/UnsafeEnableableLookup.cs)

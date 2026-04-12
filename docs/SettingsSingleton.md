@@ -98,6 +98,9 @@ SettingsSingleton (base)
 Verified: 2 checks, 0 failures
 ```
 
+
+> Tested example: [Example/SettingsExample.cs](../Example/SettingsExample.cs)
+
 ## Source
 
 - [BovineLabs.Core/Settings/SettingsSingleton.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Settings/SettingsSingleton.cs)

@@ -145,6 +145,8 @@ BurstTrampoline
 Verified: 1 checks, 0 failures
 ```
 
+> Tested example: [Example/FunctionsExample.cs](../Example/FunctionsExample.cs)
+
 ## Source Files
 
 - `BovineLabs.Core/Utility/BurstTrampoline.cs` — Core struct

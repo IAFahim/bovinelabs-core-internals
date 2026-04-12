@@ -92,6 +92,9 @@ Delegates:
 Verified: 4 checks, 0 failures
 ```
 
+
+> Tested example: [Example/FunctionsExample.cs](../Example/FunctionsExample.cs)
+
 ## Source
 
 - [https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Functions/IFunction.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Functions/IFunction.cs)

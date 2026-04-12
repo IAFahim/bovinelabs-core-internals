@@ -51,6 +51,9 @@ ComponentAsset
 Verified: 1 checks, 0 failures
 ```
 
+
+> Tested example: [Example/ComponentAssetsExample.cs](../Example/ComponentAssetsExample.cs)
+
 ## Source
 
 - [BovineLabs.Core/Component/ComponentAsset.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Component/ComponentAsset.cs)

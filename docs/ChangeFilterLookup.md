@@ -70,6 +70,9 @@ ChangeFilterLookup<T>
 Verified: 1 checks, 0 failures
 ```
 
+
+> Tested example: [Example/UnsafeLookupsExample.cs](../Example/UnsafeLookupsExample.cs)
+
 ## Source
 
 - [BovineLabs.Core/Iterators/ChangeFilterLookup.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/ChangeFilterLookup.cs)

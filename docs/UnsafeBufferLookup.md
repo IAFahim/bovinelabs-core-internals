@@ -60,6 +60,9 @@ UnsafeBufferLookup<T>
 Verified: 1 checks, 0 failures
 ```
 
+
+> Tested example: [Example/UnsafeLookupsExample.cs](../Example/UnsafeLookupsExample.cs)
+
 ## Source
 
 - [BovineLabs.Core/Iterators/UnsafeBufferLookup.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/UnsafeBufferLookup.cs)

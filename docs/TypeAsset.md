@@ -45,6 +45,9 @@ TypeAsset
 Verified: 1 checks, 0 failures
 ```
 
+
+> Tested example: [Example/ComponentAssetsExample.cs](../Example/ComponentAssetsExample.cs)
+
 ## Source
 
 - [BovineLabs.Core/Component/TypeAsset.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Component/TypeAsset.cs)

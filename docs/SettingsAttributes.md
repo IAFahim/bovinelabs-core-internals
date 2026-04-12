@@ -75,6 +75,9 @@ SettingSubDirectoryAttribute
 Verified: 3 checks, 0 failures
 ```
 
+
+> Tested example: [Example/SettingsExample.cs](../Example/SettingsExample.cs)
+
 ## Source
 
 - [BovineLabs.Core/Settings/SettingsGroupAttribute.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Settings/SettingsGroupAttribute.cs)

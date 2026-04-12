@@ -68,6 +68,9 @@ RuntimeContentCatalogUtility
 Verified: 1 checks, 0 failures
 ```
 
+
+> Tested example: [Example/RuntimeContentCatalogExample.cs](../Example/RuntimeContentCatalogExample.cs)
+
 ## Source
 
 - [BovineLabs.Core/Internal/RuntimeContentCatalogUtility.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Internal/RuntimeContentCatalogUtility.cs)

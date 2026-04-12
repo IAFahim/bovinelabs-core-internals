@@ -78,6 +78,9 @@ CustomChunkIterator<T>
 Verified: 1 checks, 0 failures
 ```
 
+
+> Tested example: [Example/CustomChunkIteratorExample.cs](../Example/CustomChunkIteratorExample.cs)
+
 ## Source
 
 - [BovineLabs.Core/Iterators/CustomChunkIterator.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Iterators/CustomChunkIterator.cs)

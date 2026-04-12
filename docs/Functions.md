@@ -77,6 +77,9 @@ FunctionsBuilder<T,TO> methods: Dispose, ReflectAll, Add (x3), Build, BuildHash
 Verified: 2 checks, 0 failures
 ```
 
+
+> Tested example: [Example/FunctionsExample.cs](../Example/FunctionsExample.cs)
+
 ## Source
 
 - [https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Functions/Functions.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core/Functions/Functions.cs)

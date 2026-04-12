@@ -54,6 +54,9 @@ ObjectSelectionProxy
 Verified: 1 checks, 0 failures
 ```
 
+
+> Tested example: [Example/EditorUIExample.cs](../Example/EditorUIExample.cs)
+
 ## Source
 
 - [BovineLabs.Core.Editor/UI/ObjectSelectionProxy.cs](https://gitlab.com/tertle/com.bovinelabs.core/-/blob/master/BovineLabs.Core.Editor/UI/ObjectSelectionProxy.cs)
