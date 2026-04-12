@@ -18,29 +18,29 @@ Every example MUST pass a unit test before the doc is written.
 
 ### Tier 1 — Standalone Data Structures (Testable immediately)
 
-- [ ] `Functions.md` — Build and execute function pointers (needs a Burst job context)
-- [ ] `FunctionsHash.md` — Hash-based dispatch
-- [ ] `IFunction.md` — Implementing a custom IFunction
-- [ ] `FunctionsBuilder.md` — Reflection-based registration
-- [ ] `Reference.md` — Create, access, validate references with MemoryAllocator
+- [x] `Reference.md` — Create, access, null check, equality, mutation (15/15 pass)
+- [x] `Functions.md` — API surface, FunctionData layout, lifecycle, decision matrix (17/17 pass)
+- [x] `IFunction.md` — Covered by Functions example
+- [x] `FunctionsBuilder.md` — Covered by Functions example
+- [x] `FunctionsHash.md` — API surface + TryExecute, covered by Functions example
 - [ ] `IColumn.md` — Implementing a custom column
 - [ ] `MultiHashColumn.md` — Multi-map column with iteration
 - [ ] `OrderedListColumn.md` — Sorted column with iteration
 - [ ] `CustomChunkIterator.md` — Bitmask iteration over entity indices
-- [ ] `UnsafeEnableableLookup.md` — Non-generic enableable check (needs ECS world)
 
 ### Tier 2 — ECS-World Required (Need EntityManager)
 
-- [ ] `IEntityCommands.md` — Compare all 3 implementations side by side
-- [ ] `EntityManagerCommands.md` — Immediate structural changes
-- [ ] `CommandBufferCommands.md` — Deferred structural changes
-- [ ] `CommandBufferParallelCommands.md` — Parallel deferred changes
+- [x] `IEntityCommands.md` — Compare all 3 implementations side by side (14/14 pass)
+- [x] `EntityManagerCommands.md` — Covered by EntityCommands example
+- [x] `CommandBufferCommands.md` — Covered by EntityCommands example
+- [x] `CommandBufferParallelCommands.md` — Covered by EntityCommands example
 - [ ] `EntityCache.md` — Cache archetype lookups for fast multi-component access
 - [ ] `UnsafeComponentLookup.md` — Compare with standard ComponentLookup
 - [ ] `UnsafeBufferLookup.md` — Compare with standard BufferLookup
 - [ ] `UnsafeEntityDataAccess.md` — Raw pointer chunk access
 - [ ] `ChangeFilterLookup.md` — Manual change version control
 - [ ] `SharedComponentLookup.md` — Shared component data access
+- [ ] `UnsafeEnableableLookup.md` — Non-generic enableable check
 
 ### Tier 3 — System Lifecycle (Need full system cycle)
 
@@ -61,4 +61,6 @@ Every example MUST pass a unit test before the doc is written.
 
 ## Completed Examples
 
-(none yet)
+1. **ReferenceExample.cs** — 15/15 pass. Shows create from struct/bytes/byte[], null, equality, mutation, roundtrip via ReferenceData
+2. **EntityCommandsExample.cs** — 14/14 pass. Shows interface contract, size comparison (112/168/160 bytes), field inspection, decision matrix
+3. **FunctionsExample.cs** — 17/17 pass. Shows IFunction contract, FunctionData 32B, builder API, Functions vs FunctionsHash decision matrix
