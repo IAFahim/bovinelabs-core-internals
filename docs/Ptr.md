@@ -29,7 +29,11 @@
 ## Verified Data
 
 ```
-(no type refs)
+Ptr<T>
+  Kind: struct, 8 bytes, ns=BovineLabs.Core.Utility
+  Properties: Boolean IsCreated, T& Ref
+  Methods: Equals (x2), GetHashCode
+
 Verified: 1 checks, 0 failures
 ```
 

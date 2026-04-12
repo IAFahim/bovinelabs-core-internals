@@ -110,7 +110,11 @@ over entity iteration inside Burst jobs.
 ## Verified Data
 
 ```
-(no type refs)
+QueryEntityEnumerator
+  Kind: unmanaged struct
+  Uses UnsafeChunkCacheIterator + v128 bitmask for chunk-level iteration
+  Respects enableable component masks per entity
+
 Verified: 1 checks, 0 failures
 ```
 

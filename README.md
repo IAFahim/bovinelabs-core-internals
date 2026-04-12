@@ -448,6 +448,74 @@ docs/
 - [AnalyzersProjectFileGeneration](docs/AnalyzersProjectFileGeneration.md)
 
 
+
+### Burst-Compiled Function Pointers
+
+- [IFunction](docs/IFunction.md)
+- [FunctionsBuilder](docs/FunctionsBuilder.md)
+- [Functions](docs/Functions.md)
+- [FunctionsHash](docs/FunctionsHash.md)
+- [BurstTrampoline](docs/BurstTrampoline.md)
+
+### Entity Commands Abstraction
+
+- [IEntityCommands](docs/IEntityCommands.md)
+- [EntityManagerCommands](docs/EntityManagerCommands.md)
+- [CommandBufferCommands](docs/CommandBufferCommands.md)
+- [CommandBufferParallelCommands](docs/CommandBufferParallelCommands.md)
+
+### Component & Type Assets
+
+- [ComponentAssetBase](docs/ComponentAssetBase.md)
+- [ComponentAsset](docs/ComponentAsset.md)
+- [EnableableComponentAsset](docs/EnableableComponentAsset.md)
+- [ComponentFieldAsset](docs/ComponentFieldAsset.md)
+- [TypeAsset](docs/TypeAsset.md)
+
+### Unmanaged Lookups & Caching
+
+- [EntityCache](docs/EntityCache.md)
+- [UnsafeComponentLookup](docs/UnsafeComponentLookup.md)
+- [UnsafeBufferLookup](docs/UnsafeBufferLookup.md)
+- [UnsafeEntityDataAccess](docs/UnsafeEntityDataAccess.md)
+- [UnsafeEnableableLookup](docs/UnsafeEnableableLookup.md)
+- [ChangeFilterLookup](docs/ChangeFilterLookup.md)
+- [SharedComponentLookup](docs/SharedComponentLookup.md)
+
+### Settings Singleton Framework
+
+- [SettingsSingleton](docs/SettingsSingleton.md)
+- [SettingsAttributes](docs/SettingsAttributes.md)
+
+### Dynamic Variable Map Columns
+
+- [IColumn](docs/IColumn.md)
+- [MultiHashColumn](docs/MultiHashColumn.md)
+- [OrderedListColumn](docs/OrderedListColumn.md)
+
+### Custom Chunk Iteration
+
+- [QueryEntityEnumerator](docs/QueryEntityEnumerator.md)
+- [CustomChunkIterator](docs/CustomChunkIterator.md)
+
+### Reference Wrappers & Utilities
+
+- [Reference](docs/Reference.md)
+- [Ptr](docs/Ptr.md)
+- [RuntimeContentCatalogUtility](docs/RuntimeContentCatalogUtility.md)
+
+### Custom UI Elements & Inspectors
+
+- [ElementEditor](docs/ElementEditor.md)
+- [ObjectSelectionProxy](docs/ObjectSelectionProxy.md)
+- [SearchElement](docs/SearchElement.md)
+
 ---
 
-Total: 357 topics across 24 categories
+Total: 388 topics across 31 categories
+
+## Examples
+
+Runnable code examples with unit tests live in the `Example/` folder.
+Each example is a self-contained `.cs` file demonstrating real-world usage patterns.
+See `Example/TODO.md` for progress.

@@ -126,7 +126,7 @@ return sb.ToString();
 5. **BindingFlags**: ALWAYS include `.DeclaredOnly` — types that hide base members fail without it
 6. **Timeout**: First exec ~60s, plan warmup ping before batch runs
 
-## Categories (24 total, 357 topics)
+## Categories (31 total, 388 topics)
 
 | # | Category | Count | Status |
 |---|----------|-------|--------|
@@ -154,6 +154,23 @@ return sb.ToString();
 | 22 | Tests & Diagnostics | 5 | DONE |
 | 23 | Math Extensions | 11 | DONE |
 | 24 | Other | 34 | DONE |
+| 25 | Function Pointers | 5 | DONE |
+| 26 | Entity Commands | 4 | DONE |
+| 27 | Component Assets | 5 | DONE |
+| 28 | Unmanaged Lookups | 7 | DONE |
+| 29 | Settings Framework | 2 | DONE |
+| 30 | Dynamic Columns | 3 | DONE |
+| 31 | Custom UI | 3 | DONE |
+
+## Example Folder
+
+Runnable code examples with unit tests in `Example/`. Each example:
+- Is a self-contained `.cs` file demonstrating real-world usage
+- Includes a unit test that validates the example works correctly
+- Shows the "when to use X over Y" decision matrix
+- Can be pasted into any Unity project
+
+See `Example/TODO.md` for progress.
 
 ## Git Conventions
 

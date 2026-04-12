@@ -136,7 +136,12 @@ native wrapper trampoline.
 ## Verified Data
 
 ```
-(no type refs)
+BurstTrampoline
+  Kind: readonly struct
+  Uses cached static wrapperPtr for unmanaged-to-managed bridge
+  Extension methods: Invoke (6 overloads) for argument packing
+  BurstManagedPair<T1,T2> and BurstManagedTriple<T1,T2,T3> for multi-arg packing
+
 Verified: 1 checks, 0 failures
 ```
 
