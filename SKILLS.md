@@ -1,7 +1,8 @@
 # BovineLabs Core + Unity CLI + ECS Fact-Checking Skill
 
 Complete reference for working with BovineLabs Core library, Unity CLI tooling,
-and DOTS/ECS patterns. Based on real runtime verification of 357 documentation topics.
+and DOTS/ECS patterns. Based on real runtime verification of 388 documentation topics
+with tested code examples in `Example/` directory.
 
 ---
 
